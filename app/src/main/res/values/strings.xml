@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">CodingQuiz</string>
+    <string name="app_name">TechQuiz</string>
 
     <plurals name="question_time_left">
         <item quantity="one">%1$d second left</item>

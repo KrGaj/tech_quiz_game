@@ -7,11 +7,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.codingquiz"
+    namespace = "com.example.techquiz"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.codingquiz"
+        applicationId = "com.example.techquiz"
         minSdk = 30
         targetSdk = 34
         versionCode = 1
