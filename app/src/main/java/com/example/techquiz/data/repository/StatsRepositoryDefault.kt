@@ -17,7 +17,6 @@ class StatsRepositoryDefault(
         val categories = categoryEntities.map {
             CategoryStats(
                 Category(
-                    it.key.id,
                     it.key.name,
                 ),
                 it.value,

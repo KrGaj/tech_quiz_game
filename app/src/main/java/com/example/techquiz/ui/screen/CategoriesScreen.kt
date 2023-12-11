@@ -113,10 +113,10 @@ private fun PreviewCategoryGrid() {
     CodingQuizTheme {
         CategoryGrid(
             listOf(
-                Category(0, "Category 1"),
-                Category(0, "Category 2"),
-                Category(0, "Category 3"),
-                Category(0, "Category 4"),
+                Category("Category 1"),
+                Category("Category 2"),
+                Category("Category 3"),
+                Category("Category 4"),
             )
         ) {}
     }

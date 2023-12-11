@@ -1,16 +1,13 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.database.dao.CategoryDao
+import androidx.compose.ui.text.capitalize
+import androidx.compose.ui.text.intl.LocaleList
+import com.example.techquiz.data.PossibleCategories
 import com.example.techquiz.data.domain.Category
 
-class CategoryRepositoryDefault(
-    private val categoryDao: CategoryDao,
-) : CategoryRepository {
-    override suspend fun getAllCategories(): List<Category> =
-        categoryDao.getAllCategories().map {
-            Category(
-                it.id,
-                it.name,
-            )
+class CategoryRepositoryDefault : CategoryRepository {
+    override fun getAllCategories(): List<Category> =
+        PossibleCategories.entries.map {
+            Category(it.name.capitalize(LocaleList(languageTags = "en")))
         }
 }

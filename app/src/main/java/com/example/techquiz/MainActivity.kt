@@ -25,6 +25,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.techquiz.di.databaseModule
+import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.repositoryModule
 import com.example.techquiz.di.viewModelModule
 import com.example.techquiz.navigation.AppNavHost
@@ -45,6 +46,7 @@ class MainActivity : ComponentActivity() {
 
                 modules(
                     listOf(
+                        httpClientModule,
                         databaseModule,
                         repositoryModule,
                         viewModelModule,

@@ -181,15 +181,15 @@ private fun PreviewCorrectAnswersStats() {
 
 private val categoryStats = listOf(
     CategoryStats(
-        com.example.techquiz.data.domain.Category(0, "Demo1"),
+        com.example.techquiz.data.domain.Category("Demo1"),
         2137,
     ),
     CategoryStats(
-        com.example.techquiz.data.domain.Category(1, "Demo2"),
+        com.example.techquiz.data.domain.Category("Demo2"),
         21,
     ),
     CategoryStats(
-        com.example.techquiz.data.domain.Category(2, "Demo3"),
+        com.example.techquiz.data.domain.Category("Demo3"),
         37,
     ),
 )
