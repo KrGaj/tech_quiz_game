@@ -1,5 +1,6 @@
 package com.example.techquiz.ui.screen
 
+import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -63,7 +64,10 @@ fun QuestionScreen(
     navigateToResults: (List<QuizResult>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
-    val question by questionViewModel.questionWithIndex.collectAsStateWithLifecycle()
+    val questionResult by questionViewModel.question.collectAsStateWithLifecycle()
+    var question by remember {
+        mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
+    }
     val questionNumber by questionViewModel.questionNumber.collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
@@ -81,8 +85,17 @@ fun QuestionScreen(
         }
     }
 
-    LaunchedEffect(question.id) {
-        timerViewModel.start()
+    LaunchedEffect(questionResult) {
+        questionResult.fold(
+            onSuccess = {
+                question = it
+                timerViewModel.start()
+            },
+            onFailure = {
+                // TODO
+                Log.e("Demo failure", it.stackTraceToString())
+            },
+        )
     }
 
     BackHandler {
@@ -90,7 +103,9 @@ fun QuestionScreen(
     }
 
     CodingQuizTheme {
-//        LaunchedEffect(Unit) { questionViewModel.fetchQuestions(category.id) }
+        LaunchedEffect(Unit) {
+            questionViewModel.fetchQuestions(category)
+        }
         Column(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.SpaceBetween,
@@ -109,12 +124,13 @@ fun QuestionScreen(
                     coroutineScope.launch {
                         answerState.isAnyAnswerChosen = true
                         timerViewModel.clear()
-                        givenAnswerViewModel.addAnswer(
-                            answer = GivenAnswer(
-                                question = question,
-                                correct = it.isCorrect,
-                            ),
-                        )
+                        // TODO uncomment
+//                        givenAnswerViewModel.addAnswer(
+//                            answer = GivenAnswer(
+//                                question = question,
+//                                correct = it.isCorrect,
+//                            ),
+//                        )
                         delay(1.seconds)
                         answerAddCallback()
                     }
@@ -240,7 +256,7 @@ private fun Timer(timeLeft: Long) {
 @Composable
 private fun PreviewQuestionText() {
     CodingQuizTheme {
-        QuestionText(question = Question(0, 0,
+        QuestionText(question = Question(0, "0",
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
                     "sed do eiusmod tempor incididunt ut labore et dolore " +
                     "magna aliqua. Ut enim ad minim veniam, quis nostrud " +

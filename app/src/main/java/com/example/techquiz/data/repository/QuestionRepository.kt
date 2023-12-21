@@ -7,5 +7,5 @@ fun interface QuestionRepository {
     suspend fun getRandomQuestions(
         quantity: Int,
         category: Category,
-    ): Result<List<Question>>
+    ): List<Question>
 }

@@ -4,8 +4,9 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.resources.Resources
+import io.ktor.http.URLProtocol
+import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
-import io.ktor.util.AttributeKey
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
@@ -18,14 +19,17 @@ val httpClientModule = module {
                     Json {
                         prettyPrint = true
                         isLenient = true
+                        ignoreUnknownKeys = true
                     }
                 )
             }
 
             defaultRequest {
-                url("https://quizapi.io/api/v1/")   // TODO verify - we have 2 servers!
-                setAttributes {
-                    put(AttributeKey(name = "apiKey"), "")  // TODO
+                url {
+                    protocol = URLProtocol.HTTPS
+                    host = "quizapi.io"
+                    path("/api/v1/")
+                    parameters.append("apiKey", "")
                 }
             }
 

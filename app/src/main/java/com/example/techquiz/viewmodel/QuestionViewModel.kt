@@ -14,23 +14,27 @@ class QuestionViewModel(
     private val questionRepository: QuestionRepository,
 ) : ViewModel() {
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
-    private val _questionWithIndex = MutableStateFlow(
-        value = Question(0, 0, "Questions not loaded yet", emptyList()),
+    private val _question = MutableStateFlow(
+        value = Result.success(DEFAULT_QUESTION),
     )
-    val questionWithIndex get() = _questionWithIndex.asStateFlow()
+    val question get() = _question.asStateFlow()
 
     private val _questionNumber = MutableStateFlow(0)
     val questionNumber = _questionNumber.asStateFlow()
 
     fun fetchQuestions(category: Category) {
         viewModelScope.launch {
-            val questions = questionRepository.getRandomQuestions(
-                quantity = QUESTION_COUNT,
-                category = category,
-            )
+            try {
+                val questions = questionRepository.getRandomQuestions(
+                    quantity = QUESTION_COUNT,
+                    category = category,
+                )
 
-            questionIterator = questions.iterator().withIndex()
-            nextQuestion()
+                questionIterator = questions.iterator().withIndex()
+                nextQuestion()
+            } catch (e: Exception) {
+                _question.value = Result.failure(e)
+            }
         }
     }
 
@@ -39,7 +43,7 @@ class QuestionViewModel(
     fun nextQuestion() {
         if (!isQuestionLast()) {
             val questionWithIndex = questionIterator.next()
-            _questionWithIndex.value = questionWithIndex.value
+            _question.value = Result.success(questionWithIndex.value)
             _questionNumber.value = questionWithIndex.index + 1
         }
     }
@@ -47,5 +51,6 @@ class QuestionViewModel(
     companion object {
         private const val QUESTION_COUNT = 5
         val TIMEOUT = 30.seconds
+        val DEFAULT_QUESTION = Question(0, "0", "Questions not loaded yet", emptyList())
     }
 }
