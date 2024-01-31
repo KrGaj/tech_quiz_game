@@ -1,26 +1,27 @@
 [versions]
-agp = "8.2.0"
-androidx-material = "1.5.4"
-koin-androidx-compose = "3.5.0"
+agp = "8.2.2"
+androidx-material = "1.6.0"
+koin-androidx-compose = "3.5.3"
 kotlinx-serialization-json = "1.6.2"
-ksp = "1.9.21-1.0.15"
-kotlin = "1.9.10"
+ksp = "1.9.22-1.0.16"
+kotlin = "1.9.22"
 core-ktx = "1.12.0"
 junit = "4.13.2"
 androidx-test-ext-junit = "1.1.5"
 espresso-core = "3.5.1"
-lifecycle-runtime-ktx = "2.6.2"
+lifecycle-runtime-ktx = "2.7.0"
 activity-compose = "1.8.2"
-compose-bom = "2023.10.01"
+compose-bom = "2024.01.00"
 material3 = "1.1.2"
 navigation-compose = "2.7.6"
 room-runtime = "2.6.1"
-ui = "1.5.4"
-ui-test-junit4 = "1.5.4"
-ui-test-manifest = "1.5.4"
-ui-tooling = "1.5.4"
+ui = "1.6.0"
+ui-test-junit4 = "1.6.0"
+ui-test-manifest = "1.6.0"
+ui-tooling = "1.6.0"
 ktor = "2.3.7"
 coroutines = "1.7.3"
+googleid = "1.1.0"
 
 [libraries]
 androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
@@ -52,6 +53,7 @@ ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx
 ktor-client-resources = { module = "io.ktor:ktor-client-resources", version.ref = "ktor" }
 kotlinx-coroutines-core = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version.ref = "coroutines" }
 kotlinx-coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
+googleid = { module = "com.google.android.libraries.identity.googleid:googleid", version.ref = "googleid" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }

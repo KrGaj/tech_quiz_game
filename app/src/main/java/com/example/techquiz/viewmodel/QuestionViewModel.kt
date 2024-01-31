@@ -51,6 +51,11 @@ class QuestionViewModel(
     companion object {
         private const val QUESTION_COUNT = 5
         val TIMEOUT = 30.seconds
-        val DEFAULT_QUESTION = Question(0, "0", "Questions not loaded yet", emptyList())
+        val DEFAULT_QUESTION = Question(
+            id = 0,
+            category = Category(name = "0"),
+            text = "Questions not loaded yet",
+            answers = emptyList(),
+        )
     }
 }

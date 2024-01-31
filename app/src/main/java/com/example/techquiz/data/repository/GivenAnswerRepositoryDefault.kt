@@ -1,18 +1,31 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.database.dao.AnswerDao
-import com.example.techquiz.data.database.entity.AnswerEntity
 import com.example.techquiz.data.domain.GivenAnswer
+import com.example.techquiz.data.dto.GivenAnswerDTO
+import com.example.techquiz.data.dto.QuestionDTO
+import com.example.techquiz.data.resources.GivenAnswerRes
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.resources.post
+import java.util.UUID
 
+// TODO improve
 class GivenAnswerRepositoryDefault(
-    private val answerDao: AnswerDao,
+    private val httpClient: HttpClient,
 ) : GivenAnswerRepository {
     override suspend fun insertAnswer(
         answer: GivenAnswer,
-    ) = answerDao.insertAnswer(
-        AnswerEntity(
-            question = answer.question.id,
-            correct = answer.correct,
+    ) {
+        val questionDTO = QuestionDTO(
+            id = answer.question.id.toLong(),
+            category = answer.question.category,
         )
-    )
+
+        val answerDTO = GivenAnswerDTO(
+            userUUID = UUID(0, 0),
+            question = questionDTO,
+            isCorrect = answer.correct,
+        )
+
+        httpClient.post(GivenAnswerRes(answerDTO))
+    }
 }

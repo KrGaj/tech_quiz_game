@@ -16,7 +16,12 @@ class QuestionRepositoryDefault(
         quantity: Int,
         category: Category,
     ): List<Question> {
-        val response = httpClient.get(Questions(category = category.name, limit = quantity))
+        val response = httpClient.get(
+            Questions(
+                category = category.name,
+                limit = quantity,
+            )
+        )
         val responseBody: List<QuestionResponse> = response.body()
 
         val questions = responseBody.map { question ->
@@ -34,7 +39,7 @@ class QuestionRepositoryDefault(
 
             Question(
                 id = question.id,
-                category = question.category,
+                category = Category(question.category),
                 text = question.questionText,
                 answers = possibleAnswers.shuffled(),
             )

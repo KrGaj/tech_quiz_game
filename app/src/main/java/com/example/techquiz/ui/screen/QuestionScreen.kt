@@ -88,8 +88,10 @@ fun QuestionScreen(
     LaunchedEffect(questionResult) {
         questionResult.fold(
             onSuccess = {
-                question = it
-                timerViewModel.start()
+                if (it != QuestionViewModel.DEFAULT_QUESTION) {
+                    question = it
+                    timerViewModel.start()
+                }
             },
             onFailure = {
                 // TODO
@@ -256,7 +258,7 @@ private fun Timer(timeLeft: Long) {
 @Composable
 private fun PreviewQuestionText() {
     CodingQuizTheme {
-        QuestionText(question = Question(0, "0",
+        QuestionText(question = Question(0, Category("0"),
             "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
                     "sed do eiusmod tempor incididunt ut labore et dolore " +
                     "magna aliqua. Ut enim ad minim veniam, quis nostrud " +

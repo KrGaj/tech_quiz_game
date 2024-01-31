@@ -4,14 +4,13 @@ import io.ktor.client.HttpClient
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.resources.Resources
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
+import io.ktor.http.URLBuilder
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import org.koin.dsl.module
 
 val httpClientModule = module {
-    single {
+    single { (urlBuilderBlock: URLBuilder.() -> Unit) ->
         HttpClient {
             install(Resources)
             install(ContentNegotiation) {
@@ -26,10 +25,12 @@ val httpClientModule = module {
 
             defaultRequest {
                 url {
-                    protocol = URLProtocol.HTTPS
-                    host = "quizapi.io"
-                    path("/api/v1/")
-                    parameters.append("apiKey", "")
+                    urlBuilderBlock()
+
+//                    protocol = URLProtocol.HTTPS
+//                    host = "quizapi.io"
+//                    path("/api/v1/")
+//                    parameters.append("apiKey", "bhMnTOPrriwHI7TJ22ZP3PQtUGqKhMvhCF1ItC9g")
                 }
             }
 
