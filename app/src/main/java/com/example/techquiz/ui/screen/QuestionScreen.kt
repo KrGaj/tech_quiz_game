@@ -126,13 +126,12 @@ fun QuestionScreen(
                     coroutineScope.launch {
                         answerState.isAnyAnswerChosen = true
                         timerViewModel.clear()
-                        // TODO uncomment
-//                        givenAnswerViewModel.addAnswer(
-//                            answer = GivenAnswer(
-//                                question = question,
-//                                correct = it.isCorrect,
-//                            ),
-//                        )
+                        givenAnswerViewModel.addAnswer(
+                            answer = GivenAnswer(
+                                question = question,
+                                correct = it.isCorrect,
+                            ),
+                        )
                         delay(1.seconds)
                         answerAddCallback()
                     }

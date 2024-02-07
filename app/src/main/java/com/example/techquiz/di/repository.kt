@@ -8,7 +8,7 @@ import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
-import io.ktor.http.URLBuilder
+import com.example.techquiz.data.ssl.SSLSettings
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import org.koin.core.module.dsl.singleOf
@@ -17,29 +17,52 @@ import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    val questionApiUrlBuilder: URLBuilder.() -> Unit = {
+    val questionApiUrlBuilder: UrlBuilderBlock = {
         protocol = URLProtocol.HTTPS
         host = "quizapi.io"
         path("/api/v1/")
         parameters.append("apiKey", "")
     }
 
-    val answerApiUrlBuilder: URLBuilder.() -> Unit = {
+    val answerApiUrlBuilder: UrlBuilderBlock = {
         protocol = URLProtocol.HTTPS
-        TODO()
+        host = ""
+    }
+
+    val answerEngineConfig: EngineConfigBlock = { config, context ->
+        val keyStoreFile = context.assets.open("keystore/keystore.bks")
+        val keyStorePassword = "DemoApka".toCharArray()
+
+        config.sslManager = {
+            it.sslSocketFactory = SSLSettings
+                .getSSLContext(keyStoreFile, keyStorePassword)
+                ?.socketFactory
+        }
     }
 
     singleOf(::CategoryRepositoryDefault) bind CategoryRepository::class
 
     single<QuestionRepository> {
-        QuestionRepositoryDefault(get { parametersOf(questionApiUrlBuilder) })
+        QuestionRepositoryDefault(
+            get {
+                parametersOf(questionApiUrlBuilder, null)
+            }
+        )
     }
 
     single<GivenAnswerRepository> {
-        GivenAnswerRepositoryDefault(get { parametersOf(answerApiUrlBuilder) })
+        GivenAnswerRepositoryDefault(
+            get {
+                parametersOf(answerApiUrlBuilder, answerEngineConfig)
+            }
+        )
     }
 
     single<StatsRepository> {
-        StatsRepositoryDefault(get { parametersOf(answerApiUrlBuilder) })
+        StatsRepositoryDefault(
+            get {
+                parametersOf(answerApiUrlBuilder, answerEngineConfig)
+            }
+        )
     }
 }

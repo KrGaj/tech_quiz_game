@@ -6,6 +6,7 @@ import com.example.techquiz.data.dto.QuestionDTO
 import com.example.techquiz.data.resources.GivenAnswerRes
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.setBody
 import java.util.UUID
 
 // TODO improve
@@ -26,6 +27,8 @@ class GivenAnswerRepositoryDefault(
             isCorrect = answer.correct,
         )
 
-        httpClient.post(GivenAnswerRes(answerDTO))
+        httpClient.post(GivenAnswerRes()) {
+            setBody(answerDTO)
+        }
     }
 }
