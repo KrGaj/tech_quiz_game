@@ -9,7 +9,7 @@ import javax.net.ssl.TrustManagerFactory
 
 val sslManagerModule = module {
     single {
-        val sslManagerConfig: AdditionalConfigBlock = { config ->
+        val sslManagerConfig: AdditionalHttpClientConfig = { config ->
             config.engine {
                 sslManager = {
                     val keyStoreFile = androidContext().assets.open("keystore/keystore.bks")

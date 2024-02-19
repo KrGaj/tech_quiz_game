@@ -41,7 +41,7 @@ val repositoryModule = module {
     single<GivenAnswerRepository> {
         GivenAnswerRepositoryDefault(
             get {
-                parametersOf(answerApiUrlBuilder, get<AdditionalConfigBlock>())
+                parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
             }
         )
     }
@@ -49,7 +49,7 @@ val repositoryModule = module {
     single<StatsRepository> {
         StatsRepositoryDefault(
             get {
-                parametersOf(answerApiUrlBuilder, get<AdditionalConfigBlock>())
+                parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
             }
         )
     }

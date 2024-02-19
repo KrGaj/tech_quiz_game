@@ -17,7 +17,7 @@ import org.koin.dsl.module
 val httpClientModule = module {
     factory { (
                   urlBuilderBlock: UrlBuilderBlock,
-                  additionalConfigBlock: AdditionalConfigBlock?,
+                  additionalHttpClientConfig: AdditionalHttpClientConfig?,
     ) ->
         HttpClient(Android) {
             install(Resources)
@@ -31,7 +31,7 @@ val httpClientModule = module {
                 )
             }
 
-            additionalConfigBlock?.invoke(this)
+            additionalHttpClientConfig?.invoke(this)
 
             defaultRequest {
                 url(urlBuilderBlock)
@@ -45,4 +45,4 @@ val httpClientModule = module {
 
 typealias UrlBuilderBlock = URLBuilder.() -> Unit
 
-typealias AdditionalConfigBlock = (HttpClientConfig<AndroidEngineConfig>) -> Unit
+typealias AdditionalHttpClientConfig = (HttpClientConfig<AndroidEngineConfig>) -> Unit
