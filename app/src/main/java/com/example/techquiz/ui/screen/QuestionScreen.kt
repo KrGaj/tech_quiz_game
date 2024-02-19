@@ -65,6 +65,7 @@ fun QuestionScreen(
 ) {
     val coroutineScope = rememberCoroutineScope()
     val questionResult by questionViewModel.question.collectAsStateWithLifecycle()
+    val answerAddResult by givenAnswerViewModel.answerAddResult.collectAsStateWithLifecycle()
     var question by remember {
         mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
     }
@@ -100,6 +101,19 @@ fun QuestionScreen(
         )
     }
 
+    LaunchedEffect(answerAddResult) {
+        answerAddResult?.fold(
+            onSuccess = {
+                delay(1.seconds)
+                answerAddCallback()
+            },
+            onFailure = {
+                // TODO
+                Log.e("Demo failure", it.stackTraceToString())
+            }
+        )
+    }
+
     BackHandler {
         onBackPressed(givenAnswerViewModel.quizResults)
     }
@@ -132,8 +146,8 @@ fun QuestionScreen(
                                 correct = it.isCorrect,
                             ),
                         )
-                        delay(1.seconds)
-                        answerAddCallback()
+//                        delay(1.seconds)
+//                        answerAddCallback()
                     }
                 }
             }
@@ -152,8 +166,8 @@ fun QuestionScreen(
                 ),
             )
 
-            delay(1.seconds)
-            answerAddCallback()
+//            delay(1.seconds)
+//            answerAddCallback()
         }
     }
 }

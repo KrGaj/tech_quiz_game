@@ -4,15 +4,15 @@ import androidx.lifecycle.ViewModel
 import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 
 class GivenAnswerViewModel(
     private val givenAnswerRepository: GivenAnswerRepository,
 ) : ViewModel() {
-    private val _answerAddResult = MutableSharedFlow<Result<Unit>>()
+    private val _answerAddResult = MutableStateFlow<Result<Unit>?>(null)
     val answerAddResult
-        get() = _answerAddResult.asSharedFlow()
+        get() = _answerAddResult.asStateFlow()
 
     private val _quizResults = mutableListOf<QuizResult>()
     val quizResults get() = _quizResults.toList()

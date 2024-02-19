@@ -8,7 +8,6 @@ import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
-import com.example.techquiz.data.ssl.SSLSettings
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import org.koin.core.module.dsl.singleOf
@@ -29,17 +28,6 @@ val repositoryModule = module {
         host = ""
     }
 
-    val answerEngineConfig: EngineConfigBlock = { config, context ->
-        val keyStoreFile = context.assets.open("keystore/keystore.bks")
-        val keyStorePassword = "DemoApka".toCharArray()
-
-        config.sslManager = {
-            it.sslSocketFactory = SSLSettings
-                .getSSLContext(keyStoreFile, keyStorePassword)
-                ?.socketFactory
-        }
-    }
-
     singleOf(::CategoryRepositoryDefault) bind CategoryRepository::class
 
     single<QuestionRepository> {
@@ -53,7 +41,7 @@ val repositoryModule = module {
     single<GivenAnswerRepository> {
         GivenAnswerRepositoryDefault(
             get {
-                parametersOf(answerApiUrlBuilder, answerEngineConfig)
+                parametersOf(answerApiUrlBuilder, get<AdditionalConfigBlock>())
             }
         )
     }
@@ -61,7 +49,7 @@ val repositoryModule = module {
     single<StatsRepository> {
         StatsRepositoryDefault(
             get {
-                parametersOf(answerApiUrlBuilder, answerEngineConfig)
+                parametersOf(answerApiUrlBuilder, get<AdditionalConfigBlock>())
             }
         )
     }

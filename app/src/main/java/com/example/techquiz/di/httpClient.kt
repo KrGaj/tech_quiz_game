@@ -1,7 +1,7 @@
 package com.example.techquiz.di
 
-import android.content.Context
 import io.ktor.client.HttpClient
+import io.ktor.client.HttpClientConfig
 import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.android.AndroidEngineConfig
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -12,13 +12,12 @@ import io.ktor.http.URLBuilder
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
-import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 
 val httpClientModule = module {
     factory { (
                   urlBuilderBlock: UrlBuilderBlock,
-                  engineConfigBlock: EngineConfigBlock?,
+                  additionalConfigBlock: AdditionalConfigBlock?,
     ) ->
         HttpClient(Android) {
             install(Resources)
@@ -32,9 +31,7 @@ val httpClientModule = module {
                 )
             }
 
-            engine {
-                engineConfigBlock?.invoke(this, androidContext())
-            }
+            additionalConfigBlock?.invoke(this)
 
             defaultRequest {
                 url(urlBuilderBlock)
@@ -48,4 +45,4 @@ val httpClientModule = module {
 
 typealias UrlBuilderBlock = URLBuilder.() -> Unit
 
-typealias EngineConfigBlock = (AndroidEngineConfig, Context) -> Unit
+typealias AdditionalConfigBlock = (HttpClientConfig<AndroidEngineConfig>) -> Unit
