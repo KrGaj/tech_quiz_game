@@ -1,5 +1,6 @@
 package com.example.techquiz
 
+// TODO use proper Material3 components
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
