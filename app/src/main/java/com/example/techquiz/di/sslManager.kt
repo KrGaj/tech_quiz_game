@@ -16,7 +16,9 @@ val sslManagerModule = module {
                     val keyStorePassword = "DemoApka".toCharArray()
 
                     it.sslSocketFactory = getSSLContext(keyStoreFile, keyStorePassword)
-                        ?.socketFactory.also { keyStoreFile.close() }
+                        ?.socketFactory
+
+                    keyStoreFile.close()
                 }
             }
         }
