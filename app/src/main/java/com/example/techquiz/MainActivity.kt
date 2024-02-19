@@ -6,13 +6,13 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material.BottomNavigation
-import androidx.compose.material.BottomNavigationItem
-import androidx.compose.material.Icon
+import androidx.compose.material3.Icon
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -26,8 +26,8 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.example.techquiz.di.httpClientModule
-import com.example.techquiz.di.sslManagerModule
 import com.example.techquiz.di.repositoryModule
+import com.example.techquiz.di.sslManagerModule
 import com.example.techquiz.di.viewModelModule
 import com.example.techquiz.navigation.AppNavHost
 import com.example.techquiz.navigation.Screen
@@ -90,8 +90,8 @@ class MainActivity : ComponentActivity() {
         navController: NavHostController,
         navBackStackEntry: NavBackStackEntry?,
     ) {
-        BottomNavigation {
-            BottomNavigationItem(
+        NavigationBar {
+            NavigationBarItem(
                 selected = navBackStackEntry?.destination?.route == Screen.Categories.route,
                 onClick = {
                     navController.navigate(Screen.Categories.route) {
@@ -111,7 +111,7 @@ class MainActivity : ComponentActivity() {
                 },
             )
 
-            BottomNavigationItem(
+            NavigationBarItem(
                 selected = navBackStackEntry?.destination?.route == Screen.Statistics.route,
                 onClick = { navController.navigate(Screen.Statistics.route) },
                 icon = {
