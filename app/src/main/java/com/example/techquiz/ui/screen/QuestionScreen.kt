@@ -146,8 +146,6 @@ fun QuestionScreen(
                                 correct = it.isCorrect,
                             ),
                         )
-//                        delay(1.seconds)
-//                        answerAddCallback()
                     }
                 }
             }
@@ -165,9 +163,6 @@ fun QuestionScreen(
                     correct = false,
                 ),
             )
-
-//            delay(1.seconds)
-//            answerAddCallback()
         }
     }
 }
