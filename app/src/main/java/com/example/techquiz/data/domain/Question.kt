@@ -5,4 +5,5 @@ data class Question(
     val category: Category,
     val text: String,
     val answers: List<PossibleAnswer>,
+    val multipleCorrectAnswers: Boolean,
 )

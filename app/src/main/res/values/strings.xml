@@ -15,6 +15,7 @@
 
     <string name="categories_header">Categories</string>
     <string name="question_header">%1$s: Question %2$d</string>
+    <string name="question_header_multiple_choice">(Multiple Choice)</string>
 
     <string name="quiz_results_score">Your score: %1$d/%2$d</string>
     <string name="quiz_results_correct">Correct</string>

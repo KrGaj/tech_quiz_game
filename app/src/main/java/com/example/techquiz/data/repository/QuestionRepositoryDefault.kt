@@ -42,6 +42,7 @@ class QuestionRepositoryDefault(
                 category = Category(question.category),
                 text = question.questionText,
                 answers = possibleAnswers.shuffled(),
+                multipleCorrectAnswers = question.multipleCorrectAnswers,
             )
         }
 
