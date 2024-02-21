@@ -155,7 +155,7 @@ private fun CorrectAnswersStatsRow(stats: CorrectAnswersStats) {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategoryStats() {
     CodingQuizTheme {
@@ -163,7 +163,7 @@ private fun PreviewCategoryStats() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewAnsweredQuestionsStats() {
     CodingQuizTheme {
@@ -171,7 +171,7 @@ private fun PreviewAnsweredQuestionsStats() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCorrectAnswersStats() {
     CodingQuizTheme {

@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -33,7 +35,6 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
@@ -43,11 +44,9 @@ import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Duration.Companion.seconds
 
 class AnswerState {
     var shouldShowAllAnswers: Boolean by mutableStateOf(false)
@@ -69,22 +68,15 @@ fun QuestionScreen(
         mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
     }
     val questionNumber by questionViewModel.questionNumber.collectAsStateWithLifecycle()
-    val answersLeft by questionViewModel.answersLeft.collectAsStateWithLifecycle()
+    val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
     val answerState by remember {
         mutableStateOf(AnswerState())
     }
 
-    val answerAddCallback = {
-        if (questionViewModel.isQuestionLast()) {
-            navigateToResults(givenAnswerViewModel.quizResults)
-        } else {
-            questionViewModel.nextQuestion()
-        }
-    }
-
     LaunchedEffect(questionResult) {
+        givenAnswerViewModel.clearSelectedAnswers()
         questionResult.fold(
             onSuccess = {
                 if (it != QuestionViewModel.DEFAULT_QUESTION) {
@@ -103,8 +95,11 @@ fun QuestionScreen(
     LaunchedEffect(answerAddResult) {
         answerAddResult?.fold(
             onSuccess = {
-                delay(1.seconds)
-                answerAddCallback()
+                if (questionViewModel.isQuestionLast()) {
+                    navigateToResults(givenAnswerViewModel.quizResults)
+                } else {
+                    questionViewModel.nextQuestion()
+                }
             },
             onFailure = {
                 // TODO
@@ -133,35 +128,19 @@ fun QuestionScreen(
             QuestionText(question)
             AnswersGrid(
                 answers = question.answers,
-                { answerState.shouldShowAllAnswers },
-            ) { possibleAnswer, isClicked ->
-                if (isClicked) {
-                    questionViewModel.decrementAnswersLeftCount()
-
-                    coroutineScope.launch {
-                        if (possibleAnswer.isCorrect && answersLeft == 0) {
-                            answerState.shouldShowAllAnswers = true
-                            timerViewModel.clear()
-                            givenAnswerViewModel.addAnswer(
-                                answer = GivenAnswer(
-                                    question = question,
-                                    correct = true,
-                                ),
-                            )
-                        } else if (!possibleAnswer.isCorrect) {
-                            answerState.shouldShowAllAnswers = true
-                            timerViewModel.clear()
-                            givenAnswerViewModel.addAnswer(
-                                answer = GivenAnswer(
-                                    question = question,
-                                    correct = false,
-                                ),
-                            )
-                        }
-                    }
-                } else questionViewModel.increaseAnswersLeftCount()
+                selectedAnswers = selectedAnswers,
+            ) {
+                givenAnswerViewModel.toggleAnswer(it)
             }
             Timer(timeLeft = timeLeft)
+            NextQuestionButton(
+                isQuestionLast = questionViewModel::isQuestionLast,
+            ) {
+                coroutineScope.launch {
+                    timerViewModel.clear()
+                    givenAnswerViewModel.addAnswer(question)
+                }
+            }
         }
     }
 
@@ -170,10 +149,7 @@ fun QuestionScreen(
             answerState.shouldShowAllAnswers = true
 
             givenAnswerViewModel.addAnswer(
-                answer = GivenAnswer(
-                    question = question,
-                    correct = false,
-                ),
+                question = question,
             )
         }
     }
@@ -233,30 +209,23 @@ private fun QuestionText(question: Question) {
 @Composable
 private fun AnswersGrid(
     answers: List<PossibleAnswer>,
-    shouldShowAllAnswers: () -> Boolean,
-    onClick: (PossibleAnswer, Boolean) -> Unit,
+    selectedAnswers: List<PossibleAnswer>,
+    onClick: (PossibleAnswer) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
         columns = GridCells.Fixed(2),
     ) {
         items(answers) {
-            var isClicked by remember { mutableStateOf(false) }
+            val isSelected = selectedAnswers.contains(it)
 
-            val shouldChangeColor = (isClicked || shouldShowAllAnswers())
-            val color = if (shouldChangeColor && it.isCorrect) Color.Green
-                else if (shouldChangeColor) Color.Red
-                else Color.Gray
-
-            LaunchedEffect(it) {
-                isClicked = false
-            }
+            val color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.secondary
 
             PossibleAnswer(
                 answer = it,
                 color,
             ) {
-                isClicked = !isClicked
-                onClick(it, isClicked)
+                onClick(it)
             }
         }
     }
@@ -299,8 +268,26 @@ private fun Timer(timeLeft: Long) {
     )
 }
 
+@Composable
+private fun NextQuestionButton(
+    isQuestionLast: () -> Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        FilledTonalButton(onClick = onClick) {
+            val textId = if (isQuestionLast()) R.string.question_finish
+                else R.string.question_next
 
-@Preview
+            Text(text = stringResource(id = textId))
+        }
+    }
+}
+
+
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewQuestionText() {
     CodingQuizTheme {
@@ -318,34 +305,42 @@ private fun PreviewQuestionText() {
                     "cupidatat non proident, sunt in culpa qui officia " +
                     "deserunt mollit anim id est laborum.",
                 answers = emptyList(),
-                multipleCorrectAnswers = false,
             ),
         )
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewAnswers() {
-    val shouldShowAllAnswers by remember { mutableStateOf(false) }
-
     CodingQuizTheme {
         AnswersGrid(
-            shouldShowAllAnswers = { shouldShowAllAnswers },
             answers = listOf(
                 PossibleAnswer("Demo Answer 1", false),
                 PossibleAnswer("Demo Answer 2", false),
                 PossibleAnswer("Demo Answer 3", false),
                 PossibleAnswer("Demo Answer 4", true),
-            )
-        ) { _, _ -> }
+            ),
+            selectedAnswers = listOf(
+                PossibleAnswer("Demo Answer 1", false),
+                PossibleAnswer("Demo Answer 4", true)
+            ),
+        ) {}
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewTimer() {
     CodingQuizTheme {
         Timer(timeLeft = 2137)
+    }
+}
+
+@Preview(showBackground = true, apiLevel = 33)
+@Composable
+private fun PreviewNextQuestionButton() {
+    CodingQuizTheme {
+        NextQuestionButton({ false }) {}
     }
 }

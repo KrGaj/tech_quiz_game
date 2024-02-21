@@ -20,21 +20,9 @@ class QuestionViewModel(
     val question
         get() = _question.asStateFlow()
 
-    private val _questionNumber = MutableStateFlow(-1)
+    private val _questionNumber = MutableStateFlow(0)
     val questionNumber
         get() = _questionNumber.asStateFlow()
-
-    private val _answersLeft = MutableStateFlow(-1)
-    val answersLeft
-        get() = _answersLeft.asStateFlow()
-
-    fun decrementAnswersLeftCount() {
-        _answersLeft.value -= 1
-    }
-
-    fun increaseAnswersLeftCount() {
-        _answersLeft.value += 1
-    }
 
     fun fetchQuestions(category: Category) {
         viewModelScope.launch {
@@ -52,14 +40,13 @@ class QuestionViewModel(
         }
     }
 
-    fun isQuestionLast() = !questionIterator.hasNext()
+    fun isQuestionLast() = ::questionIterator.isInitialized && !questionIterator.hasNext()
 
     fun nextQuestion() {
         if (!isQuestionLast()) {
             val questionWithIndex = questionIterator.next()
             _question.value = Result.success(questionWithIndex.value)
             _questionNumber.value = questionWithIndex.index + 1
-            _answersLeft.value = questionWithIndex.value.answers.count { it.isCorrect }
         }
     }
 
@@ -71,7 +58,6 @@ class QuestionViewModel(
             category = Category(name = "0"),
             text = "Questions not loaded yet",
             answers = emptyList(),
-            multipleCorrectAnswers = false,
         )
     }
 }

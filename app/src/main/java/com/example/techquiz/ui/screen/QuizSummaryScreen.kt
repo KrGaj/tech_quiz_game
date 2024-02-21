@@ -23,6 +23,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techquiz.R
+import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.QuizResultsViewModel
@@ -95,7 +96,7 @@ private fun QuizResultsList(results: List<QuizResult>) {
 
 @Composable
 private fun QuizResult(quizResult: QuizResult) {
-    val answerIconResources = if (quizResult.isAnswerCorrect) {
+    val answerIconResources = if (quizResult.givenAnswers.all { it.isCorrect }) {
         Pair(
             painterResource(id = R.drawable.ic_result_answer_correct),
             stringResource(id = R.string.quiz_results_correct),
@@ -118,7 +119,7 @@ private fun QuizResult(quizResult: QuizResult) {
                 modifier = Modifier
                     .weight(0.8f)
                     .align(Alignment.CenterVertically),
-                text = quizResult.questionText,
+                text = quizResult.question.text,
             )
 
             Icon(
@@ -144,7 +145,7 @@ private fun FinishButton(navigateToCategories: () -> Unit) {
 }
 
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewScore() {
     CodingQuizTheme {
@@ -152,7 +153,7 @@ private fun PreviewScore() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewQuizResultsList() {
     CodingQuizTheme {
@@ -162,7 +163,7 @@ private fun PreviewQuizResultsList() {
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewFinishButton() {
     CodingQuizTheme {
@@ -172,15 +173,30 @@ private fun PreviewFinishButton() {
 
 private val quizResults = listOf(
     QuizResult(
-        "Demo Question 1",
-        false,
+        question = Question(
+            id = 0,
+            category = com.example.techquiz.data.domain.Category("Demo"),
+            text = "Demo Question 1",
+            answers = emptyList(),
+        ),
+        givenAnswers = emptyList(),
     ),
     QuizResult(
-        "Demo Question 2",
-        true,
+        question = Question(
+            id = 1,
+            category = com.example.techquiz.data.domain.Category("Demo"),
+            text = "Demo Question 2",
+            answers = emptyList(),
+        ),
+        givenAnswers = emptyList(),
     ),
     QuizResult(
-        "Demo Question 3, but very very very long for preview purposes",
-        true,
+        question = Question(
+            id = 2,
+            category = com.example.techquiz.data.domain.Category("Demo"),
+            text = "Demo Question 3, but very very very long for preview purposes",
+            answers = emptyList(),
+        ),
+        givenAnswers = emptyList(),
     ),
 )

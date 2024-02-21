@@ -97,7 +97,7 @@ private fun Category(
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategory() {
     CodingQuizTheme {
@@ -107,7 +107,7 @@ private fun PreviewCategory() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategoryGrid() {
     CodingQuizTheme {
