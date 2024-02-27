@@ -6,6 +6,7 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
+import com.example.techquiz.util.allIfNotEmpty
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -27,8 +28,8 @@ class GivenAnswerViewModel(
     fun toggleAnswer(answer: PossibleAnswer) {
         val modifiedAnswers = _selectedAnswers.value
             .toMutableList()
-            .also {
-                if (!it.remove(answer)) it.add(answer)
+            .apply {
+                if (!remove(answer)) add(answer)
             }
 
         _selectedAnswers.value = modifiedAnswers
@@ -42,7 +43,7 @@ class GivenAnswerViewModel(
         try {
             val answer = GivenAnswer(
                 question = question,
-                correct = selectedAnswers.value.all { it.isCorrect }
+                correct = selectedAnswers.value.allIfNotEmpty { it.isCorrect }
             )
 
             givenAnswerRepository.insertAnswer(answer)

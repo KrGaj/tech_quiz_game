@@ -1,10 +1,10 @@
 package com.example.techquiz.navigation
 
 import android.net.Uri
-import androidx.compose.material.ScaffoldState
-import androidx.compose.material.rememberScaffoldState
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.window.DialogProperties
@@ -35,7 +35,7 @@ import kotlinx.serialization.json.Json
 fun AppNavHost(
     navController: NavHostController,
 ) {
-    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember { SnackbarHostState() }
 
     NavHost(
         navController = navController,
@@ -49,7 +49,7 @@ fun AppNavHost(
         configureQuestionScreenRoute(
             navGraphBuilder = this,
             navController,
-            scaffoldState,
+            snackbarHostState,
         )
 
         configureQuizResultsScreen(
@@ -101,12 +101,12 @@ private fun configureCategoriesScreenRoute(
 private fun configureQuestionScreenRoute(
     navGraphBuilder: NavGraphBuilder,
     navController: NavController,
-    scaffoldState: ScaffoldState,
+    snackbarHostState: SnackbarHostState,
 ) {
     navGraphBuilder.composable(
         route = "${Screen.Question.route}/{${Screen.Question.navArg}}",
         arguments = listOf(navArgument(Screen.Question.navArg) {
-            type = CategoryNavType()
+            type = CategoryNavType
         }),
     ) { backStackEntry ->
         deserializeCategory(backStackEntry)?.let { category ->
@@ -122,7 +122,7 @@ private fun configureQuestionScreenRoute(
             val message = stringResource(id = R.string.navigation_question_error)
 
             LaunchedEffect(Unit) {
-                scaffoldState.snackbarHostState.showSnackbar(message)
+                snackbarHostState.showSnackbar(message)
             }
         }
     }
@@ -135,7 +135,7 @@ private fun configureQuizResultsScreen(
     navGraphBuilder.composable(
         route = "${Screen.QuizSummary.route}/{${Screen.QuizSummary.navArg}}",
         arguments = listOf(navArgument(Screen.QuizSummary.navArg) {
-            type = QuizSummaryNavType()
+            type = QuizSummaryNavType
         }),
     ) { backStackEntry ->
         val results = deserializeQuizResults(backStackEntry)
@@ -169,7 +169,7 @@ private fun configureExitQuizDialog(
             dismissOnClickOutside = true,
         ),
         arguments = listOf(navArgument(Dialog.ExitQuiz.navArg) {
-            type = QuizSummaryNavType()
+            type = QuizSummaryNavType
         })
     ) { backStackEntry ->
         val results = deserializeQuizResults(backStackEntry)

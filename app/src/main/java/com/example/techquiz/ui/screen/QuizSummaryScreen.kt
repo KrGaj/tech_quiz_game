@@ -26,6 +26,7 @@ import com.example.techquiz.R
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.allIfNotEmpty
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -96,7 +97,7 @@ private fun QuizResultsList(results: List<QuizResult>) {
 
 @Composable
 private fun QuizResult(quizResult: QuizResult) {
-    val answerIconResources = if (quizResult.givenAnswers.all { it.isCorrect }) {
+    val answerIconResources = if (quizResult.givenAnswers.allIfNotEmpty { it.isCorrect }) {
         Pair(
             painterResource(id = R.drawable.ic_result_answer_correct),
             stringResource(id = R.string.quiz_results_correct),
