@@ -7,9 +7,7 @@ class QuizResultsViewModel(
     val quizResults: List<QuizResult>,
 ) : ViewModel() {
     val correctAnswersCount
-        get() = quizResults.count {
-            it.givenAnswers.all { answer -> answer.isCorrect }
-        }
+        get() = quizResults.count { it.isAnsweredCorrectly }
     val answersCount
         get() = quizResults.count()
 }

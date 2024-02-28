@@ -13,22 +13,24 @@ import java.util.UUID
 class GivenAnswerRepositoryDefault(
     private val httpClient: HttpClient,
 ) : GivenAnswerRepository {
-    override suspend fun insertAnswer(
-        answer: GivenAnswer,
+    override suspend fun insertAnswers(
+        answers: List<GivenAnswer>,
     ) {
-        val questionDTO = QuestionDTO(
-            id = answer.question.id.toLong(),
-            category = answer.question.category,
-        )
+        val answersDTO = answers.map {
+            val questionDTO = QuestionDTO(
+                id = it.question.id.toLong(),
+                category = it.question.category,
+            )
 
-        val answerDTO = GivenAnswerDTO(
-            userUUID = UUID(0, 0),
-            question = questionDTO,
-            isCorrect = answer.correct,
-        )
+            GivenAnswerDTO(
+                userUUID = UUID(0, 0),
+                question = questionDTO,
+                isCorrect = it.correct,
+            )
+        }
 
         httpClient.post(GivenAnswerRes()) {
-            setBody(answerDTO)
+            setBody(answersDTO)
         }
     }
 }

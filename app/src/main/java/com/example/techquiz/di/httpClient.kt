@@ -18,14 +18,13 @@ val httpClientModule = module {
     factory { (
                   urlBuilderBlock: UrlBuilderBlock,
                   additionalHttpClientConfig: AdditionalHttpClientConfig?,
-    ) ->
+        ) ->
         HttpClient(Android) {
             install(Resources)
             install(ContentNegotiation) {
                 json(
                     Json {
                         prettyPrint = true
-                        isLenient = true
                         ignoreUnknownKeys = true
                     }
                 )

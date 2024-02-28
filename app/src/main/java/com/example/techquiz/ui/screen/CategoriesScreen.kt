@@ -15,7 +15,10 @@ import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,20 +28,37 @@ import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
+import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.findActivity
 import com.example.techquiz.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun CategoriesScreen(
     categoryViewModel: CategoryViewModel = koinViewModel(),
-    onBackPressed: () -> Unit,
     navigateToQuestionScreen: (Category) -> Unit,
 ) {
     val categories by categoryViewModel.categories.collectAsStateWithLifecycle()
+    val showExitAppDialog = rememberSaveable {
+        mutableStateOf(false)
+    }
 
     BackHandler {
-        onBackPressed()
+        showExitAppDialog.apply { value = !value }
+    }
+
+    if (showExitAppDialog.value) {
+        val context = LocalContext.current
+
+        ExitDialog(
+            message = stringResource(id = R.string.app_exit_message),
+            onDismissRequest = { showExitAppDialog.apply { value = !value } },
+            onConfirmation = {
+                showExitAppDialog.apply { value = !value }
+                context.findActivity().finish()
+            }
+        )
     }
 
     CodingQuizTheme {

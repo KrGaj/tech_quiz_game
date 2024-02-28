@@ -23,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -40,6 +41,7 @@ import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
+import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
@@ -58,7 +60,7 @@ fun QuestionScreen(
     givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
     category: Category,
-    onBackPressed: (List<QuizResult>) -> Unit,
+    navigateToCategories: () -> Unit,
     navigateToResults: (List<QuizResult>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -71,9 +73,9 @@ fun QuestionScreen(
     val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
-    val answerState by remember {
-        mutableStateOf(AnswerState())
-    }
+    val answerState by remember { mutableStateOf(AnswerState()) }
+
+    val showExitDialog = rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(questionResult) {
         givenAnswerViewModel.clearSelectedAnswers()
@@ -95,11 +97,7 @@ fun QuestionScreen(
     LaunchedEffect(answerAddResult) {
         answerAddResult?.fold(
             onSuccess = {
-                if (questionViewModel.isQuestionLast()) {
-                    navigateToResults(givenAnswerViewModel.quizResults)
-                } else {
-                    questionViewModel.nextQuestion()
-                }
+                navigateToResults(givenAnswerViewModel.quizResults)
             },
             onFailure = {
                 // TODO
@@ -109,7 +107,19 @@ fun QuestionScreen(
     }
 
     BackHandler {
-        onBackPressed(givenAnswerViewModel.quizResults)
+        showExitDialog.apply { value = !value }
+    }
+
+    if (showExitDialog.value) {
+        ExitDialog(
+            message = stringResource(id = R.string.quiz_exit_message),
+            onDismissRequest = { showExitDialog.apply { value = !value } },
+            onConfirmation = {
+                showExitDialog.apply { value = !value }
+                if (givenAnswerViewModel.quizResults.isEmpty()) navigateToCategories()
+                else coroutineScope.launch { givenAnswerViewModel.sendAnswers() }
+            },
+        )
     }
 
     CodingQuizTheme {
@@ -136,22 +146,26 @@ fun QuestionScreen(
             NextQuestionButton(
                 isQuestionLast = questionViewModel::isQuestionLast,
             ) {
-                coroutineScope.launch {
-                    timerViewModel.clear()
-                    givenAnswerViewModel.addAnswer(question)
+                timerViewModel.clear()
+                givenAnswerViewModel.addAnswer(question)
+
+                if (questionViewModel.isQuestionLast()) {
+                    coroutineScope.launch {
+                        givenAnswerViewModel.sendAnswers()
+                    }
                 }
+
+                questionViewModel.nextQuestion()
             }
         }
     }
 
     if (timeLeft == 0L) {
-        LaunchedEffect(Unit) {
-            answerState.shouldShowAllAnswers = true
+        answerState.shouldShowAllAnswers = true
 
-            givenAnswerViewModel.addAnswer(
-                question = question,
-            )
-        }
+        givenAnswerViewModel.addAnswer(
+            question = question,
+        )
     }
 }
 

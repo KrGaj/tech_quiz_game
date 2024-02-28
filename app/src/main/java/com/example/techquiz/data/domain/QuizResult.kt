@@ -15,4 +15,5 @@ data class QuizSummary(
 data class QuizResult(
     val question: Question,
     val givenAnswers: List<PossibleAnswer>,
+    val isAnsweredCorrectly: Boolean,
 ) : Parcelable

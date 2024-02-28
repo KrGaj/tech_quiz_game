@@ -6,7 +6,6 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
-import com.example.techquiz.util.allIfNotEmpty
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
@@ -39,21 +38,30 @@ class GivenAnswerViewModel(
         _selectedAnswers.value = emptyList()
     }
 
-    suspend fun addAnswer(question: Question) {
-        try {
-            val answer = GivenAnswer(
-                question = question,
-                correct = selectedAnswers.value.allIfNotEmpty { it.isCorrect }
-            )
+    fun addAnswer(question: Question) {
+        val isAnswerCorrect = question.answers
+            .filter { it.isCorrect } == selectedAnswers.value
 
-            givenAnswerRepository.insertAnswer(answer)
-            _quizResults.add(
-                QuizResult(
-                    question = question,
-                    givenAnswers = selectedAnswers.value,
-                )
+        _quizResults.add(
+            QuizResult(
+                question = question,
+                givenAnswers = selectedAnswers.value,
+                isAnsweredCorrectly = isAnswerCorrect,
             )
-            _answerAddResult.value = Result.success(answer.question.id)
+        )
+    }
+
+    suspend fun sendAnswers() {
+        try {
+            val answers = quizResults.map {
+                GivenAnswer(
+                    question = it.question,
+                    correct = it.isAnsweredCorrectly,
+                )
+            }
+
+            givenAnswerRepository.insertAnswers(answers)
+            _answerAddResult.value = Result.success(answers.first().question.id)
         } catch (ex: Exception) {
             _answerAddResult.value = Result.failure(ex)
         }

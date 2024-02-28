@@ -13,7 +13,3 @@ internal fun Context.findActivity(): Activity {
     }
     throw IllegalStateException("Activity not found")
 }
-
-internal inline fun <T> Collection<T>.allIfNotEmpty(
-    predicate: (T) -> Boolean,
-) = isEmpty() && all(predicate)

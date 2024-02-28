@@ -9,7 +9,6 @@ data class QuestionResponse(
     @SerialName("question") val questionText: String,
     val description: String?,
     val answers: Map<String, String?>,
-    @SerialName("multiple_correct_answers") val multipleCorrectAnswers: Boolean,
     @SerialName("correct_answers") val correctAnswers: Map<String, Boolean>,
     val category: String,
 )
