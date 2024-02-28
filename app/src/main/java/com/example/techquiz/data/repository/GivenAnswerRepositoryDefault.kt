@@ -1,8 +1,8 @@
 package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.GivenAnswer
-import com.example.techquiz.data.dto.GivenAnswerDTO
-import com.example.techquiz.data.dto.QuestionDTO
+import com.example.techquiz.data.dto.request.GivenAnswerDTO
+import com.example.techquiz.data.dto.request.QuestionDTO
 import com.example.techquiz.data.resources.GivenAnswerRes
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post

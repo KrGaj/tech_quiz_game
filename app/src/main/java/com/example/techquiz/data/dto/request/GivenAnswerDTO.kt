@@ -1,4 +1,4 @@
-package com.example.techquiz.data.dto
+package com.example.techquiz.data.dto.request
 
 import com.example.techquiz.util.UUIDSerializer
 import kotlinx.serialization.Serializable

@@ -3,7 +3,7 @@ package com.example.techquiz.data.repository
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.dto.QuestionResponse
+import com.example.techquiz.data.dto.response.QuestionDTO
 import com.example.techquiz.data.resources.Questions
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -22,7 +22,7 @@ class QuestionRepositoryDefault(
                 limit = quantity,
             )
         )
-        val responseBody: List<QuestionResponse> = response.body()
+        val responseBody: List<QuestionDTO> = response.body()
 
         val questions = responseBody.map { question ->
             val possibleAnswers = question.answers.asSequence()

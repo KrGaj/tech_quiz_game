@@ -1,10 +1,10 @@
-package com.example.techquiz.data.dto
+package com.example.techquiz.data.dto.response
 
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class QuestionResponse(
+data class QuestionDTO(
     val id: Int,
     @SerialName("question") val questionText: String,
     val description: String?,
