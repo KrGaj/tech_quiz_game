@@ -4,7 +4,7 @@ import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class QuestionDTO(
+data class QuestionResDTO(
     val id: Int,
     @SerialName("question") val questionText: String,
     val description: String?,

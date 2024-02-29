@@ -4,7 +4,7 @@ import com.example.techquiz.data.domain.Category
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class QuestionDTO(
+data class QuestionReqDTO(
     val id: Long,
     val category: Category,
 )

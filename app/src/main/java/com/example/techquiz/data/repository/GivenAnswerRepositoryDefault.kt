@@ -2,8 +2,8 @@ package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.dto.request.GivenAnswerDTO
-import com.example.techquiz.data.dto.request.QuestionDTO
-import com.example.techquiz.data.resources.GivenAnswerRes
+import com.example.techquiz.data.dto.request.QuestionReqDTO
+import com.example.techquiz.data.resources.GivenAnswers
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post
 import io.ktor.client.request.setBody
@@ -17,7 +17,7 @@ class GivenAnswerRepositoryDefault(
         answers: List<GivenAnswer>,
     ) {
         val answersDTO = answers.map {
-            val questionDTO = QuestionDTO(
+            val questionDTO = QuestionReqDTO(
                 id = it.question.id.toLong(),
                 category = it.question.category,
             )
@@ -29,7 +29,7 @@ class GivenAnswerRepositoryDefault(
             )
         }
 
-        httpClient.post(GivenAnswerRes()) {
+        httpClient.post(GivenAnswers()) {
             setBody(answersDTO)
         }
     }

@@ -9,6 +9,6 @@ data class GivenAnswerDTO(
     @Serializable(
         with = UUIDSerializer::class
     ) val userUUID: UUID,
-    val question: QuestionDTO,
+    val question: QuestionReqDTO,
     val isCorrect: Boolean,
 )
