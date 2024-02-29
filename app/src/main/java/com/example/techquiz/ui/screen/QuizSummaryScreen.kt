@@ -20,6 +20,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -112,9 +113,9 @@ private fun QuizResult(quizResult: QuizResult) {
     var isExpanded by remember { mutableStateOf(false) }
 
     val answerCorrectColor = if (quizResult.isAnsweredCorrectly) {
-        Color(0xFFEF5350)
-    } else {
         Color(0xFF81C784)
+    } else {
+        Color(0xFFEF5350)
     }
 
     Card {
@@ -158,25 +159,29 @@ private fun QuizResult(quizResult: QuizResult) {
 
             if (isExpanded) {
                 val correctAnswers = quizResult.question.answers.filter { it.isCorrect }
-                val correctAnswersStr = buildString {
-                    append(
-                        stringResource(id = R.string.quiz_results_details_answers_correct)
-                    )
-                    append(
-                        correctAnswers.joinToString(separator = ", ") { it.text }
-                    )
-                }
+                val correctAnswersStr = buildAnswerString(
+                    title = stringResource(
+                        id = R.string.quiz_results_details_answers_correct,
+                    ),
+                    answers = correctAnswers,
+                )
 
-                val givenAnswersStr = buildString {
-                    append(
-                        stringResource(id = R.string.quiz_results_details_answers_given)
-                    )
-                    append(
-                        quizResult.givenAnswers.joinToString(separator = ", ") { it.text }
-                    )
-                }
+                val givenAnswersStr = buildAnswerString(
+                    title = stringResource(
+                        id = R.string.quiz_results_details_answers_given,
+                    ),
+                    answers = quizResult.givenAnswers,
+                )
 
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = Color.Black,
+                )
                 Text(text = correctAnswersStr)
+                HorizontalDivider(
+                    thickness = 2.dp,
+                    color = Color.Black,
+                )
                 Text(text = givenAnswersStr)
             }
         }
@@ -193,6 +198,17 @@ private fun FinishButton(navigateToCategories: () -> Unit) {
             Text(text = stringResource(id = R.string.quiz_results_finish))
         }
     }
+}
+
+private fun buildAnswerString(
+    title: String,
+    answers: List<PossibleAnswer>,
+) = buildString {
+    append(title)
+    append(" ")
+    append(
+        answers.joinToString(separator = ", ") { it.text }
+    )
 }
 
 
