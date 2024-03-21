@@ -15,11 +15,14 @@
 
     <string name="categories_header">Categories</string>
     <string name="question_header">%1$s: Question %2$d</string>
+    <string name="question_header_multiple_choice">(Multiple Choice)</string>
+    <string name="question_next">Next question</string>
+    <string name="question_finish">Finish quiz</string>
 
     <string name="quiz_results_score">Your score: %1$d/%2$d</string>
-    <string name="quiz_results_correct">Correct</string>
-    <string name="quiz_results_wrong">Wrong</string>
     <string name="quiz_results_finish">Finish</string>
+    <string name="quiz_results_details_answers_correct">Correct answers:</string>
+    <string name="quiz_results_details_answers_given">Given answers:</string>
 
     <string name="stats_header">Statistics</string>
     <string name="stats_most_answered_header">Most Answered Categories</string>

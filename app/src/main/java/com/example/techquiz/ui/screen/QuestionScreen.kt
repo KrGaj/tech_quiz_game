@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -14,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -21,6 +23,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,25 +36,22 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
+import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-import kotlin.time.Duration.Companion.seconds
 
-class AnswerState {
-    var isAnyAnswerChosen: Boolean by mutableStateOf(false)
-    var isTimeOut: Boolean by mutableStateOf(false)
+private class AnswerState {
+    var shouldShowAllAnswers by mutableStateOf(false)
 }
 
 @Composable
@@ -60,7 +60,7 @@ fun QuestionScreen(
     givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
     category: Category,
-    onBackPressed: (List<QuizResult>) -> Unit,
+    navigateToCategories: () -> Unit,
     navigateToResults: (List<QuizResult>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
@@ -70,26 +70,19 @@ fun QuestionScreen(
         mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
     }
     val questionNumber by questionViewModel.questionNumber.collectAsStateWithLifecycle()
+    val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
-    val answerState by remember {
-        mutableStateOf(AnswerState())
-    }
+    val answerState by remember { mutableStateOf(AnswerState()) }
 
-    val answerAddCallback = {
-        if (questionViewModel.isQuestionLast()) {
-            navigateToResults(givenAnswerViewModel.quizResults)
-        } else {
-            answerState.isAnyAnswerChosen = false
-            answerState.isTimeOut = false
-            questionViewModel.nextQuestion()
-        }
-    }
+    val showExitDialog = rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(questionResult) {
+        givenAnswerViewModel.clearSelectedAnswers()
         questionResult.fold(
             onSuccess = {
                 if (it != QuestionViewModel.DEFAULT_QUESTION) {
+                    answerState.shouldShowAllAnswers = false
                     question = it
                     timerViewModel.start()
                 }
@@ -104,8 +97,7 @@ fun QuestionScreen(
     LaunchedEffect(answerAddResult) {
         answerAddResult?.fold(
             onSuccess = {
-                delay(1.seconds)
-                answerAddCallback()
+                navigateToResults(givenAnswerViewModel.quizResults)
             },
             onFailure = {
                 // TODO
@@ -115,7 +107,19 @@ fun QuestionScreen(
     }
 
     BackHandler {
-        onBackPressed(givenAnswerViewModel.quizResults)
+        showExitDialog.apply { value = !value }
+    }
+
+    if (showExitDialog.value) {
+        ExitDialog(
+            message = stringResource(id = R.string.quiz_exit_message),
+            onDismissRequest = { showExitDialog.apply { value = !value } },
+            onConfirmation = {
+                showExitDialog.apply { value = !value }
+                if (givenAnswerViewModel.quizResults.isEmpty()) navigateToCategories()
+                else coroutineScope.launch { givenAnswerViewModel.sendAnswers() }
+            },
+        )
     }
 
     CodingQuizTheme {
@@ -129,41 +133,39 @@ fun QuestionScreen(
             QuestionHeader(
                 categoryName = category.name,
                 questionNumber = questionNumber,
+                multipleCorrectAnswers = question.answers.count { it.isCorrect } > 1,
             )
             QuestionText(question)
             AnswersGrid(
                 answers = question.answers,
-                { answerState.isAnyAnswerChosen },
-                { answerState.isTimeOut },
+                selectedAnswers = selectedAnswers,
             ) {
-                if (!answerState.isAnyAnswerChosen) {
-                    coroutineScope.launch {
-                        answerState.isAnyAnswerChosen = true
-                        timerViewModel.clear()
-                        givenAnswerViewModel.addAnswer(
-                            answer = GivenAnswer(
-                                question = question,
-                                correct = it.isCorrect,
-                            ),
-                        )
-                    }
-                }
+                givenAnswerViewModel.toggleAnswer(it)
             }
             Timer(timeLeft = timeLeft)
+            NextQuestionButton(
+                isQuestionLast = questionViewModel::isQuestionLast,
+            ) {
+                timerViewModel.clear()
+                givenAnswerViewModel.addAnswer(question)
+
+                if (questionViewModel.isQuestionLast()) {
+                    coroutineScope.launch {
+                        givenAnswerViewModel.sendAnswers()
+                    }
+                }
+
+                questionViewModel.nextQuestion()
+            }
         }
     }
 
     if (timeLeft == 0L) {
-        LaunchedEffect(Unit) {
-            answerState.isTimeOut = true
+        answerState.shouldShowAllAnswers = true
 
-            givenAnswerViewModel.addAnswer(
-                answer = GivenAnswer(
-                    question = question,
-                    correct = false,
-                ),
-            )
-        }
+        givenAnswerViewModel.addAnswer(
+            question = question,
+        )
     }
 }
 
@@ -171,9 +173,29 @@ fun QuestionScreen(
 private fun QuestionHeader(
     categoryName: String,
     questionNumber: Int,
+    multipleCorrectAnswers: Boolean,
 ) {
+    val headerText = buildString {
+        append(
+            stringResource(
+                id = R.string.question_header,
+                categoryName,
+                questionNumber,
+            )
+        )
+
+        if (multipleCorrectAnswers) {
+            append(" ")
+            append(
+                stringResource(
+                    id = R.string.question_header_multiple_choice,
+                )
+            )
+        }
+    }
+
     HeaderTextLarge(
-        text = stringResource(id = R.string.question_header, categoryName, questionNumber),
+        text = headerText,
     )
 }
 
@@ -201,18 +223,17 @@ private fun QuestionText(question: Question) {
 @Composable
 private fun AnswersGrid(
     answers: List<PossibleAnswer>,
-    isAnyAnswerChosen: () -> Boolean,
-    isTimeOut: () -> Boolean,
+    selectedAnswers: List<PossibleAnswer>,
     onClick: (PossibleAnswer) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
         columns = GridCells.Fixed(2),
     ) {
         items(answers) {
-            val shouldChangeColor = (isAnyAnswerChosen() || isTimeOut())
-            val color = if (shouldChangeColor && it.isCorrect) Color.Green
-                else if (shouldChangeColor) Color.Red
-                else Color.Gray
+            val isSelected = selectedAnswers.contains(it)
+
+            val color = if (isSelected) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.secondary
 
             PossibleAnswer(
                 answer = it,
@@ -261,13 +282,34 @@ private fun Timer(timeLeft: Long) {
     )
 }
 
+@Composable
+private fun NextQuestionButton(
+    isQuestionLast: () -> Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        FilledTonalButton(onClick = onClick) {
+            val textId = if (isQuestionLast()) R.string.question_finish
+                else R.string.question_next
 
-@Preview
+            Text(text = stringResource(id = textId))
+        }
+    }
+}
+
+
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewQuestionText() {
     CodingQuizTheme {
-        QuestionText(question = Question(0, Category("0"),
-            "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+        QuestionText(
+            question = Question(
+                id = 0,
+                category = Category("0"),
+                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
                     "sed do eiusmod tempor incididunt ut labore et dolore " +
                     "magna aliqua. Ut enim ad minim veniam, quis nostrud " +
                     "exercitation ullamco laboris nisi ut aliquip ex ea " +
@@ -276,34 +318,43 @@ private fun PreviewQuestionText() {
                     "eu fugiat nulla pariatur. Excepteur sint occaecat " +
                     "cupidatat non proident, sunt in culpa qui officia " +
                     "deserunt mollit anim id est laborum.",
-            emptyList()))
+                answers = emptyList(),
+            ),
+        )
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewAnswers() {
-    val isAnyAnswerChosen by remember { mutableStateOf(false) }
-    val isTimeOut by remember { mutableStateOf(false) }
-
     CodingQuizTheme {
         AnswersGrid(
-            isAnyAnswerChosen = { isAnyAnswerChosen },
-            isTimeOut = { isTimeOut },
             answers = listOf(
                 PossibleAnswer("Demo Answer 1", false),
                 PossibleAnswer("Demo Answer 2", false),
                 PossibleAnswer("Demo Answer 3", false),
                 PossibleAnswer("Demo Answer 4", true),
-            )
+            ),
+            selectedAnswers = listOf(
+                PossibleAnswer("Demo Answer 1", false),
+                PossibleAnswer("Demo Answer 4", true)
+            ),
         ) {}
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewTimer() {
     CodingQuizTheme {
         Timer(timeLeft = 2137)
+    }
+}
+
+@Preview(showBackground = true, apiLevel = 33)
+@Composable
+private fun PreviewNextQuestionButton() {
+    CodingQuizTheme {
+        NextQuestionButton({ false }) {}
     }
 }

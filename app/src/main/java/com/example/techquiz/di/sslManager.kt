@@ -32,7 +32,7 @@ private fun getSSLContext(
     keyStorePassword: CharArray,
 ): SSLContext? =
     SSLContext.getInstance(
-        "TLS",
+        "TLSv1.3",
     ).also {
         it.init(
             null,

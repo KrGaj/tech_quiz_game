@@ -10,9 +10,7 @@ import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
-import org.koin.core.module.dsl.singleOf
 import org.koin.core.parameter.parametersOf
-import org.koin.dsl.bind
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -28,7 +26,13 @@ val repositoryModule = module {
         host = ""
     }
 
-    singleOf(::CategoryRepositoryDefault) bind CategoryRepository::class
+    single<CategoryRepository> {
+        CategoryRepositoryDefault(
+            get {
+                parametersOf(questionApiUrlBuilder, null)
+            }
+        )
+    }
 
     single<QuestionRepository> {
         QuestionRepositoryDefault(

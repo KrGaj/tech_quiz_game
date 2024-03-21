@@ -17,10 +17,12 @@ class QuestionViewModel(
     private val _question = MutableStateFlow(
         value = Result.success(DEFAULT_QUESTION),
     )
-    val question get() = _question.asStateFlow()
+    val question
+        get() = _question.asStateFlow()
 
     private val _questionNumber = MutableStateFlow(0)
-    val questionNumber = _questionNumber.asStateFlow()
+    val questionNumber
+        get() = _questionNumber.asStateFlow()
 
     fun fetchQuestions(category: Category) {
         viewModelScope.launch {
@@ -38,7 +40,7 @@ class QuestionViewModel(
         }
     }
 
-    fun isQuestionLast() = !questionIterator.hasNext()
+    fun isQuestionLast() = ::questionIterator.isInitialized && !questionIterator.hasNext()
 
     fun nextQuestion() {
         if (!isQuestionLast()) {

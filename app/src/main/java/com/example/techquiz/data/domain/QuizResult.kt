@@ -13,6 +13,7 @@ data class QuizSummary(
 @Serializable
 @Parcelize
 data class QuizResult(
-    val questionText: String,
-    val isAnswerCorrect: Boolean,
+    val question: Question,
+    val givenAnswers: List<PossibleAnswer>,
+    val isAnsweredCorrectly: Boolean,
 ) : Parcelable
