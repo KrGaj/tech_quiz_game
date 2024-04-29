@@ -20,12 +20,15 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
+import com.example.techquiz.viewmodel.UserViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StatsScreen(
-    statsViewModel: StatsViewModel = koinViewModel()
+    statsViewModel: StatsViewModel = koinViewModel(),
+    userViewModel: UserViewModel = koinActivityViewModel(),
 ) {
     val categoryStats by statsViewModel.categoryStats
         .collectAsStateWithLifecycle()
@@ -34,8 +37,14 @@ fun StatsScreen(
 
     Column {
         LaunchedEffect(Unit) {
-            statsViewModel.getMostAnsweredCategories()
-            statsViewModel.getCorrectAnswersCount()
+            statsViewModel.getMostAnsweredCategories(
+                token = userViewModel.token,
+                userUUID = userViewModel.userUuid,
+            )
+            statsViewModel.getCorrectAnswersCount(
+                token = userViewModel.token,
+                userUUID = userViewModel.userUuid,
+            )
         }
 
         Column(

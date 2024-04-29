@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.techquiz.di.authModule
 import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.repositoryModule
 import com.example.techquiz.di.sslManagerModule
@@ -23,25 +24,14 @@ import com.example.techquiz.ui.theme.CodingQuizTheme
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.compose.KoinApplication
+import org.koin.compose.KoinContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            KoinApplication(application = {
-                androidContext(application)
-                androidLogger()
-
-                modules(
-                    listOf(
-                        httpClientModule,
-                        sslManagerModule,
-                        repositoryModule,
-                        viewModelModule,
-                    )
-                )
-            }) {
+            KoinContext {
                 CodingQuizTheme {
                     val navController = rememberNavController()
                     val navBackStackEntry by navController.currentBackStackEntryAsState()

@@ -18,6 +18,7 @@ import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.domain.QuizSummary
 import com.example.techquiz.ui.screen.CategoriesScreen
+import com.example.techquiz.ui.screen.LoginScreen
 import com.example.techquiz.ui.screen.QuestionScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen
@@ -34,8 +35,13 @@ fun AppNavHost(
 
     NavHost(
         navController = navController,
-        startDestination = Screen.Categories.route,
+        startDestination = Screen.Login.route,
     ) {
+        configureLoginScreenRoute(
+            navGraphBuilder = this,
+            navController,
+        )
+
         configureCategoriesScreenRoute(
             navGraphBuilder = this,
             navController,
@@ -55,6 +61,27 @@ fun AppNavHost(
         configureStatsScreen(
             navGraphBuilder = this,
         )
+    }
+}
+
+private fun configureLoginScreenRoute(
+    navGraphBuilder: NavGraphBuilder,
+    navController: NavController,
+) {
+    navGraphBuilder.composable(
+        route = Screen.Login.route,
+    ) {
+        LoginScreen {
+            navController.navigate(
+                route = Screen.Categories.route,
+            ) {
+                popUpTo(
+                    Screen.Login.route,
+                ) {
+                    inclusive = true
+                }
+            }
+        }
     }
 }
 

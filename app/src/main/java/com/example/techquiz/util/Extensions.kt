@@ -3,6 +3,11 @@ package com.example.techquiz.util
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import io.ktor.client.HttpClient
+import io.ktor.client.plugins.resources.get
+import io.ktor.client.plugins.resources.post
+import io.ktor.client.request.HttpRequestBuilder
+import io.ktor.client.statement.HttpResponse
 
 // https://stackoverflow.com/a/74696154
 internal fun Context.findActivity(): Activity {
@@ -12,4 +17,22 @@ internal fun Context.findActivity(): Activity {
         context = context.baseContext
     }
     throw IllegalStateException("Activity not found")
+}
+
+internal suspend inline fun <reified T : Any> HttpClient.getWithToken(
+    resource: T,
+    token: String?,
+    builder: HttpRequestBuilder.() -> Unit = {},
+): HttpResponse = get(resource) {
+    headers.append("Authorization", token.toString())
+    builder()
+}
+
+internal suspend inline fun <reified T : Any> HttpClient.postWithToken(
+    resource: T,
+    token: String?,
+    builder: HttpRequestBuilder.() -> Unit = {},
+): HttpResponse = post(resource) {
+    headers.append("Authorization", token.toString())
+    builder()
 }

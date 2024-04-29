@@ -8,6 +8,7 @@ import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.UUID
 
 class GivenAnswerViewModel(
     private val givenAnswerRepository: GivenAnswerRepository,
@@ -51,7 +52,10 @@ class GivenAnswerViewModel(
         )
     }
 
-    suspend fun sendAnswers() {
+    suspend fun sendAnswers(
+        userUUID: UUID?,
+        token: String?,
+    ) {
         try {
             val answers = quizResults.map {
                 GivenAnswer(
@@ -60,7 +64,11 @@ class GivenAnswerViewModel(
                 )
             }
 
-            givenAnswerRepository.insertAnswers(answers)
+            givenAnswerRepository.insertAnswers(
+                token = token,
+                userUUID = userUUID,
+                answers = answers,
+            )
             _answerAddResult.value = Result.success(answers.first().question.id)
         } catch (ex: Exception) {
             _answerAddResult.value = Result.failure(ex)

@@ -43,9 +43,11 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
+import com.example.techquiz.viewmodel.UserViewModel
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -59,6 +61,7 @@ fun QuestionScreen(
     questionViewModel: QuestionViewModel = koinViewModel(),
     givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
+    userViewModel: UserViewModel = koinActivityViewModel(),
     category: Category,
     navigateToCategories: () -> Unit,
     navigateToResults: (List<QuizResult>) -> Unit,
@@ -116,8 +119,14 @@ fun QuestionScreen(
             onDismissRequest = { showExitDialog.apply { value = !value } },
             onConfirmation = {
                 showExitDialog.apply { value = !value }
-                if (givenAnswerViewModel.quizResults.isEmpty()) navigateToCategories()
-                else coroutineScope.launch { givenAnswerViewModel.sendAnswers() }
+                if (givenAnswerViewModel.quizResults.isEmpty())
+                    navigateToCategories()
+                else coroutineScope.launch {
+                    givenAnswerViewModel.sendAnswers(
+                        userUUID = userViewModel.userUuid,
+                        token = userViewModel.token,
+                    )
+                }
             },
         )
     }
@@ -151,7 +160,10 @@ fun QuestionScreen(
 
                 if (questionViewModel.isQuestionLast()) {
                     coroutineScope.launch {
-                        givenAnswerViewModel.sendAnswers()
+                        givenAnswerViewModel.sendAnswers(
+                            userUUID = userViewModel.userUuid,
+                            token = userViewModel.token,
+                        )
                     }
                 }
 
