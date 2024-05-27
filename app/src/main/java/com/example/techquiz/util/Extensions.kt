@@ -3,6 +3,7 @@ package com.example.techquiz.util
 import android.app.Activity
 import android.content.Context
 import android.content.ContextWrapper
+import androidx.compose.runtime.MutableState
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.get
 import io.ktor.client.plugins.resources.post
@@ -35,4 +36,8 @@ internal suspend inline fun <reified T : Any> HttpClient.postWithToken(
 ): HttpResponse = post(resource) {
     headers.append("Authorization", token.toString())
     builder()
+}
+
+fun MutableState<Boolean>.toggleValue() {
+    value = !value
 }

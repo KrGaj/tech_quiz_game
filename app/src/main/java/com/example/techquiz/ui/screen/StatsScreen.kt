@@ -5,9 +5,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -20,6 +24,7 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.handleHttpFailure
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.UserViewModel
@@ -30,10 +35,49 @@ fun StatsScreen(
     statsViewModel: StatsViewModel = koinViewModel(),
     userViewModel: UserViewModel = koinActivityViewModel(),
 ) {
-    val categoryStats by statsViewModel.categoryStats
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+    val categoryStatsResult by statsViewModel.categoryStats
         .collectAsStateWithLifecycle()
-    val correctAnswersStats by statsViewModel.correctAnswersCount
+    val correctAnswersStatsResult by statsViewModel.correctAnswersCount
         .collectAsStateWithLifecycle()
+
+    var categoryStats by remember {
+        mutableStateOf(emptyList<CategoryStats>())
+    }
+
+    var correctAnswersStats by remember {
+        mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
+    }
+
+    LaunchedEffect(categoryStatsResult) {
+        categoryStatsResult.fold(
+            onSuccess = {
+                categoryStats = it
+            },
+            onFailure = {
+                handleHttpFailure(
+                    snackbarHostState = snackbarHostState,
+                    throwable = it,
+                )
+            },
+        )
+    }
+
+    LaunchedEffect(correctAnswersStatsResult) {
+        correctAnswersStatsResult.fold(
+            onSuccess = {
+                correctAnswersStats = it
+            },
+            onFailure = {
+                handleHttpFailure(
+                    snackbarHostState = snackbarHostState,
+                    throwable = it,
+                )
+            },
+        )
+    }
 
     Column {
         LaunchedEffect(Unit) {

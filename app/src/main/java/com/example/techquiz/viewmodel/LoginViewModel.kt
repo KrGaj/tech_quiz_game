@@ -12,6 +12,7 @@ import com.example.techquiz.TechQuizApplication
 import com.example.techquiz.data.domain.User
 import com.example.techquiz.data.domain.exception.InvalidCredentialTypeException
 import com.example.techquiz.data.repository.UserRepository
+import com.example.techquiz.util.wrapAsResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -25,6 +26,10 @@ class LoginViewModel(
     private val _authResult = MutableSharedFlow<Result<GoogleIdTokenCredential>>()
     val authResult
         get() = _authResult.asSharedFlow()
+
+    private val _user = MutableSharedFlow<Result<User>>()
+    val user
+        get() = _user.asSharedFlow()
 
     private val credentialManager = CredentialManager.create(application.baseContext)
     private val webClientId = application.getString(R.string.web_client_id)
@@ -106,8 +111,11 @@ class LoginViewModel(
         }
     }
 
-    suspend fun fetchUser(token: String?): User =
+    suspend fun fetchUser(
+        token: String?,
+    ): Unit = wrapAsResult {
         userRepository.getUser(token)
+    }.let { _user.emit(it) }
 
     private enum class AuthType {
         LOG_IN,

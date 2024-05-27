@@ -31,8 +31,6 @@ import kotlinx.serialization.json.Json
 fun AppNavHost(
     navController: NavHostController,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-
     NavHost(
         navController = navController,
         startDestination = Screen.Login.route,
@@ -50,7 +48,6 @@ fun AppNavHost(
         configureQuestionScreenRoute(
             navGraphBuilder = this,
             navController,
-            snackbarHostState,
         )
 
         configureQuizResultsScreen(
@@ -109,7 +106,6 @@ private fun configureCategoriesScreenRoute(
 private fun configureQuestionScreenRoute(
     navGraphBuilder: NavGraphBuilder,
     navController: NavController,
-    snackbarHostState: SnackbarHostState,
 ) {
     navGraphBuilder.composable(
         route = "${Screen.Question.route}/{${Screen.Question.navArg}}",
@@ -117,6 +113,10 @@ private fun configureQuestionScreenRoute(
             type = CategoryNavType
         }),
     ) { backStackEntry ->
+        val snackbarHostState = remember {
+            SnackbarHostState()
+        }
+
         deserializeCategory(backStackEntry)?.let { category ->
             QuestionScreen(
                 category = category,

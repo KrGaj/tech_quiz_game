@@ -12,11 +12,15 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -31,6 +35,8 @@ import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.findActivity
+import com.example.techquiz.util.handleHttpFailure
+import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.koinViewModel
 
@@ -39,13 +45,31 @@ fun CategoriesScreen(
     categoryViewModel: CategoryViewModel = koinViewModel(),
     navigateToQuestionScreen: (Category) -> Unit,
 ) {
-    val categories by categoryViewModel.categories.collectAsStateWithLifecycle()
+    val categoriesResult by categoryViewModel.categories.collectAsStateWithLifecycle()
+    var categories by remember {
+        mutableStateOf(emptyList<Category>())
+    }
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
     val showExitAppDialog = rememberSaveable {
         mutableStateOf(false)
     }
 
+    LaunchedEffect(categoriesResult) {
+        categoriesResult.fold(
+            onSuccess = { categories = it },
+            onFailure = {
+                handleHttpFailure(
+                    snackbarHostState = snackbarHostState,
+                    throwable = it,
+                )
+            },
+        )
+    }
+
     BackHandler {
-        showExitAppDialog.apply { value = !value }
+        showExitAppDialog.toggleValue()
     }
 
     if (showExitAppDialog.value) {
@@ -53,9 +77,9 @@ fun CategoriesScreen(
 
         ExitDialog(
             message = stringResource(id = R.string.app_exit_message),
-            onDismissRequest = { showExitAppDialog.apply { value = !value } },
+            onDismissRequest = { showExitAppDialog.toggleValue() },
             onConfirmation = {
-                showExitAppDialog.apply { value = !value }
+                showExitAppDialog.toggleValue()
                 context.findActivity().finish()
             }
         )
@@ -66,6 +90,9 @@ fun CategoriesScreen(
             modifier = Modifier.padding(12.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
+            LaunchedEffect(Unit) {
+                categoryViewModel.fetchCategories()
+            }
             CategoriesLabel()
             CategoryGrid(categories = categories, navigateToQuestionScreen)
         }
@@ -131,13 +158,13 @@ private fun PreviewCategory() {
 @Composable
 private fun PreviewCategoryGrid() {
     CodingQuizTheme {
-        CategoryGrid(
-            listOf(
-                Category("Category 1"),
-                Category("Category 2"),
-                Category("Category 3"),
-                Category("Category 4"),
-            )
-        ) {}
+        CategoryGrid(CATEGORIES) {}
     }
 }
+
+private val CATEGORIES = listOf(
+    Category("Category 1"),
+    Category("Category 2"),
+    Category("Category 3"),
+    Category("Category 4"),
+)

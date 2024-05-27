@@ -1,55 +1,52 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.dto.response.stats.CategoryStats
 import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.data.repository.StatsRepository
+import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 import java.util.UUID
 
 class StatsViewModel(
     private val statsRepository: StatsRepository,
 ) : ViewModel() {
-    private val _categoryStats = MutableStateFlow(emptyList<CategoryStats>())
+    private val _categoryStats = MutableStateFlow(Result.success(emptyList<CategoryStats>()))
     val categoryStats get() = _categoryStats.asStateFlow()
 
-    private val _answersCount = MutableStateFlow(DEFAULT_CORRECT_STATS)
+    private val _answersCount = MutableStateFlow(Result.success(DEFAULT_CORRECT_STATS))
     val correctAnswersCount get() = _answersCount.asStateFlow()
 
-    fun getMostAnsweredCategories(
+    suspend fun getMostAnsweredCategories(
         token: String?,
         userUUID: UUID?,
     ) {
-        viewModelScope.launch {
-            _categoryStats.value =
-                statsRepository.getMostAnsweredCategories(
-                    token = token,
-                    userUUID = userUUID,
-                    count = CATEGORIES_COUNT,
-                )
+        _categoryStats.value = wrapAsResult {
+            statsRepository.getMostAnsweredCategories(
+                token = token,
+                userUUID = userUUID,
+                count = CATEGORIES_COUNT,
+            )
         }
     }
 
-    fun getCorrectAnswersCount(
+    suspend fun getCorrectAnswersCount(
         token: String?,
         userUUID: UUID?,
     ) {
-        viewModelScope.launch {
-            _answersCount.value =
-                statsRepository.getCorrectAnswersCount(
-                    token = token,
-                    userUUID = userUUID,
-                )
+        _answersCount.value = wrapAsResult {
+            statsRepository.getCorrectAnswersCount(
+                token = token,
+                userUUID = userUUID,
+            )
         }
     }
 
-    private companion object {
+    companion object {
         private const val CATEGORIES_COUNT = 3
 
-        private val DEFAULT_CORRECT_STATS = CorrectAnswersStats(
+        val DEFAULT_CORRECT_STATS = CorrectAnswersStats(
             correctAnswers = 0,
             allAnswers = 0,
         )
