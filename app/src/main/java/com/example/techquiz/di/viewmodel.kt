@@ -16,7 +16,6 @@ import org.koin.dsl.module
 val viewModelModule = module {
     viewModelOf(::CategoryViewModel)
     viewModelOf(::GivenAnswerViewModel)
-//    viewModelOf(::LoginViewModel)
     viewModelOf(::QuestionViewModel)
     viewModelOf(::QuizResultsViewModel)
     viewModelOf(::StatsViewModel)
