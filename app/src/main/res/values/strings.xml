@@ -1,11 +1,14 @@
 <resources>
     <string name="app_name">TechQuiz</string>
+    <string name="web_client_id">insert_your_server_client_id</string>
+    <string name="sign_in_button_label">Sign In with Google</string>
 
     <plurals name="question_time_left">
         <item quantity="one">%1$d second left</item>
         <item quantity="other">%1$d seconds left</item>
     </plurals>
 
+    <string name="navigation_login_label">Login</string>
     <string name="navigation_categories_label">Categories</string>
     <string name="navigation_question_label">Question</string>
     <string name="navigation_results_label">Summary</string>
@@ -32,6 +35,10 @@
     <string name="correct_answers_header">Correct Answers</string>
     <string name="correct_answers_msg">Correct answers</string>
     <string name="correct_answers_count">%1$d/%2$d (%3$.2f\uFF05)</string>
+    
+    <string name="client_error_message">An error on client side occurred. Code: %1$d.</string>
+    <string name="server_error_message">An error on server side occurred. Code: %1$d.</string>
+    <string name="other_error_message">An error occurred.</string>
 
     <string name="quiz_exit_message">Are you sure want to quit this quiz?</string>
     <string name="app_exit_message">Are you sure want to exit this app?</string>

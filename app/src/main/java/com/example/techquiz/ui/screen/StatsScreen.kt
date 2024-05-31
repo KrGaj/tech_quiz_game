@@ -5,10 +5,15 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -20,22 +25,70 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.getHttpFailureMessage
+import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
+import com.example.techquiz.viewmodel.UserViewModel
+import io.ktor.client.plugins.ResponseException
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StatsScreen(
-    statsViewModel: StatsViewModel = koinViewModel()
+    statsViewModel: StatsViewModel = koinViewModel(),
+    userViewModel: UserViewModel = koinActivityViewModel(),
 ) {
-    val categoryStats by statsViewModel.categoryStats
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+    val categoryStatsResult by statsViewModel.categoryStats
         .collectAsStateWithLifecycle()
-    val correctAnswersStats by statsViewModel.correctAnswersCount
+    val correctAnswersStatsResult by statsViewModel.correctAnswersCount
         .collectAsStateWithLifecycle()
+
+    var categoryStats by remember {
+        mutableStateOf(emptyList<CategoryStats>())
+    }
+
+    var correctAnswersStats by remember {
+        mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
+    }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(categoryStatsResult) {
+        categoryStatsResult.fold(
+            onSuccess = {
+                categoryStats = it
+            },
+            onFailure = {
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
+            },
+        )
+    }
+
+    LaunchedEffect(correctAnswersStatsResult) {
+        correctAnswersStatsResult.fold(
+            onSuccess = {
+                correctAnswersStats = it
+            },
+            onFailure = {
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
+            },
+        )
+    }
 
     Column {
         LaunchedEffect(Unit) {
-            statsViewModel.getMostAnsweredCategories()
-            statsViewModel.getCorrectAnswersCount()
+            statsViewModel.getMostAnsweredCategories(
+                token = userViewModel.token,
+                userUUID = userViewModel.userUuid,
+            )
+            statsViewModel.getCorrectAnswersCount(
+                token = userViewModel.token,
+                userUUID = userViewModel.userUuid,
+            )
         }
 
         Column(

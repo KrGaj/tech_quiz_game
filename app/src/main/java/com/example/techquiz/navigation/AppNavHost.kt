@@ -18,6 +18,7 @@ import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.domain.QuizSummary
 import com.example.techquiz.ui.screen.CategoriesScreen
+import com.example.techquiz.ui.screen.LoginScreen
 import com.example.techquiz.ui.screen.QuestionScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen
@@ -30,12 +31,15 @@ import kotlinx.serialization.json.Json
 fun AppNavHost(
     navController: NavHostController,
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
-
     NavHost(
         navController = navController,
-        startDestination = Screen.Categories.route,
+        startDestination = Screen.Login.route,
     ) {
+        configureLoginScreenRoute(
+            navGraphBuilder = this,
+            navController,
+        )
+
         configureCategoriesScreenRoute(
             navGraphBuilder = this,
             navController,
@@ -44,7 +48,6 @@ fun AppNavHost(
         configureQuestionScreenRoute(
             navGraphBuilder = this,
             navController,
-            snackbarHostState,
         )
 
         configureQuizResultsScreen(
@@ -55,6 +58,27 @@ fun AppNavHost(
         configureStatsScreen(
             navGraphBuilder = this,
         )
+    }
+}
+
+private fun configureLoginScreenRoute(
+    navGraphBuilder: NavGraphBuilder,
+    navController: NavController,
+) {
+    navGraphBuilder.composable(
+        route = Screen.Login.route,
+    ) {
+        LoginScreen {
+            navController.navigate(
+                route = Screen.Categories.route,
+            ) {
+                popUpTo(
+                    Screen.Login.route,
+                ) {
+                    inclusive = true
+                }
+            }
+        }
     }
 }
 
@@ -82,7 +106,6 @@ private fun configureCategoriesScreenRoute(
 private fun configureQuestionScreenRoute(
     navGraphBuilder: NavGraphBuilder,
     navController: NavController,
-    snackbarHostState: SnackbarHostState,
 ) {
     navGraphBuilder.composable(
         route = "${Screen.Question.route}/{${Screen.Question.navArg}}",
@@ -90,6 +113,10 @@ private fun configureQuestionScreenRoute(
             type = CategoryNavType
         }),
     ) { backStackEntry ->
+        val snackbarHostState = remember {
+            SnackbarHostState()
+        }
+
         deserializeCategory(backStackEntry)?.let { category ->
             QuestionScreen(
                 category = category,

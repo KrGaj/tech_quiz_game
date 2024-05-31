@@ -1,28 +1,21 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.repository.CategoryRepository
+import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
 
 class CategoryViewModel(
     private val categoryRepository: CategoryRepository,
 ) : ViewModel() {
-    private val _categories = MutableStateFlow(emptyList<Category>())
+    private val _categories = MutableStateFlow(Result.success(emptyList<Category>()))
     val categories get() = _categories.asStateFlow()
 
-    init {
-        getCategories()
-    }
-
-    private fun getCategories() {
-        viewModelScope.launch {
-            _categories.value = categoryRepository.getAllCategories()
-        }
-    }
+    suspend fun fetchCategories() = wrapAsResult {
+        categoryRepository.getAllCategories()
+    }.let { _categories.value = it }
 
     companion object {
         const val COLUMNS_NUM = 2

@@ -8,6 +8,8 @@ import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
+import com.example.techquiz.data.repository.UserRepository
+import com.example.techquiz.data.repository.UserRepositoryDefault
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
 import org.koin.core.parameter.parametersOf
@@ -52,6 +54,14 @@ val repositoryModule = module {
 
     single<StatsRepository> {
         StatsRepositoryDefault(
+            get {
+                parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            }
+        )
+    }
+
+    single<UserRepository> {
+        UserRepositoryDefault(
             get {
                 parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
             }

@@ -1,6 +1,5 @@
 package com.example.techquiz.ui.screen
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -16,6 +15,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -43,27 +44,32 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.getHttpFailureMessage
+import com.example.techquiz.util.koinActivityViewModel
+import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
+import com.example.techquiz.viewmodel.UserViewModel
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
-
-private class AnswerState {
-    var shouldShowAllAnswers by mutableStateOf(false)
-}
 
 @Composable
 fun QuestionScreen(
     questionViewModel: QuestionViewModel = koinViewModel(),
     givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
+    userViewModel: UserViewModel = koinActivityViewModel(),
     category: Category,
     navigateToCategories: () -> Unit,
     navigateToResults: (List<QuizResult>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
     val questionResult by questionViewModel.question.collectAsStateWithLifecycle()
     val answerAddResult by givenAnswerViewModel.answerAddResult.collectAsStateWithLifecycle()
     var question by remember {
@@ -73,23 +79,22 @@ fun QuestionScreen(
     val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
-    val answerState by remember { mutableStateOf(AnswerState()) }
-
     val showExitDialog = rememberSaveable { mutableStateOf(false) }
+
+    val context = LocalContext.current
 
     LaunchedEffect(questionResult) {
         givenAnswerViewModel.clearSelectedAnswers()
         questionResult.fold(
             onSuccess = {
                 if (it != QuestionViewModel.DEFAULT_QUESTION) {
-                    answerState.shouldShowAllAnswers = false
                     question = it
                     timerViewModel.start()
                 }
             },
             onFailure = {
-                // TODO
-                Log.e("Demo failure", it.stackTraceToString())
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }
@@ -100,24 +105,30 @@ fun QuestionScreen(
                 navigateToResults(givenAnswerViewModel.quizResults)
             },
             onFailure = {
-                // TODO
-                Log.e("Demo failure", it.stackTraceToString())
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             }
         )
     }
 
     BackHandler {
-        showExitDialog.apply { value = !value }
+        showExitDialog.toggleValue()
     }
 
     if (showExitDialog.value) {
         ExitDialog(
             message = stringResource(id = R.string.quiz_exit_message),
-            onDismissRequest = { showExitDialog.apply { value = !value } },
+            onDismissRequest = { showExitDialog.toggleValue() },
             onConfirmation = {
-                showExitDialog.apply { value = !value }
-                if (givenAnswerViewModel.quizResults.isEmpty()) navigateToCategories()
-                else coroutineScope.launch { givenAnswerViewModel.sendAnswers() }
+                showExitDialog.toggleValue()
+                if (givenAnswerViewModel.quizResults.isEmpty())
+                    navigateToCategories()
+                else coroutineScope.launch {
+                    givenAnswerViewModel.sendAnswers(
+                        userUUID = userViewModel.userUuid,
+                        token = userViewModel.token,
+                    )
+                }
             },
         )
     }
@@ -135,7 +146,7 @@ fun QuestionScreen(
                 questionNumber = questionNumber,
                 multipleCorrectAnswers = question.answers.count { it.isCorrect } > 1,
             )
-            QuestionText(question)
+            QuestionTextCard(question)
             AnswersGrid(
                 answers = question.answers,
                 selectedAnswers = selectedAnswers,
@@ -143,7 +154,7 @@ fun QuestionScreen(
                 givenAnswerViewModel.toggleAnswer(it)
             }
             Timer(timeLeft = timeLeft)
-            NextQuestionButton(
+            NextQuestionButtonRow(
                 isQuestionLast = questionViewModel::isQuestionLast,
             ) {
                 timerViewModel.clear()
@@ -151,7 +162,10 @@ fun QuestionScreen(
 
                 if (questionViewModel.isQuestionLast()) {
                     coroutineScope.launch {
-                        givenAnswerViewModel.sendAnswers()
+                        givenAnswerViewModel.sendAnswers(
+                            userUUID = userViewModel.userUuid,
+                            token = userViewModel.token,
+                        )
                     }
                 }
 
@@ -161,8 +175,6 @@ fun QuestionScreen(
     }
 
     if (timeLeft == 0L) {
-        answerState.shouldShowAllAnswers = true
-
         givenAnswerViewModel.addAnswer(
             question = question,
         )
@@ -200,7 +212,7 @@ private fun QuestionHeader(
 }
 
 @Composable
-private fun QuestionText(question: Question) {
+private fun QuestionTextCard(question: Question) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -283,7 +295,7 @@ private fun Timer(timeLeft: Long) {
 }
 
 @Composable
-private fun NextQuestionButton(
+private fun NextQuestionButtonRow(
     isQuestionLast: () -> Boolean,
     onClick: () -> Unit,
 ) {
@@ -303,23 +315,10 @@ private fun NextQuestionButton(
 
 @Preview(showBackground = true, apiLevel = 33)
 @Composable
-private fun PreviewQuestionText() {
+private fun PreviewQuestionTextCard() {
     CodingQuizTheme {
-        QuestionText(
-            question = Question(
-                id = 0,
-                category = Category("0"),
-                text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-                    "sed do eiusmod tempor incididunt ut labore et dolore " +
-                    "magna aliqua. Ut enim ad minim veniam, quis nostrud " +
-                    "exercitation ullamco laboris nisi ut aliquip ex ea " +
-                    "commodo consequat. Duis aute irure dolor in " +
-                    "reprehenderit in voluptate velit esse cillum dolore " +
-                    "eu fugiat nulla pariatur. Excepteur sint occaecat " +
-                    "cupidatat non proident, sunt in culpa qui officia " +
-                    "deserunt mollit anim id est laborum.",
-                answers = emptyList(),
-            ),
+        QuestionTextCard(
+            question = question,
         )
     }
 }
@@ -329,16 +328,8 @@ private fun PreviewQuestionText() {
 private fun PreviewAnswers() {
     CodingQuizTheme {
         AnswersGrid(
-            answers = listOf(
-                PossibleAnswer("Demo Answer 1", false),
-                PossibleAnswer("Demo Answer 2", false),
-                PossibleAnswer("Demo Answer 3", false),
-                PossibleAnswer("Demo Answer 4", true),
-            ),
-            selectedAnswers = listOf(
-                PossibleAnswer("Demo Answer 1", false),
-                PossibleAnswer("Demo Answer 4", true)
-            ),
+            answers = answers,
+            selectedAnswers = selectedAnswers,
         ) {}
     }
 }
@@ -353,8 +344,35 @@ private fun PreviewTimer() {
 
 @Preview(showBackground = true, apiLevel = 33)
 @Composable
-private fun PreviewNextQuestionButton() {
+private fun PreviewNextQuestionButtonRow() {
     CodingQuizTheme {
-        NextQuestionButton({ false }) {}
+        NextQuestionButtonRow({ false }) {}
     }
 }
+
+private val question = Question(
+    id = 0,
+    category = Category("0"),
+    text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
+            "sed do eiusmod tempor incididunt ut labore et dolore " +
+            "magna aliqua. Ut enim ad minim veniam, quis nostrud " +
+            "exercitation ullamco laboris nisi ut aliquip ex ea " +
+            "commodo consequat. Duis aute irure dolor in " +
+            "reprehenderit in voluptate velit esse cillum dolore " +
+            "eu fugiat nulla pariatur. Excepteur sint occaecat " +
+            "cupidatat non proident, sunt in culpa qui officia " +
+            "deserunt mollit anim id est laborum.",
+    answers = emptyList(),
+)
+
+private val answers = listOf(
+    PossibleAnswer("Demo Answer 1", false),
+    PossibleAnswer("Demo Answer 2", false),
+    PossibleAnswer("Demo Answer 3", false),
+    PossibleAnswer("Demo Answer 4", true),
+)
+
+private val selectedAnswers = listOf(
+    PossibleAnswer("Demo Answer 1", false),
+    PossibleAnswer("Demo Answer 4", true)
+)

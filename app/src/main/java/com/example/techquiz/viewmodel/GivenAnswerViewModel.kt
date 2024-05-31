@@ -6,8 +6,10 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
+import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import java.util.UUID
 
 class GivenAnswerViewModel(
     private val givenAnswerRepository: GivenAnswerRepository,
@@ -51,19 +53,27 @@ class GivenAnswerViewModel(
         )
     }
 
-    suspend fun sendAnswers() {
-        try {
-            val answers = quizResults.map {
-                GivenAnswer(
-                    question = it.question,
-                    correct = it.isAnsweredCorrectly,
-                )
-            }
+    suspend fun sendAnswers(
+        userUUID: UUID?,
+        token: String?,
+    ) {
+        val answers = quizResults.map(::mapQuizResultToGivenAnswer)
 
-            givenAnswerRepository.insertAnswers(answers)
-            _answerAddResult.value = Result.success(answers.first().question.id)
-        } catch (ex: Exception) {
-            _answerAddResult.value = Result.failure(ex)
+        _answerAddResult.value = wrapAsResult {
+            givenAnswerRepository.insertAnswers(
+                token = token,
+                userUUID = userUUID,
+                answers = answers,
+            )
+
+            answers.first().question.id
         }
     }
 }
+
+private fun mapQuizResultToGivenAnswer(
+    quizResult: QuizResult
+) = GivenAnswer(
+    question = quizResult.question,
+    correct = quizResult.isAnsweredCorrectly,
+)

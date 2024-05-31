@@ -8,6 +8,11 @@ sealed class Screen(
     @StringRes val resourceId: Int,
     val navArg: String = "",
 ) {
+    data object Login : Screen(
+        route = "Login",
+        resourceId = R.string.navigation_login_label,
+    )
+
     data object Categories : Screen(
         route = "Categories",
         resourceId = R.string.navigation_categories_label,
