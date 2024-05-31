@@ -13,14 +13,16 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
-import com.example.techquiz.util.handleHttpFailure
+import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
@@ -35,6 +37,7 @@ fun LoginScreen(
     val snackbarHostState = remember {
         SnackbarHostState()
     }
+    val context = LocalContext.current
 
     LaunchedEffect(authResult) {
         authResult?.fold(
@@ -58,10 +61,8 @@ fun LoginScreen(
                 navigateToCategories()
             },
             onFailure = {
-                handleHttpFailure(
-                    snackbarHostState = snackbarHostState,
-                    throwable = it,
-                )
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }

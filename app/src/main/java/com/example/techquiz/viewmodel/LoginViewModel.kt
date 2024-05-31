@@ -45,7 +45,7 @@ class LoginViewModel(
         .build()
 
     suspend fun startAuth() {
-        val logInResult = startAuth(AuthType.LOG_IN)
+        val logInResult = startAuth(googleIdOptionLogIn)
         var signInResult: Result<GoogleIdTokenCredential>? = null
 
         logInResult.fold(
@@ -53,7 +53,7 @@ class LoginViewModel(
                 _authResult.emit(Result.success(it))
             },
             onFailure = {
-                signInResult = startAuth(AuthType.SIGN_IN)
+                signInResult = startAuth(googleIdOptionSignIn)
             },
         )
 
@@ -68,14 +68,9 @@ class LoginViewModel(
     }
 
     private suspend fun startAuth(
-        authType: AuthType,
+        googleIdOption: GetGoogleIdOption,
     ): Result<GoogleIdTokenCredential> {
         val context = getApplication<TechQuizApplication>().baseContext
-
-        val googleIdOption = when (authType) {
-            AuthType.LOG_IN -> googleIdOptionLogIn
-            AuthType.SIGN_IN -> googleIdOptionSignIn
-        }
 
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
@@ -116,9 +111,4 @@ class LoginViewModel(
     ): Unit = wrapAsResult {
         userRepository.getUser(token)
     }.let { _user.emit(it) }
-
-    private enum class AuthType {
-        LOG_IN,
-        SIGN_IN,
-    }
 }

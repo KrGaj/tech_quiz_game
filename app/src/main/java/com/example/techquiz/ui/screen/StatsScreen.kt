@@ -13,6 +13,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -24,10 +25,11 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
-import com.example.techquiz.util.handleHttpFailure
+import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import io.ktor.client.plugins.ResponseException
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -51,16 +53,16 @@ fun StatsScreen(
         mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
     }
 
+    val context = LocalContext.current
+
     LaunchedEffect(categoryStatsResult) {
         categoryStatsResult.fold(
             onSuccess = {
                 categoryStats = it
             },
             onFailure = {
-                handleHttpFailure(
-                    snackbarHostState = snackbarHostState,
-                    throwable = it,
-                )
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }
@@ -71,10 +73,8 @@ fun StatsScreen(
                 correctAnswersStats = it
             },
             onFailure = {
-                handleHttpFailure(
-                    snackbarHostState = snackbarHostState,
-                    throwable = it,
-                )
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }

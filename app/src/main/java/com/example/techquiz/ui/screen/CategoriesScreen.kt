@@ -35,9 +35,10 @@ import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.findActivity
-import com.example.techquiz.util.handleHttpFailure
+import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
+import io.ktor.client.plugins.ResponseException
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -56,14 +57,14 @@ fun CategoriesScreen(
         mutableStateOf(false)
     }
 
+    val context = LocalContext.current
+
     LaunchedEffect(categoriesResult) {
         categoriesResult.fold(
             onSuccess = { categories = it },
             onFailure = {
-                handleHttpFailure(
-                    snackbarHostState = snackbarHostState,
-                    throwable = it,
-                )
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }
@@ -73,8 +74,6 @@ fun CategoriesScreen(
     }
 
     if (showExitAppDialog.value) {
-        val context = LocalContext.current
-
         ExitDialog(
             message = stringResource(id = R.string.app_exit_message),
             onDismissRequest = { showExitAppDialog.toggleValue() },

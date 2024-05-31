@@ -1,6 +1,5 @@
 package com.example.techquiz.ui.screen
 
-import android.util.Log
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -28,6 +27,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -44,13 +44,14 @@ import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialogs.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
-import com.example.techquiz.util.handleHttpFailure
+import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -80,6 +81,8 @@ fun QuestionScreen(
 
     val showExitDialog = rememberSaveable { mutableStateOf(false) }
 
+    val context = LocalContext.current
+
     LaunchedEffect(questionResult) {
         givenAnswerViewModel.clearSelectedAnswers()
         questionResult.fold(
@@ -90,8 +93,8 @@ fun QuestionScreen(
                 }
             },
             onFailure = {
-                // TODO
-                Log.e("Demo failure", it.stackTraceToString())
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
     }
@@ -102,10 +105,8 @@ fun QuestionScreen(
                 navigateToResults(givenAnswerViewModel.quizResults)
             },
             onFailure = {
-                handleHttpFailure(
-                    snackbarHostState = snackbarHostState,
-                    throwable = it,
-                )
+                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
             }
         )
     }
