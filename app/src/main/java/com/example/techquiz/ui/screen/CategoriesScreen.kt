@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -85,15 +87,21 @@ fun CategoriesScreen(
     }
 
     CodingQuizTheme {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp),
-        ) {
-            LaunchedEffect(Unit) {
-                categoryViewModel.fetchCategories()
+        Scaffold(
+            snackbarHost = {
+                SnackbarHost(hostState = snackbarHostState)
             }
-            CategoriesLabel()
-            CategoryGrid(categories = categories, navigateToQuestionScreen)
+        ) {
+            Column(
+                modifier = Modifier.padding(it),
+                verticalArrangement = Arrangement.spacedBy(20.dp),
+            ) {
+                LaunchedEffect(Unit) {
+                    categoryViewModel.fetchCategories()
+                }
+                CategoriesLabel()
+                CategoryGrid(categories = categories, navigateToQuestionScreen)
+            }
         }
     }
 }

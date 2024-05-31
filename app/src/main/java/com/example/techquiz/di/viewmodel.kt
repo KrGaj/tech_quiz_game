@@ -8,7 +8,6 @@ import com.example.techquiz.viewmodel.QuizResultsViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
 import com.example.techquiz.viewmodel.UserViewModel
-import org.koin.android.ext.koin.androidApplication
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
@@ -22,5 +21,5 @@ val viewModelModule = module {
     viewModelOf(::TimerViewModel)
     viewModelOf(::UserViewModel)
 
-    viewModel { LoginViewModel(androidApplication(), get()) }
+    viewModel { params -> LoginViewModel(get(), params.get()) }
 }
