@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
@@ -15,6 +16,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -42,7 +45,7 @@ import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
-import com.example.techquiz.ui.dialogs.ExitDialog
+import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
@@ -133,12 +136,21 @@ fun QuestionScreen(
         )
     }
 
-    CodingQuizTheme {
-        LaunchedEffect(Unit) {
-            questionViewModel.fetchQuestions(category)
-        }
+    LaunchedEffect(Unit) {
+        questionViewModel.fetchQuestions(category)
+    }
+
+    Scaffold(
+        modifier = Modifier
+            .padding(12.dp),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             QuestionHeader(
@@ -156,11 +168,11 @@ fun QuestionScreen(
             Timer(timeLeft = timeLeft)
             NextQuestionButtonRow(
                 isQuestionLast = questionViewModel::isQuestionLast,
-            ) {
+            ) { isQuestionLast ->
                 timerViewModel.clear()
                 givenAnswerViewModel.addAnswer(question)
 
-                if (questionViewModel.isQuestionLast()) {
+                if (isQuestionLast) {
                     coroutineScope.launch {
                         givenAnswerViewModel.sendAnswers(
                             userUUID = userViewModel.userUuid,
@@ -244,7 +256,8 @@ private fun AnswersGrid(
         items(answers) {
             val isSelected = selectedAnswers.contains(it)
 
-            val color = if (isSelected) MaterialTheme.colorScheme.primary
+            val color =
+                if (isSelected) MaterialTheme.colorScheme.primary
                 else MaterialTheme.colorScheme.secondary
 
             PossibleAnswer(
@@ -297,21 +310,25 @@ private fun Timer(timeLeft: Long) {
 @Composable
 private fun NextQuestionButtonRow(
     isQuestionLast: () -> Boolean,
-    onClick: () -> Unit,
+    onClick: (Boolean) -> Unit,
 ) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.Center,
     ) {
-        FilledTonalButton(onClick = onClick) {
-            val textId = if (isQuestionLast()) R.string.question_finish
+        FilledTonalButton(
+            onClick = {
+                onClick(isQuestionLast())
+            },
+        ) {
+            val textId =
+                if (isQuestionLast()) R.string.question_finish
                 else R.string.question_next
 
             Text(text = stringResource(id = textId))
         }
     }
 }
-
 
 @Preview(showBackground = true, apiLevel = 33)
 @Composable

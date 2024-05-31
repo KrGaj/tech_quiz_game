@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -79,20 +81,25 @@ fun StatsScreen(
         )
     }
 
-    Column {
-        LaunchedEffect(Unit) {
-            statsViewModel.getMostAnsweredCategories(
-                token = userViewModel.token,
-                userUUID = userViewModel.userUuid,
-            )
-            statsViewModel.getCorrectAnswersCount(
-                token = userViewModel.token,
-                userUUID = userViewModel.userUuid,
-            )
-        }
+    LaunchedEffect(Unit) {
+        statsViewModel.getMostAnsweredCategories(
+            token = userViewModel.token,
+            userUUID = userViewModel.userUuid,
+        )
+        statsViewModel.getCorrectAnswersCount(
+            token = userViewModel.token,
+            userUUID = userViewModel.userUuid,
+        )
+    }
 
+    Scaffold(
+        modifier = Modifier.padding(12.dp),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             StatsLabel()

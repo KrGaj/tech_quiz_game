@@ -34,7 +34,7 @@ import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
-import com.example.techquiz.ui.dialogs.ExitDialog
+import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.findActivity
 import com.example.techquiz.util.getHttpFailureMessage
@@ -86,22 +86,22 @@ fun CategoriesScreen(
         )
     }
 
-    CodingQuizTheme {
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            }
+    LaunchedEffect(Unit) {
+        categoryViewModel.fetchCategories()
+    }
+
+    Scaffold(
+        modifier = Modifier.padding(12.dp),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier.padding(paddingValues),
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            Column(
-                modifier = Modifier.padding(it),
-                verticalArrangement = Arrangement.spacedBy(20.dp),
-            ) {
-                LaunchedEffect(Unit) {
-                    categoryViewModel.fetchCategories()
-                }
-                CategoriesLabel()
-                CategoryGrid(categories = categories, navigateToQuestionScreen)
-            }
+            CategoriesLabel()
+            CategoryGrid(categories = categories, navigateToQuestionScreen)
         }
     }
 }

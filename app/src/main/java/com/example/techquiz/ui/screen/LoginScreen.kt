@@ -22,7 +22,6 @@ import androidx.credentials.CredentialManager
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
-import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
@@ -75,29 +74,27 @@ fun LoginScreen(
         )
     }
 
-    CodingQuizTheme {
-        Scaffold(
-            snackbarHost = {
-                SnackbarHost(hostState = snackbarHostState)
-            }
-        ) { contentPadding ->
-            Column(
-                modifier = Modifier
-                    .padding(contentPadding)
-                    .fillMaxSize(),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center,
-            ) {
-                AuthButton {
-                    loginViewModel.startAuth {
-                        credentialManager.getCredential(context, it)
-                    }
+    Scaffold(
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        },
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            AuthButton {
+                loginViewModel.startAuth {
+                    credentialManager.getCredential(context, it)
                 }
+            }
 
-                LaunchedEffect(Unit) {
-                    loginViewModel.startAuth {
-                        credentialManager.getCredential(context, it)
-                    }
+            LaunchedEffect(Unit) {
+                loginViewModel.startAuth {
+                    credentialManager.getCredential(context, it)
                 }
             }
         }

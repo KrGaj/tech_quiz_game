@@ -55,21 +55,20 @@ fun QuizSummaryScreen(
         onBackPressed()
     }
 
-    CodingQuizTheme {
-        Column(
-            modifier = Modifier.padding(12.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-        ) {
-            with(quizResultsViewModel) {
-                Score(
-                    correctAnswers = correctAnswersCount,
-                    allAnswers = answersCount,
-                )
-                QuizResultsList(results = this.quizResults)
-            }
-
-            FinishButton(navigateToCategories)
+    Column(
+        modifier = Modifier
+            .padding(12.dp),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        with(quizResultsViewModel) {
+            Score(
+                correctAnswers = correctAnswersCount,
+                allAnswers = answersCount,
+            )
+            QuizResultsList(results = this.quizResults)
         }
+
+        FinishButton(navigateToCategories)
     }
 }
 
