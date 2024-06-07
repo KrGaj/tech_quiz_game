@@ -1,5 +1,7 @@
 package com.example.techquiz.viewmodel
 
+import android.content.Context
+import androidx.credentials.CredentialManager
 import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
@@ -37,9 +39,9 @@ class LoginViewModel(
         .build()
 
     suspend fun startAuth(
-        getCredential: suspend (GetCredentialRequest) -> GetCredentialResponse,
+        context: Context,
     ) {
-        val logInResult = startAuth(googleIdOptionLogIn, getCredential)
+        val logInResult = startAuth(context, googleIdOptionLogIn)
         var signInResult: Result<GoogleIdTokenCredential>? = null
 
         logInResult.fold(
@@ -47,7 +49,7 @@ class LoginViewModel(
                 _authResult.emit(Result.success(it))
             },
             onFailure = {
-                signInResult = startAuth(googleIdOptionSignIn, getCredential)
+                signInResult = startAuth(context, googleIdOptionSignIn)
             },
         )
 
@@ -62,15 +64,16 @@ class LoginViewModel(
     }
 
     private suspend fun startAuth(
+        context: Context,
         googleIdOption: GetGoogleIdOption,
-        getCredential: suspend (GetCredentialRequest) -> GetCredentialResponse,
     ): Result<GoogleIdTokenCredential> {
+        val credentialManager = CredentialManager.create(context)
         val request = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
             .build()
 
         return try {
-            val response = getCredential(request)
+            val response = credentialManager.getCredential(context, request)
 
             handleSignIn(response)
         } catch (e: Exception) {
