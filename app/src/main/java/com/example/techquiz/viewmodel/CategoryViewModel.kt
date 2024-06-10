@@ -15,6 +15,7 @@ class CategoryViewModel: ViewModel(), KoinScopeComponent {
     override val scope: Scope by lazy { createScope(this) }
 
     private val categoryRepository: CategoryRepository by inject()
+
     private val _categories = MutableStateFlow(Result.success(emptyList<Category>()))
     val categories get() = _categories.asStateFlow()
 

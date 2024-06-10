@@ -21,11 +21,13 @@ val httpClientModule = module {
                   urlBuilderBlock: UrlBuilderBlock,
                   additionalHttpClientConfig: AdditionalHttpClientConfig?,
         ) ->
+        val requestTimeout = 10.seconds.inWholeMilliseconds
+
         HttpClient(Android) {
             install(Resources)
             install(ContentNegotiation, ::configureContentNegotiation)
             install(HttpTimeout) {
-                requestTimeoutMillis = 10.seconds.inWholeMilliseconds
+                requestTimeoutMillis = requestTimeout
             }
 
             additionalHttpClientConfig?.invoke(this)

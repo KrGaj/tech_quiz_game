@@ -1,5 +1,5 @@
 [versions]
-agp = "8.4.1"
+agp = "8.4.2"
 androidx-material = "1.6.7"
 koin-android = "3.5.6"
 kotlinx-serialization-json = "1.7.0"
