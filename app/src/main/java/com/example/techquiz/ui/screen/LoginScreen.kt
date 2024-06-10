@@ -25,7 +25,6 @@ import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
 import com.example.techquiz.viewmodel.UserViewModel
-import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -66,7 +65,7 @@ fun LoginScreen(
                 navigateToCategories()
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )

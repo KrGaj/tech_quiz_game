@@ -9,11 +9,17 @@ import com.example.techquiz.data.repository.GivenAnswerRepository
 import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.koin.core.component.KoinScopeComponent
+import org.koin.core.component.createScope
+import org.koin.core.component.inject
+import org.koin.core.scope.Scope
 import java.util.UUID
 
-class GivenAnswerViewModel(
-    private val givenAnswerRepository: GivenAnswerRepository,
-) : ViewModel() {
+class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
+    override val scope: Scope by lazy { createScope(this) }
+
+    private val givenAnswerRepository: GivenAnswerRepository by inject()
+
     private val _selectedAnswers = MutableStateFlow(listOf<PossibleAnswer>())
     val selectedAnswers
         get() = _selectedAnswers.asStateFlow()
@@ -69,11 +75,17 @@ class GivenAnswerViewModel(
             answers.first().question.id
         }
     }
-}
 
-private fun mapQuizResultToGivenAnswer(
-    quizResult: QuizResult
-) = GivenAnswer(
-    question = quizResult.question,
-    correct = quizResult.isAnsweredCorrectly,
-)
+    private fun mapQuizResultToGivenAnswer(
+        quizResult: QuizResult
+    ) = GivenAnswer(
+        question = quizResult.question,
+        correct = quizResult.isAnsweredCorrectly,
+    )
+
+    override fun onCleared() {
+        super.onCleared()
+        givenAnswerRepository.closeHttpClient()
+        scope.close()
+    }
+}

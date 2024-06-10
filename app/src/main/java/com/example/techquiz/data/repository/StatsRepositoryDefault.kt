@@ -40,4 +40,8 @@ class StatsRepositoryDefault(
 
         return response.body()
     }
+
+    override fun closeHttpClient() {
+        httpClient.close()
+    }
 }

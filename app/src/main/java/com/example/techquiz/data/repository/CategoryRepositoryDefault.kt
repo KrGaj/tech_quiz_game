@@ -21,4 +21,8 @@ class CategoryRepositoryDefault(
 
         return categories
     }
+
+    override fun closeHttpClient() {
+        httpClient.close()
+    }
 }

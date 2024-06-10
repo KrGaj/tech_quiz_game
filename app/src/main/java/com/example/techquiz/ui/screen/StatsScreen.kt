@@ -31,7 +31,6 @@ import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.UserViewModel
-import io.ktor.client.plugins.ResponseException
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -63,7 +62,7 @@ fun StatsScreen(
                 categoryStats = it
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
@@ -75,7 +74,7 @@ fun StatsScreen(
                 correctAnswersStats = it
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )

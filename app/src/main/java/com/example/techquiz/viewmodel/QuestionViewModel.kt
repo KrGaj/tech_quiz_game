@@ -7,11 +7,17 @@ import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import org.koin.core.component.KoinScopeComponent
+import org.koin.core.component.createScope
+import org.koin.core.component.inject
+import org.koin.core.scope.Scope
 import kotlin.time.Duration.Companion.seconds
 
-class QuestionViewModel(
-    private val questionRepository: QuestionRepository,
-) : ViewModel() {
+class QuestionViewModel : ViewModel(), KoinScopeComponent {
+    override val scope: Scope by lazy { createScope(this) }
+
+    private val questionRepository: QuestionRepository by inject()
+
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
     private val _question = MutableStateFlow(
         value = Result.success(DEFAULT_QUESTION),
@@ -51,6 +57,12 @@ class QuestionViewModel(
             _question.value = Result.success(questionWithIndex.value)
             _questionNumber.value = questionWithIndex.index + 1
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        questionRepository.closeHttpClient()
+        scope.close()
     }
 
     companion object {

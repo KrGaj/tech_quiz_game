@@ -40,7 +40,6 @@ import com.example.techquiz.util.findActivity
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
-import io.ktor.client.plugins.ResponseException
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -65,7 +64,7 @@ fun CategoriesScreen(
         categoriesResult.fold(
             onSuccess = { categories = it },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? ResponseException)
+                val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )

@@ -15,4 +15,6 @@ interface StatsRepository {
         token: String?,
         userUUID: UUID?,
     ): CorrectAnswersStats
+
+    fun closeHttpClient()
 }

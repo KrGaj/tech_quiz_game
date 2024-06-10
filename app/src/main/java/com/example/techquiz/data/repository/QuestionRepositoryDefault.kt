@@ -47,4 +47,8 @@ class QuestionRepositoryDefault(
 
         return questions.shuffled()
     }
+
+    override fun closeHttpClient() {
+        httpClient.close()
+    }
 }

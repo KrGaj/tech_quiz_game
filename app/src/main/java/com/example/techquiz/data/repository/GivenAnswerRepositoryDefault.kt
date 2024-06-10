@@ -38,4 +38,8 @@ class GivenAnswerRepositoryDefault(
             setBody(answersDTO)
         }
     }
+
+    override fun closeHttpClient() {
+        httpClient.close()
+    }
 }

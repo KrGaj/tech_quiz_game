@@ -15,11 +15,18 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import org.koin.core.component.KoinScopeComponent
+import org.koin.core.component.createScope
+import org.koin.core.component.inject
+import org.koin.core.scope.Scope
 
 class LoginViewModel(
-    private val userRepository: UserRepository,
     webClientId: String,
-) : ViewModel() {
+) : ViewModel(), KoinScopeComponent {
+    override val scope: Scope by lazy { createScope(this) }
+
+    private val userRepository: UserRepository by inject()
+
     private val _authResult = MutableSharedFlow<Result<GoogleIdTokenCredential>>()
     val authResult
         get() = _authResult.asSharedFlow()
@@ -104,4 +111,10 @@ class LoginViewModel(
     ): Unit = wrapAsResult {
         userRepository.getUser(token)
     }.let { _user.emit(it) }
+
+    override fun onCleared() {
+        super.onCleared()
+        userRepository.closeHttpClient()
+        scope.close()
+    }
 }

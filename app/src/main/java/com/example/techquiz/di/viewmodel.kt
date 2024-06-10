@@ -21,5 +21,5 @@ val viewModelModule = module {
     viewModelOf(::TimerViewModel)
     viewModelOf(::UserViewModel)
 
-    viewModel { params -> LoginViewModel(get(), params.get()) }
+    viewModel { params -> LoginViewModel(params.get()) }
 }

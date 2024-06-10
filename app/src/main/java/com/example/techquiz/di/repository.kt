@@ -10,6 +10,11 @@ import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
 import com.example.techquiz.data.repository.UserRepository
 import com.example.techquiz.data.repository.UserRepositoryDefault
+import com.example.techquiz.viewmodel.CategoryViewModel
+import com.example.techquiz.viewmodel.GivenAnswerViewModel
+import com.example.techquiz.viewmodel.LoginViewModel
+import com.example.techquiz.viewmodel.QuestionViewModel
+import com.example.techquiz.viewmodel.StatsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
@@ -30,34 +35,44 @@ val repositoryModule = module {
         host = ""
     }
 
-    single<CategoryRepository> {
-        CategoryRepositoryDefault(
-            getHttpClient(questionApiUrlBuilder, null)
-        )
+    scope<CategoryViewModel> {
+        scoped<CategoryRepository> {
+            CategoryRepositoryDefault(
+                getHttpClient(questionApiUrlBuilder, null)
+            )
+        }
     }
 
-    single<QuestionRepository> {
-        QuestionRepositoryDefault(
-            getHttpClient(questionApiUrlBuilder, null)
-        )
+    scope<QuestionViewModel> {
+        scoped<QuestionRepository> {
+            QuestionRepositoryDefault(
+                getHttpClient(questionApiUrlBuilder, null)
+            )
+        }
     }
 
-    single<GivenAnswerRepository> {
-        GivenAnswerRepositoryDefault(
-            getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
-        )
+    scope<GivenAnswerViewModel> {
+        scoped<GivenAnswerRepository> {
+            GivenAnswerRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
     }
 
-    single<StatsRepository> {
-        StatsRepositoryDefault(
-            getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
-        )
+    scope<StatsViewModel> {
+        scoped<StatsRepository> {
+            StatsRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
     }
 
-    single<UserRepository> {
-        UserRepositoryDefault(
-            getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
-        )
+    scope<LoginViewModel> {
+        scoped<UserRepository> {
+            UserRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
     }
 }
 
