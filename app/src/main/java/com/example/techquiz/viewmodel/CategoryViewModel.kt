@@ -22,13 +22,13 @@ class CategoryViewModel: ViewModel(), KoinScopeComponent {
         categoryRepository.getAllCategories()
     }.let { _categories.value = it }
 
-    companion object {
-        const val COLUMNS_NUM = 2
-    }
-
     override fun onCleared() {
         super.onCleared()
         categoryRepository.closeHttpClient()
         scope.close()
+    }
+
+    companion object {
+        const val COLUMNS_NUM = 2
     }
 }
