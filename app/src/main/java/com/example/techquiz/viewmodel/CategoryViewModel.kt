@@ -28,8 +28,4 @@ class CategoryViewModel: ViewModel(), KoinScopeComponent {
         categoryRepository.closeHttpClient()
         scope.close()
     }
-
-    companion object {
-        const val COLUMNS_NUM = 2
-    }
 }

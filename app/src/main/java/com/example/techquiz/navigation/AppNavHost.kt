@@ -109,9 +109,11 @@ private fun configureQuestionScreenRoute(
 ) {
     navGraphBuilder.composable(
         route = "${Screen.Question.route}/{${Screen.Question.navArg}}",
-        arguments = listOf(navArgument(Screen.Question.navArg) {
-            type = CategoryNavType
-        }),
+        arguments = listOf(
+            navArgument(Screen.Question.navArg) {
+                type = CategoryNavType
+            },
+        ),
     ) { backStackEntry ->
         val snackbarHostState = remember {
             SnackbarHostState()
@@ -145,9 +147,11 @@ private fun configureQuizResultsScreen(
 ) {
     navGraphBuilder.composable(
         route = "${Screen.QuizSummary.route}/{${Screen.QuizSummary.navArg}}",
-        arguments = listOf(navArgument(Screen.QuizSummary.navArg) {
-            type = QuizSummaryNavType
-        }),
+        arguments = listOf(
+            navArgument(Screen.QuizSummary.navArg) {
+                type = QuizSummaryNavType
+            },
+        ),
     ) { backStackEntry ->
         val results = deserializeQuizResults(backStackEntry)
 

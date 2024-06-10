@@ -42,6 +42,8 @@ import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.koinViewModel
 
+private const val COLUMNS_NUM = 2
+
 @Composable
 fun CategoriesScreen(
     categoryViewModel: CategoryViewModel = koinViewModel(),
@@ -118,7 +120,7 @@ private fun CategoryGrid(
     onItemClicked: (Category) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
-        columns = GridCells.Fixed(count = CategoryViewModel.COLUMNS_NUM),
+        columns = GridCells.Fixed(count = COLUMNS_NUM),
     ) {
         items(categories) { item ->
             Category(
