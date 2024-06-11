@@ -10,6 +10,7 @@ import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
+import androidx.navigation.NavOptionsBuilder
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
@@ -72,11 +73,7 @@ private fun configureLoginScreenRoute(
             navController.navigate(
                 route = Screen.Categories.route,
             ) {
-                popUpTo(
-                    Screen.Login.route,
-                ) {
-                    inclusive = true
-                }
+                popUpToInclusive(Screen.Login)
             }
         }
     }
@@ -93,15 +90,26 @@ private fun configureCategoriesScreenRoute(
             navController.navigate(
                 route = "${Screen.Question.route}/${encodeCategory(it)}",
             ) {
-                popUpTo(
-                    Screen.Categories.route,
-                ) {
-                    inclusive = true
-                }
+                popUpToInclusive(Screen.Categories)
             }
         }
     }
 }
+
+private fun encodeCategory(
+    category: Category,
+): String = Uri.encode(Json.encodeToString(category))
+
+private fun deserializeCategory(
+    backStackEntry: NavBackStackEntry,
+): Category? =
+    backStackEntry.arguments?.let {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            it.getParcelable(Screen.Question.navArg, Category::class.java)
+        } else {
+            it.getParcelable(Screen.Question.navArg)
+        }
+    }
 
 private fun configureQuestionScreenRoute(
     navGraphBuilder: NavGraphBuilder,
@@ -124,9 +132,7 @@ private fun configureQuestionScreenRoute(
                 category = category,
                 navigateToCategories = {
                     navController.navigate(Screen.Categories.route) {
-                        popUpTo(Screen.Question.route) {
-                            inclusive = true
-                        }
+                        popUpToInclusive(Screen.Question)
                     }
                 },
                 navigateToResults = { navigateToResultsScreen(it, navController) },
@@ -140,6 +146,22 @@ private fun configureQuestionScreenRoute(
         }
     }
 }
+
+private fun navigateToResultsScreen(
+    results: List<QuizResult>,
+    navController: NavController,
+) {
+    val resultsJson = encodeQuizResults(results)
+    navController.navigate(
+        route = "${Screen.QuizSummary.route}/$resultsJson"
+    ) {
+        popUpToInclusive(Screen.Question)
+    }
+}
+
+private fun encodeQuizResults(
+    results: List<QuizResult>,
+): String = Uri.encode(Json.encodeToString(QuizSummary(results)))
 
 private fun configureQuizResultsScreen(
     navGraphBuilder: NavGraphBuilder,
@@ -163,57 +185,6 @@ private fun configureQuizResultsScreen(
     }
 }
 
-private fun configureStatsScreen(
-    navGraphBuilder: NavGraphBuilder,
-) {
-    navGraphBuilder.composable(
-        route = Screen.Statistics.route,
-    ) {
-        StatsScreen()
-    }
-}
-
-private fun navigateToResultsScreen(
-    results: List<QuizResult>,
-    navController: NavController,
-) {
-    val resultsJson = encodeQuizResults(results)
-    navController.navigate(
-        route = "${Screen.QuizSummary.route}/$resultsJson"
-    ) {
-        popUpTo(Screen.Question.route) {
-            inclusive = true
-        }
-    }
-}
-
-private fun backToCategoriesInclusive(navController: NavController) {
-    navController.navigate(Screen.Categories.route) {
-        popUpTo(Screen.QuizSummary.route) {
-            inclusive = true
-        }
-    }
-}
-
-private fun encodeCategory(
-    category: Category,
-): String = Uri.encode(Json.encodeToString(category))
-
-private fun deserializeCategory(
-    backStackEntry: NavBackStackEntry,
-): Category? =
-    backStackEntry.arguments?.let {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            it.getParcelable(Screen.Question.navArg, Category::class.java)
-        } else {
-            it.getParcelable(Screen.Question.navArg)
-        }
-    }
-
-private fun encodeQuizResults(
-    results: List<QuizResult>,
-): String = Uri.encode(Json.encodeToString(QuizSummary(results)))
-
 private fun deserializeQuizResults(
     backStackEntry: NavBackStackEntry,
 ): List<QuizResult> =
@@ -224,3 +195,25 @@ private fun deserializeQuizResults(
             it.getParcelable(Screen.QuizSummary.navArg)
         }
     }?.results ?: emptyList()
+
+private fun backToCategoriesInclusive(navController: NavController) {
+    navController.navigate(Screen.Categories.route) {
+        popUpToInclusive(Screen.QuizSummary)
+    }
+}
+
+private fun NavOptionsBuilder.popUpToInclusive(
+    screen: Screen,
+) = popUpTo(screen.route) {
+    inclusive = true
+}
+
+private fun configureStatsScreen(
+    navGraphBuilder: NavGraphBuilder,
+) {
+    navGraphBuilder.composable(
+        route = Screen.Statistics.route,
+    ) {
+        StatsScreen()
+    }
+}
