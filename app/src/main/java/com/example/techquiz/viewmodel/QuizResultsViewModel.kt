@@ -6,6 +6,8 @@ import com.example.techquiz.data.domain.QuizResult
 class QuizResultsViewModel(
     val quizResults: List<QuizResult>,
 ) : ViewModel() {
-    val correctAnswersCount get() = quizResults.count { it.isAnswerCorrect }
-    val answersCount get() = quizResults.count()
+    val correctAnswersCount
+        get() = quizResults.count { it.isAnsweredCorrectly }
+    val answersCount
+        get() = quizResults.count()
 }

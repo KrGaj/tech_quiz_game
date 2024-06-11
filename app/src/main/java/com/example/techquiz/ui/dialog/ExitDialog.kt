@@ -1,4 +1,4 @@
-package com.example.techquiz.ui.dialogs
+package com.example.techquiz.ui.dialog
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,22 +34,31 @@ fun ExitDialog(
             ) {
                 Text(text = message)
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End,
-                ) {
-                    TextButton(onClick = onDismissRequest) {
-                        Text(text = stringResource(id = android.R.string.cancel))
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(onClick = onConfirmation) {
-                        Text(text = stringResource(id = android.R.string.ok))
-                    }
-                }
+                DialogButtons(onDismissRequest, onConfirmation)
             }
         }
     }
 }
+
+@Composable
+private fun DialogButtons(
+    onDismissRequest: () -> Unit,
+    onConfirmation: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+    ) {
+        TextButton(onClick = onDismissRequest) {
+            Text(text = stringResource(id = android.R.string.cancel))
+        }
+        Spacer(modifier = Modifier.width(8.dp))
+        Button(onClick = onConfirmation) {
+            Text(text = stringResource(id = android.R.string.ok))
+        }
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable

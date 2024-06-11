@@ -12,10 +12,19 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme.typography
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,25 +34,71 @@ import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
+import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.findActivity
+import com.example.techquiz.util.getHttpFailureMessage
+import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
 import org.koin.androidx.compose.koinViewModel
+
+private const val COLUMNS_NUM = 2
 
 @Composable
 fun CategoriesScreen(
     categoryViewModel: CategoryViewModel = koinViewModel(),
-    onBackPressed: () -> Unit,
     navigateToQuestionScreen: (Category) -> Unit,
 ) {
-    val categories by categoryViewModel.categories.collectAsStateWithLifecycle()
-
-    BackHandler {
-        onBackPressed()
+    val categoriesResult by categoryViewModel.categories.collectAsStateWithLifecycle()
+    var categories by remember {
+        mutableStateOf(emptyList<Category>())
+    }
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+    val showExitAppDialog = rememberSaveable {
+        mutableStateOf(false)
     }
 
-    CodingQuizTheme {
+    val context = LocalContext.current
+
+    LaunchedEffect(categoriesResult) {
+        categoriesResult.fold(
+            onSuccess = { categories = it },
+            onFailure = {
+                val messageRes = getHttpFailureMessage(it as? Exception)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
+            },
+        )
+    }
+
+    BackHandler {
+        showExitAppDialog.toggleValue()
+    }
+
+    if (showExitAppDialog.value) {
+        ExitDialog(
+            message = stringResource(id = R.string.app_exit_message),
+            onDismissRequest = { showExitAppDialog.toggleValue() },
+            onConfirmation = {
+                showExitAppDialog.toggleValue()
+                context.findActivity().finish()
+            }
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        categoryViewModel.fetchCategories()
+    }
+
+    Scaffold(
+        modifier = Modifier.padding(12.dp),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
+        }
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             CategoriesLabel()
@@ -65,7 +120,7 @@ private fun CategoryGrid(
     onItemClicked: (Category) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
-        columns = GridCells.Fixed(count = CategoryViewModel.COLUMNS_NUM),
+        columns = GridCells.Fixed(count = COLUMNS_NUM),
     ) {
         items(categories) { item ->
             Category(
@@ -97,7 +152,7 @@ private fun Category(
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategory() {
     CodingQuizTheme {
@@ -107,17 +162,17 @@ private fun PreviewCategory() {
     }
 }
 
-@Preview
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategoryGrid() {
     CodingQuizTheme {
-        CategoryGrid(
-            listOf(
-                Category("Category 1"),
-                Category("Category 2"),
-                Category("Category 3"),
-                Category("Category 4"),
-            )
-        ) {}
+        CategoryGrid(CATEGORIES) {}
     }
 }
+
+private val CATEGORIES = listOf(
+    Category("Category 1"),
+    Category("Category 2"),
+    Category("Category 3"),
+    Category("Category 4"),
+)

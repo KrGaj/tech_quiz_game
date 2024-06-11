@@ -8,11 +8,18 @@ import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault
+import com.example.techquiz.data.repository.UserRepository
+import com.example.techquiz.data.repository.UserRepositoryDefault
+import com.example.techquiz.viewmodel.CategoryViewModel
+import com.example.techquiz.viewmodel.GivenAnswerViewModel
+import com.example.techquiz.viewmodel.LoginViewModel
+import com.example.techquiz.viewmodel.QuestionViewModel
+import com.example.techquiz.viewmodel.StatsViewModel
+import io.ktor.client.HttpClient
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
-import org.koin.core.module.dsl.singleOf
 import org.koin.core.parameter.parametersOf
-import org.koin.dsl.bind
+import org.koin.core.scope.Scope
 import org.koin.dsl.module
 
 val repositoryModule = module {
@@ -28,29 +35,50 @@ val repositoryModule = module {
         host = ""
     }
 
-    singleOf(::CategoryRepositoryDefault) bind CategoryRepository::class
-
-    single<QuestionRepository> {
-        QuestionRepositoryDefault(
-            get {
-                parametersOf(questionApiUrlBuilder, null)
-            }
-        )
+    scope<CategoryViewModel> {
+        scoped<CategoryRepository> {
+            CategoryRepositoryDefault(
+                getHttpClient(questionApiUrlBuilder, null)
+            )
+        }
     }
 
-    single<GivenAnswerRepository> {
-        GivenAnswerRepositoryDefault(
-            get {
-                parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
-            }
-        )
+    scope<QuestionViewModel> {
+        scoped<QuestionRepository> {
+            QuestionRepositoryDefault(
+                getHttpClient(questionApiUrlBuilder, null)
+            )
+        }
     }
 
-    single<StatsRepository> {
-        StatsRepositoryDefault(
-            get {
-                parametersOf(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
-            }
-        )
+    scope<GivenAnswerViewModel> {
+        scoped<GivenAnswerRepository> {
+            GivenAnswerRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
     }
+
+    scope<StatsViewModel> {
+        scoped<StatsRepository> {
+            StatsRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
+    }
+
+    scope<LoginViewModel> {
+        scoped<UserRepository> {
+            UserRepositoryDefault(
+                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+            )
+        }
+    }
+}
+
+private fun Scope.getHttpClient(
+    urlBuilder: UrlBuilderBlock,
+    additionalConfig: AdditionalHttpClientConfig?,
+): HttpClient = get {
+    parametersOf(urlBuilder, additionalConfig)
 }

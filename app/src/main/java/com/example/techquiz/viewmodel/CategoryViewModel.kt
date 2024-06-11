@@ -1,30 +1,31 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.repository.CategoryRepository
+import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import org.koin.core.component.KoinScopeComponent
+import org.koin.core.component.createScope
+import org.koin.core.component.inject
+import org.koin.core.scope.Scope
 
-class CategoryViewModel(
-    private val categoryRepository: CategoryRepository,
-) : ViewModel() {
-    private val _categories = MutableStateFlow(emptyList<Category>())
+class CategoryViewModel: ViewModel(), KoinScopeComponent {
+    override val scope: Scope by lazy { createScope(this) }
+
+    private val categoryRepository: CategoryRepository by inject()
+
+    private val _categories = MutableStateFlow(Result.success(emptyList<Category>()))
     val categories get() = _categories.asStateFlow()
 
-    init {
-        getCategories()
-    }
+    suspend fun fetchCategories() = wrapAsResult {
+        categoryRepository.getAllCategories()
+    }.let { _categories.value = it }
 
-    fun getCategories() {
-        viewModelScope.launch {
-            _categories.value = categoryRepository.getAllCategories()
-        }
-    }
-
-    companion object {
-        const val COLUMNS_NUM = 2
+    override fun onCleared() {
+        super.onCleared()
+        categoryRepository.closeHttpClient()
+        scope.close()
     }
 }

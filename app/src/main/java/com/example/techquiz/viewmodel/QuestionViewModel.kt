@@ -1,44 +1,55 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.repository.QuestionRepository
+import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.launch
+import org.koin.core.component.KoinScopeComponent
+import org.koin.core.component.createScope
+import org.koin.core.component.inject
+import org.koin.core.scope.Scope
 import kotlin.time.Duration.Companion.seconds
 
-class QuestionViewModel(
-    private val questionRepository: QuestionRepository,
-) : ViewModel() {
+class QuestionViewModel : ViewModel(), KoinScopeComponent {
+    override val scope: Scope by lazy { createScope(this) }
+
+    private val questionRepository: QuestionRepository by inject()
+
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
     private val _question = MutableStateFlow(
         value = Result.success(DEFAULT_QUESTION),
     )
-    val question get() = _question.asStateFlow()
+    val question
+        get() = _question.asStateFlow()
 
     private val _questionNumber = MutableStateFlow(0)
-    val questionNumber = _questionNumber.asStateFlow()
+    val questionNumber
+        get() = _questionNumber.asStateFlow()
 
-    fun fetchQuestions(category: Category) {
-        viewModelScope.launch {
-            try {
-                val questions = questionRepository.getRandomQuestions(
-                    quantity = QUESTION_COUNT,
-                    category = category,
-                )
-
-                questionIterator = questions.iterator().withIndex()
-                nextQuestion()
-            } catch (e: Exception) {
-                _question.value = Result.failure(e)
-            }
+    suspend fun fetchQuestions(category: Category) {
+        val result = wrapAsResult {
+            questionRepository.getRandomQuestions(
+                quantity = QUESTION_COUNT,
+                category = category,
+            )
         }
+
+        result.fold(
+            onSuccess = {
+                questionIterator = it.iterator().withIndex()
+                nextQuestion()
+            },
+            onFailure = {
+                _question.value = Result.failure(it)
+            }
+        )
     }
 
-    fun isQuestionLast() = !questionIterator.hasNext()
+    fun isQuestionLast() =
+        ::questionIterator.isInitialized && !questionIterator.hasNext()
 
     fun nextQuestion() {
         if (!isQuestionLast()) {
@@ -46,6 +57,12 @@ class QuestionViewModel(
             _question.value = Result.success(questionWithIndex.value)
             _questionNumber.value = questionWithIndex.index + 1
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        questionRepository.closeHttpClient()
+        scope.close()
     }
 
     companion object {

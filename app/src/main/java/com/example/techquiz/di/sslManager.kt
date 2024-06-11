@@ -12,11 +12,14 @@ val sslManagerModule = module {
         val sslManagerConfig: AdditionalHttpClientConfig = { config ->
             config.engine {
                 sslManager = {
-                    val keyStoreFile = androidContext().assets.open("keystore/keystore.bks")
+                    val keyStoreFile = androidContext().assets
+                        .open("keystore/keystore.bks")
                     val keyStorePassword = "DemoApka".toCharArray()
 
-                    it.sslSocketFactory = getSSLContext(keyStoreFile, keyStorePassword)
-                        ?.socketFactory
+                    it.sslSocketFactory = getSSLContext(
+                        keyStoreFile,
+                        keyStorePassword,
+                    )?.socketFactory
 
                     keyStoreFile.close()
                 }
@@ -32,7 +35,7 @@ private fun getSSLContext(
     keyStorePassword: CharArray,
 ): SSLContext? =
     SSLContext.getInstance(
-        "TLS",
+        "TLSv1.3",
     ).also {
         it.init(
             null,
@@ -49,7 +52,7 @@ private fun getTrustManagerFactory(
     keyStorePassword: CharArray,
 ): TrustManagerFactory? =
     TrustManagerFactory.getInstance(
-        TrustManagerFactory.getDefaultAlgorithm()
+        TrustManagerFactory.getDefaultAlgorithm(),
     ).also {
         it.init(
             getKeyStore(

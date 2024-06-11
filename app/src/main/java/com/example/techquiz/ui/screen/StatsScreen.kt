@@ -5,50 +5,104 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
-import com.example.techquiz.data.domain.AnsweredQuestionsCountStats
-import com.example.techquiz.data.domain.CategoryStats
-import com.example.techquiz.data.domain.CorrectAnswersStats
+import com.example.techquiz.data.dto.response.stats.CategoryStats
+import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import com.example.techquiz.util.getHttpFailureMessage
+import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
+import com.example.techquiz.viewmodel.UserViewModel
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StatsScreen(
-    statsViewModel: StatsViewModel = koinViewModel()
+    statsViewModel: StatsViewModel = koinViewModel(),
+    userViewModel: UserViewModel = koinActivityViewModel(),
 ) {
-    val categoryStats by statsViewModel.categoryStats
+    val snackbarHostState = remember {
+        SnackbarHostState()
+    }
+    val categoryStatsResult by statsViewModel.categoryStats
         .collectAsStateWithLifecycle()
-    val answeredQuestionsStats by statsViewModel.answeredQuestionsCount
-        .collectAsStateWithLifecycle()
-    val correctAnswersStats by statsViewModel.correctAnswersCount
+    val correctAnswersStatsResult by statsViewModel.correctAnswersCount
         .collectAsStateWithLifecycle()
 
-    Column {
-        LaunchedEffect(Unit) {
-            statsViewModel.getMostAnsweredCategories()
-            statsViewModel.getAnsweredQuestionsCount()
-            statsViewModel.getCorrectAnswersCount()
+    var categoryStats by remember {
+        mutableStateOf(emptyList<CategoryStats>())
+    }
+
+    var correctAnswersStats by remember {
+        mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
+    }
+
+    val context = LocalContext.current
+
+    LaunchedEffect(categoryStatsResult) {
+        categoryStatsResult.fold(
+            onSuccess = {
+                categoryStats = it
+            },
+            onFailure = {
+                val messageRes = getHttpFailureMessage(it as? Exception)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
+            },
+        )
+    }
+
+    LaunchedEffect(correctAnswersStatsResult) {
+        correctAnswersStatsResult.fold(
+            onSuccess = {
+                correctAnswersStats = it
+            },
+            onFailure = {
+                val messageRes = getHttpFailureMessage(it as? Exception)
+                snackbarHostState.showSnackbar(context.getString(messageRes))
+            },
+        )
+    }
+
+    LaunchedEffect(Unit) {
+        statsViewModel.getMostAnsweredCategories(
+            token = userViewModel.token,
+            userUUID = userViewModel.userUuid,
+        )
+        statsViewModel.getCorrectAnswersCount(
+            token = userViewModel.token,
+            userUUID = userViewModel.userUuid,
+        )
+    }
+
+    Scaffold(
+        modifier = Modifier.padding(12.dp),
+        snackbarHost = {
+            SnackbarHost(hostState = snackbarHostState)
         }
-
+    ) { paddingValues ->
         Column(
-            modifier = Modifier.padding(12.dp),
+            modifier = Modifier.padding(paddingValues),
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             StatsLabel()
             CategoryStats(statsList = categoryStats)
-            AnsweredQuestionsStats(stats = answeredQuestionsStats)
             CorrectAnswersStats(stats = correctAnswersStats)
         }
     }
@@ -97,35 +151,6 @@ private fun CategoryStatsRow(stats: CategoryStats) {
 }
 
 @Composable
-private fun AnsweredQuestionsStats(stats: AnsweredQuestionsCountStats) {
-    Column {
-        AnsweredQuestionsLabel()
-        AnsweredQuestionsRow(stats = stats)
-    }
-}
-
-@Composable
-private fun AnsweredQuestionsLabel() {
-    HeaderTextMedium(
-        text = stringResource(id = R.string.answered_questions_header),
-    )
-}
-
-@Composable
-private fun AnsweredQuestionsRow(stats: AnsweredQuestionsCountStats) {
-    TwoTextsRow(
-        leftText = stringResource(
-            id = R.string.answered_questions_msg,
-        ),
-        rightText = stringResource(
-            id = R.string.answered_questions_count,
-            stats.questionsAnswered,
-            stats.allQuestions,
-        ),
-    )
-}
-
-@Composable
 private fun CorrectAnswersStats(stats: CorrectAnswersStats) {
     Column {
         CorrectAnswersStatsLabel()
@@ -140,7 +165,7 @@ private fun CorrectAnswersStatsLabel() {
 
 @Composable
 private fun CorrectAnswersStatsRow(stats: CorrectAnswersStats) {
-    val percentage = if (stats.allAnswers != 0)
+    val percentage = if (stats.allAnswers != 0L)
             (stats.correctAnswers.toDouble()/stats.allAnswers) * 100
     else 0.0
 
@@ -155,7 +180,7 @@ private fun CorrectAnswersStatsRow(stats: CorrectAnswersStats) {
     )
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCategoryStats() {
     CodingQuizTheme {
@@ -163,15 +188,7 @@ private fun PreviewCategoryStats() {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-private fun PreviewAnsweredQuestionsStats() {
-    CodingQuizTheme {
-        AnsweredQuestionsStats(stats = answeredQuestionsStats)
-    }
-}
-
-@Preview(showBackground = true)
+@Preview(showBackground = true, apiLevel = 33)
 @Composable
 private fun PreviewCorrectAnswersStats() {
     CodingQuizTheme {
@@ -193,7 +210,5 @@ private val categoryStats = listOf(
         37,
     ),
 )
-
-private val answeredQuestionsStats = AnsweredQuestionsCountStats(15, 20)
 
 private val correctAnswersStats = CorrectAnswersStats(20, 25)
