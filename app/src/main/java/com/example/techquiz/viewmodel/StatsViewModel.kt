@@ -5,8 +5,8 @@ import com.example.techquiz.data.dto.response.stats.CategoryStats
 import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.util.wrapAsResult
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
 import org.koin.core.component.inject
@@ -18,36 +18,32 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
 
     private val statsRepository: StatsRepository by inject()
 
-    private val _categoryStats = MutableStateFlow(Result.success(emptyList<CategoryStats>()))
-    val categoryStats get() = _categoryStats.asStateFlow()
+    private val _categoryStats = MutableSharedFlow<Result<List<CategoryStats>>>()
+    val categoryStats get() = _categoryStats.asSharedFlow()
 
-    private val _answersCount = MutableStateFlow(Result.success(DEFAULT_CORRECT_STATS))
-    val correctAnswersCount get() = _answersCount.asStateFlow()
+    private val _answersCount = MutableSharedFlow<Result<CorrectAnswersStats>>()
+    val correctAnswersCount get() = _answersCount.asSharedFlow()
 
     suspend fun getMostAnsweredCategories(
         token: String?,
         userUUID: UUID?,
-    ) {
-        _categoryStats.value = wrapAsResult {
-            statsRepository.getMostAnsweredCategories(
-                token = token,
-                userUUID = userUUID,
-                count = CATEGORIES_COUNT,
-            )
-        }
-    }
+    ) = wrapAsResult {
+        statsRepository.getMostAnsweredCategories(
+            token = token,
+            userUUID = userUUID,
+            count = CATEGORIES_COUNT,
+        )
+    }.also { _categoryStats.emit(it) }
 
     suspend fun getCorrectAnswersCount(
         token: String?,
         userUUID: UUID?,
-    ) {
-        _answersCount.value = wrapAsResult {
-            statsRepository.getCorrectAnswersCount(
-                token = token,
-                userUUID = userUUID,
-            )
-        }
-    }
+    ) = wrapAsResult {
+        statsRepository.getCorrectAnswersCount(
+            token = token,
+            userUUID = userUUID,
+        )
+    }.also { _answersCount.emit(it) }
 
     override fun onCleared() {
         super.onCleared()
@@ -56,7 +52,7 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
     }
 
     companion object {
-        private const val CATEGORIES_COUNT = 3
+        const val CATEGORIES_COUNT = 3
 
         val DEFAULT_CORRECT_STATS = CorrectAnswersStats(
             correctAnswers = 0,

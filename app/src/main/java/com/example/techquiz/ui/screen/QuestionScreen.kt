@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
@@ -44,6 +43,7 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.common.HeaderTextLarge
+import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
@@ -72,14 +72,20 @@ fun QuestionScreen(
     val snackbarHostState = remember {
         SnackbarHostState()
     }
-    val questionResult by questionViewModel.question.collectAsStateWithLifecycle()
-    val answerAddResult by givenAnswerViewModel.answerAddResult.collectAsStateWithLifecycle()
+    val questionResult by questionViewModel.question
+        .collectAsStateWithLifecycle()
+    val answerAddResult by givenAnswerViewModel.answerAddResult
+        .collectAsStateWithLifecycle()
+    val questionNumber by questionViewModel.questionNumber
+        .collectAsStateWithLifecycle()
+    val selectedAnswers by givenAnswerViewModel.selectedAnswers
+        .collectAsStateWithLifecycle()
+    val timeLeft by timerViewModel.timeLeft
+        .collectAsStateWithLifecycle()
+
     var question by remember {
         mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
     }
-    val questionNumber by questionViewModel.questionNumber.collectAsStateWithLifecycle()
-    val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
-    val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
     val showExitDialog = rememberSaveable { mutableStateOf(false) }
 
@@ -198,24 +204,11 @@ private fun QuestionHeader(
     questionNumber: Int,
     multipleCorrectAnswers: Boolean,
 ) {
-    val headerText = buildString {
-        append(
-            stringResource(
-                id = R.string.question_header,
-                categoryName,
-                questionNumber,
-            )
-        )
-
-        if (multipleCorrectAnswers) {
-            append(" ")
-            append(
-                stringResource(
-                    id = R.string.question_header_multiple_choice,
-                )
-            )
-        }
-    }
+    val headerText = buildHeaderTextString(
+        categoryName,
+        questionNumber,
+        multipleCorrectAnswers,
+    )
 
     HeaderTextLarge(
         text = headerText,
@@ -223,7 +216,33 @@ private fun QuestionHeader(
 }
 
 @Composable
-private fun QuestionTextCard(question: Question) {
+private fun buildHeaderTextString(
+    categoryName: String,
+    questionNumber: Int,
+    multipleCorrectAnswers: Boolean
+) = buildString {
+    append(
+        stringResource(
+            id = R.string.question_header,
+            categoryName,
+            questionNumber,
+        )
+    )
+
+    if (multipleCorrectAnswers) {
+        append(" ")
+        append(
+            stringResource(
+                id = R.string.question_header_multiple_choice,
+            )
+        )
+    }
+}
+
+@Composable
+private fun QuestionTextCard(
+    question: Question,
+) {
     Card(
         modifier = Modifier
             .padding(8.dp)
@@ -275,9 +294,8 @@ private fun PossibleAnswer(
     color: Color,
     onClick: () -> Unit,
 ) {
-    FilledTonalButton(
+    ShapedFilledTonalButton(
         modifier = Modifier.aspectRatio(1.5f),
-        shape = RoundedCornerShape(12.dp),
         colors = ButtonDefaults.buttonColors(color),
         onClick = onClick,
     ) {

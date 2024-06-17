@@ -18,12 +18,15 @@ import androidx.compose.ui.unit.dp
 
 @Composable
 fun TwoTextsRow(
+    modifier: Modifier = Modifier,
     leftText: String,
     rightText: String,
 ) {
     Card(
         modifier = Modifier
-            .fillMaxWidth(),
+            .then(modifier)
+            .fillMaxWidth()
+        ,
     ) {
         Row(
             modifier = Modifier

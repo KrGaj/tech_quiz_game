@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.repository.CategoryRepository
 import com.example.techquiz.util.wrapAsResult
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
 import org.koin.core.component.inject
@@ -16,12 +16,12 @@ class CategoryViewModel: ViewModel(), KoinScopeComponent {
 
     private val categoryRepository: CategoryRepository by inject()
 
-    private val _categories = MutableStateFlow(Result.success(emptyList<Category>()))
-    val categories get() = _categories.asStateFlow()
+    private val _categories = MutableSharedFlow<Result<List<Category>>>()
+    val categories get() = _categories.asSharedFlow()
 
     suspend fun fetchCategories() = wrapAsResult {
         categoryRepository.getAllCategories()
-    }.let { _categories.value = it }
+    }.let { _categories.emit(it) }
 
     override fun onCleared() {
         super.onCleared()
