@@ -38,7 +38,10 @@ val repositoryModule = module {
     scope<CategoryViewModel> {
         scoped<CategoryRepository> {
             CategoryRepositoryDefault(
-                getHttpClient(questionApiUrlBuilder, null)
+                getHttpClient(
+                    urlBuilder = questionApiUrlBuilder,
+                    additionalConfig = null,
+                )
             )
         }
     }
@@ -46,7 +49,10 @@ val repositoryModule = module {
     scope<QuestionViewModel> {
         scoped<QuestionRepository> {
             QuestionRepositoryDefault(
-                getHttpClient(questionApiUrlBuilder, null)
+                getHttpClient(
+                    urlBuilder = questionApiUrlBuilder,
+                    additionalConfig = null,
+                )
             )
         }
     }
@@ -54,7 +60,10 @@ val repositoryModule = module {
     scope<GivenAnswerViewModel> {
         scoped<GivenAnswerRepository> {
             GivenAnswerRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+                getHttpClient(
+                    urlBuilder = answerApiUrlBuilder,
+                    additionalConfig = get<AdditionalHttpClientConfig>(),
+                )
             )
         }
     }
@@ -62,7 +71,10 @@ val repositoryModule = module {
     scope<StatsViewModel> {
         scoped<StatsRepository> {
             StatsRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+                getHttpClient(
+                    urlBuilder = answerApiUrlBuilder,
+                    additionalConfig = get<AdditionalHttpClientConfig>(),
+                )
             )
         }
     }
@@ -70,7 +82,10 @@ val repositoryModule = module {
     scope<LoginViewModel> {
         scoped<UserRepository> {
             UserRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+                getHttpClient(
+                    urlBuilder = answerApiUrlBuilder,
+                    additionalConfig = get<AdditionalHttpClientConfig>(),
+                )
             )
         }
     }
