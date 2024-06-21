@@ -211,15 +211,18 @@ private fun buildAnswerString(
 }
 
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
 private fun PreviewScore() {
     CodingQuizTheme {
-        Score(correctAnswers = 21, allAnswers = 37)
+        Score(
+            correctAnswers = 21,
+            allAnswers = 37,
+        )
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
 private fun PreviewQuizResultsList() {
     CodingQuizTheme {
@@ -229,7 +232,7 @@ private fun PreviewQuizResultsList() {
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
 private fun PreviewFinishButton() {
     CodingQuizTheme {

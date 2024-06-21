@@ -18,6 +18,7 @@ import com.example.techquiz.viewmodel.StatsViewModel
 import io.ktor.client.HttpClient
 import io.ktor.http.URLProtocol
 import io.ktor.http.path
+import org.koin.core.module.Module
 import org.koin.core.parameter.parametersOf
 import org.koin.core.scope.Scope
 import org.koin.dsl.module
@@ -35,50 +36,81 @@ val repositoryModule = module {
         host = ""
     }
 
-    scope<CategoryViewModel> {
-        scoped<CategoryRepository> {
-            CategoryRepositoryDefault(
-                getHttpClient(questionApiUrlBuilder, null)
-            )
-        }
-    }
+    configureCategoryRepository(questionApiUrlBuilder)
+    configureQuestionRepository(questionApiUrlBuilder)
+    configureGivenAnswerRepository(answerApiUrlBuilder)
+    configureStatsRepository(answerApiUrlBuilder)
+    configureUserRepository(answerApiUrlBuilder)
+}
 
-    scope<QuestionViewModel> {
-        scoped<QuestionRepository> {
-            QuestionRepositoryDefault(
-                getHttpClient(questionApiUrlBuilder, null)
+private fun Module.configureCategoryRepository(
+    questionApiUrlBuilder: UrlBuilderBlock,
+) = scope<CategoryViewModel> {
+    scoped<CategoryRepository> {
+        CategoryRepositoryDefault(
+            getHttpClient(
+                urlBuilder = questionApiUrlBuilder,
+                sslManagerConfig = null,
             )
-        }
+        )
     }
+}
 
-    scope<GivenAnswerViewModel> {
-        scoped<GivenAnswerRepository> {
-            GivenAnswerRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+private fun Module.configureQuestionRepository(
+    questionApiUrlBuilder: UrlBuilderBlock,
+) = scope<QuestionViewModel> {
+    scoped<QuestionRepository> {
+        QuestionRepositoryDefault(
+            getHttpClient(
+                urlBuilder = questionApiUrlBuilder,
+                sslManagerConfig = null,
             )
-        }
+        )
     }
+}
 
-    scope<StatsViewModel> {
-        scoped<StatsRepository> {
-            StatsRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+private fun Module.configureGivenAnswerRepository(
+    answerApiUrlBuilder: UrlBuilderBlock,
+) = scope<GivenAnswerViewModel> {
+    scoped<GivenAnswerRepository> {
+        GivenAnswerRepositoryDefault(
+            getHttpClient(
+                urlBuilder = answerApiUrlBuilder,
+                sslManagerConfig = get<SslManagerConfig>(),
             )
-        }
+        )
     }
+}
 
-    scope<LoginViewModel> {
-        scoped<UserRepository> {
-            UserRepositoryDefault(
-                getHttpClient(answerApiUrlBuilder, get<AdditionalHttpClientConfig>())
+private fun Module.configureStatsRepository(
+    answerApiUrlBuilder: UrlBuilderBlock,
+) = scope<StatsViewModel> {
+    scoped<StatsRepository> {
+        StatsRepositoryDefault(
+            getHttpClient(
+                urlBuilder = answerApiUrlBuilder,
+                sslManagerConfig = get<SslManagerConfig>(),
             )
-        }
+        )
+    }
+}
+
+private fun Module.configureUserRepository(
+    answerApiUrlBuilder: UrlBuilderBlock,
+) = scope<LoginViewModel> {
+    scoped<UserRepository> {
+        UserRepositoryDefault(
+            getHttpClient(
+                urlBuilder = answerApiUrlBuilder,
+                sslManagerConfig = get<SslManagerConfig>(),
+            )
+        )
     }
 }
 
 private fun Scope.getHttpClient(
     urlBuilder: UrlBuilderBlock,
-    additionalConfig: AdditionalHttpClientConfig?,
+    sslManagerConfig: SslManagerConfig?,
 ): HttpClient = get {
-    parametersOf(urlBuilder, additionalConfig)
+    parametersOf(urlBuilder, sslManagerConfig)
 }

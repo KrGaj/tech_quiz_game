@@ -22,31 +22,36 @@ class QuestionRepositoryDefault(
                 limit = quantity,
             )
         )
+
         val responseBody: List<QuestionResDTO> = response.body()
-
-        val questions = responseBody.map { question ->
-            val possibleAnswers = question.answers.asSequence()
-                .zip(question.correctAnswers.asSequence())
-                .takeWhile { it.first.value != null }
-                .associate {
-                    it.first.value as String to it.second.value
-                }.map {
-                    PossibleAnswer(
-                        text = it.key,
-                        isCorrect = it.value,
-                    )
-                }
-
-            Question(
-                id = question.id,
-                category = Category(question.category),
-                text = question.questionText,
-                answers = possibleAnswers.shuffled(),
-            )
-        }
+        val questions = mapQuestionDtoToDomainQuestion(responseBody)
 
         return questions.shuffled()
     }
+
+    private fun mapQuestionDtoToDomainQuestion(
+        responseBody: List<QuestionResDTO>
+    ) = responseBody.map { question ->
+        val possibleAnswers = question.answers.asSequence()
+            .zip(question.correctAnswers.asSequence())
+            .filter { it.first.value != null }
+            .associate {
+                it.first.value as String to it.second.value
+            }.map {
+                PossibleAnswer(
+                    text = it.key,
+                    isCorrect = it.value,
+                )
+            }
+
+        Question(
+            id = question.id,
+            category = Category(question.category),
+            text = question.questionText,
+            answers = possibleAnswers.shuffled(),
+        )
+    }
+
 
     override fun closeHttpClient() {
         httpClient.close()

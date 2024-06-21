@@ -19,7 +19,7 @@ import kotlin.time.Duration.Companion.seconds
 val httpClientModule = module {
     factory { (
                   urlBuilderBlock: UrlBuilderBlock,
-                  additionalHttpClientConfig: AdditionalHttpClientConfig?,
+                  sslManagerConfig: SslManagerConfig?,
         ) ->
         val requestTimeout = 10.seconds.inWholeMilliseconds
 
@@ -30,7 +30,7 @@ val httpClientModule = module {
                 requestTimeoutMillis = requestTimeout
             }
 
-            additionalHttpClientConfig?.invoke(this)
+            sslManagerConfig?.invoke(this)
 
             configureDefaultRequest(this, urlBuilderBlock)
 
@@ -59,4 +59,4 @@ private fun configureDefaultRequest(
 
 typealias UrlBuilderBlock = URLBuilder.() -> Unit
 
-typealias AdditionalHttpClientConfig = (HttpClientConfig<AndroidEngineConfig>) -> Unit
+typealias SslManagerConfig = (HttpClientConfig<AndroidEngineConfig>) -> Unit

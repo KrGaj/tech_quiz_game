@@ -53,7 +53,7 @@ class LoginViewModel(
 
         logInResult.fold(
             onSuccess = {
-                _authResult.emit(Result.success(it))
+                _authResult.emit(logInResult)
             },
             onFailure = {
                 signInResult = startAuth(context, googleIdOptionSignIn)
@@ -62,10 +62,10 @@ class LoginViewModel(
 
         signInResult?.fold(
             onSuccess = {
-                _authResult.emit(Result.success(it))
+                _authResult.emit(signInResult!!)
             },
             onFailure = {
-                _authResult.emit(Result.failure(it))
+                _authResult.emit(signInResult!!)
             },
         )
     }
