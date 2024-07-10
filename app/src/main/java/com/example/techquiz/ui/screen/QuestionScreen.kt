@@ -101,7 +101,6 @@ fun QuestionScreen(
     val context = LocalContext.current
 
     LaunchedEffect(questionResult) {
-        givenAnswerViewModel.clearSelectedAnswers()
         questionResult?.fold(
             onSuccess = {
                 isLoading = false
@@ -161,7 +160,9 @@ fun QuestionScreen(
     }
 
     LaunchedEffect(Unit) {
-        questionViewModel.fetchQuestions(category)
+        if (questionResult == null) {
+            questionViewModel.fetchQuestions(category)
+        }
     }
 
     val sendAnswers: () -> Unit = {
@@ -178,6 +179,7 @@ fun QuestionScreen(
                 questionViewModel.nextQuestion()
             }
         }
+        givenAnswerViewModel.clearSelectedAnswers()
     }
 
     Scaffold(
