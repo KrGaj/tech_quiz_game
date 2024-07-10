@@ -16,7 +16,7 @@ class CategoryViewModel: ViewModel(), KoinScopeComponent {
 
     private val categoryRepository: CategoryRepository by inject()
 
-    private val _categories = MutableStateFlow(Result.success(emptyList<Category>()))
+    private val _categories = MutableStateFlow<Result<List<Category>>?>(null)
     val categories get() = _categories.asStateFlow()
 
     suspend fun fetchCategories() = wrapAsResult {

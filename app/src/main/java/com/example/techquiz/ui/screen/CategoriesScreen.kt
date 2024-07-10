@@ -5,12 +5,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.MaterialTheme.typography
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -33,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.ui.common.HeaderTextLarge
+import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
@@ -40,6 +40,7 @@ import com.example.techquiz.util.findActivity
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
+import com.valentinilk.shimmer.shimmer
 import org.koin.androidx.compose.koinViewModel
 
 private const val COLUMNS_NUM = 2
@@ -49,41 +50,32 @@ fun CategoriesScreen(
     categoryViewModel: CategoryViewModel = koinViewModel(),
     navigateToQuestionScreen: (Category) -> Unit,
 ) {
-    val categoriesResult by categoryViewModel.categories.collectAsStateWithLifecycle()
+    val categoriesResult by categoryViewModel.categories
+        .collectAsStateWithLifecycle()
     var categories by remember {
         mutableStateOf(emptyList<Category>())
     }
     val snackbarHostState = remember {
         SnackbarHostState()
     }
-    val showExitAppDialog = rememberSaveable {
-        mutableStateOf(false)
+    var isLoading by remember {
+        mutableStateOf(true)
     }
 
     val context = LocalContext.current
 
+    BackButtonHandler()
+
     LaunchedEffect(categoriesResult) {
-        categoriesResult.fold(
-            onSuccess = { categories = it },
+        categoriesResult?.fold(
+            onSuccess = {
+                isLoading = false
+                categories = it
+            },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
-        )
-    }
-
-    BackHandler {
-        showExitAppDialog.toggleValue()
-    }
-
-    if (showExitAppDialog.value) {
-        ExitDialog(
-            message = stringResource(id = R.string.app_exit_message),
-            onDismissRequest = { showExitAppDialog.toggleValue() },
-            onConfirmation = {
-                showExitAppDialog.toggleValue()
-                context.findActivity().finish()
-            }
         )
     }
 
@@ -102,8 +94,40 @@ fun CategoriesScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             CategoriesLabel()
-            CategoryGrid(categories = categories, navigateToQuestionScreen)
+
+            if (isLoading) {
+                CategoryGridLoading()
+            } else {
+                CategoryGrid(
+                    categories,
+                    navigateToQuestionScreen,
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun BackButtonHandler() {
+    val context = LocalContext.current
+
+    val showExitAppDialog = rememberSaveable {
+        mutableStateOf(false)
+    }
+
+    BackHandler {
+        showExitAppDialog.toggleValue()
+    }
+
+    if (showExitAppDialog.value) {
+        ExitDialog(
+            message = stringResource(id = R.string.app_exit_message),
+            onDismissRequest = { showExitAppDialog.toggleValue() },
+            onConfirmation = {
+                showExitAppDialog.toggleValue()
+                context.findActivity().finish()
+            }
+        )
     }
 }
 
@@ -112,6 +136,28 @@ private fun CategoriesLabel() {
     HeaderTextLarge(
         text = stringResource(id = R.string.categories_header),
     )
+}
+
+@Composable
+private fun CategoryGridLoading() {
+    SpacedLazyVerticalGrid(columns = GridCells.Fixed(COLUMNS_NUM)) {
+        items(count = 10) {
+            CategoryLoading()
+        }
+    }
+}
+
+@Composable
+private fun CategoryLoading() {
+    ShapedFilledTonalButton(
+        modifier = Modifier
+            .height(50.dp)
+            .fillMaxWidth()
+            .shimmer(),
+        onClick = {},
+    ) {
+        
+    }
 }
 
 @Composable
@@ -135,10 +181,9 @@ private fun CategoryGrid(
 @Composable
 private fun Category(
     name: String,
-    onClick: () -> Unit = {},
+    onClick: () -> Unit,
 ) {
-    FilledTonalButton(
-        shape = RoundedCornerShape(12.dp),
+    ShapedFilledTonalButton(
         onClick = onClick,
     ) {
         Text(
@@ -152,21 +197,41 @@ private fun Category(
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCategoryLoading() {
+    CodingQuizTheme {
+        CategoryLoading()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCategoryGridLoading() {
+    CodingQuizTheme {
+        CategoryGridLoading()
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 private fun PreviewCategory() {
     CodingQuizTheme {
-        Box(modifier = Modifier.width(200.dp)) {
-            Category(name = "Demo")
+        Box(
+            modifier = Modifier
+                .width(400.dp),
+        ) {
+            Category(name = "Demo") { }
         }
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
 private fun PreviewCategoryGrid() {
     CodingQuizTheme {
-        CategoryGrid(CATEGORIES) {}
+        CategoryGrid(CATEGORIES) { }
     }
 }
 

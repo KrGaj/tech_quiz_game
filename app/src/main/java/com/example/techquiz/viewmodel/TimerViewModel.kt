@@ -19,11 +19,12 @@ class TimerViewModel(
     val timeLeft get() = _timeLeft.asStateFlow()
 
     fun start() {
-        timer?.cancel()
-        timer = viewModelScope.launch {
-            for (time in (timeout.inWholeSeconds downTo 0)) {
-                _timeLeft.value = time
-                delay(1.seconds)
+        if (timer == null) {
+            timer = viewModelScope.launch {
+                for (time in (timeout.inWholeSeconds downTo 0)) {
+                    _timeLeft.value = time
+                    delay(1.seconds)
+                }
             }
         }
     }

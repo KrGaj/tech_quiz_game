@@ -19,9 +19,7 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
     private val questionRepository: QuestionRepository by inject()
 
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
-    private val _question = MutableStateFlow(
-        value = Result.success(DEFAULT_QUESTION),
-    )
+    private val _question = MutableStateFlow<Result<Question>?>(null)
     val question
         get() = _question.asStateFlow()
 
@@ -52,11 +50,9 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
         ::questionIterator.isInitialized && !questionIterator.hasNext()
 
     fun nextQuestion() {
-        if (!isQuestionLast()) {
-            val questionWithIndex = questionIterator.next()
-            _question.value = Result.success(questionWithIndex.value)
-            _questionNumber.value = questionWithIndex.index + 1
-        }
+        val questionWithIndex = questionIterator.next()
+        _question.value = Result.success(questionWithIndex.value)
+        _questionNumber.value = questionWithIndex.index + 1
     }
 
     override fun onCleared() {

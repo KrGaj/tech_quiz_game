@@ -12,19 +12,24 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.credentials.exceptions.GetCredentialCancellationException
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
+import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -36,16 +41,22 @@ fun LoginScreen(
     loginViewModel: LoginViewModel = koinViewModel { parametersOf(webClientId) },
     navigateToCategories: () -> Unit,
 ) {
-    val authResult by loginViewModel.authResult.collectAsStateWithLifecycle(initialValue = null)
-    val user by loginViewModel.user.collectAsStateWithLifecycle(initialValue = null)
+    val authResult by loginViewModel.authResult
+        .collectAsStateWithLifecycle()
+    val user by loginViewModel.user
+        .collectAsStateWithLifecycle()
     val snackbarHostState = remember {
         SnackbarHostState()
     }
     val context = LocalContext.current
+    var isLoading by remember {
+        mutableStateOf(false)
+    }
 
     LaunchedEffect(authResult) {
         authResult?.fold(
             onSuccess = {
+                isLoading = true
                 userViewModel.setCredential(it)
                 loginViewModel.fetchUser(userViewModel.token)
             },
@@ -65,6 +76,7 @@ fun LoginScreen(
                 navigateToCategories()
             },
             onFailure = {
+                isLoading = false
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
@@ -83,8 +95,12 @@ fun LoginScreen(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center,
         ) {
-            AuthButton {
-                loginViewModel.startAuth(context)
+            if (!isLoading) {
+                AuthButton {
+                    loginViewModel.startAuth(context)
+                }
+            } else {
+                LoadingAuthButton()
             }
 
             LaunchedEffect(Unit) {
@@ -101,25 +117,57 @@ private suspend fun handleFailure(
     when (throwable) {
         is GetCredentialCancellationException -> Unit
         else -> snackbarHostState
-            .showSnackbar(throwable?.toString() ?: "Demo error")
+            .showSnackbar(throwable?.message ?: "Demo error")
     }
 }
 
 @Composable
 private fun AuthButton(
+    modifier: Modifier = Modifier,
     startAuth: suspend () -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
 
     Button(
+        modifier = modifier,
         onClick = {
             coroutineScope.launch {
                 startAuth()
             }
         }
     ) {
-        Text(
-            text = stringResource(id = R.string.sign_in_button_label)
-        )
+        AuthButtonText()
+    }
+}
+
+@Composable
+private fun LoadingAuthButton() {
+    AuthButton(
+        modifier = Modifier
+            .shimmer()
+    ) { }
+}
+
+@Composable
+private fun AuthButtonText() {
+    Text(
+        text = stringResource(id = R.string.sign_in_button_label)
+    )
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewAuthButton() {
+    CodingQuizTheme {
+        AuthButton { }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewLoadingAuthButton() {
+    CodingQuizTheme {
+        LoadingAuthButton()
     }
 }

@@ -93,6 +93,8 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.googleid)
 
+    implementation(libs.compose.shimmer)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)

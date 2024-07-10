@@ -3,7 +3,6 @@ package com.example.techquiz.ui.screen
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -21,16 +20,19 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
+import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.dto.response.stats.CategoryStats
 import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
+import com.example.techquiz.ui.common.SpacedLazyColumn
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import com.valentinilk.shimmer.shimmer
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
@@ -54,28 +56,40 @@ fun StatsScreen(
         mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
     }
 
+    var isCategoryStatsLoading by remember {
+        mutableStateOf(true)
+    }
+
+    var isCorrectAnswersStatsLoading by remember {
+        mutableStateOf(true)
+    }
+
     val context = LocalContext.current
 
     LaunchedEffect(categoryStatsResult) {
-        categoryStatsResult.fold(
+        categoryStatsResult?.fold(
             onSuccess = {
                 categoryStats = it
+                isCategoryStatsLoading = false
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
+                isCategoryStatsLoading = false
             },
         )
     }
 
     LaunchedEffect(correctAnswersStatsResult) {
-        correctAnswersStatsResult.fold(
+        correctAnswersStatsResult?.fold(
             onSuccess = {
                 correctAnswersStats = it
+                isCorrectAnswersStatsLoading = false
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
+                isCorrectAnswersStatsLoading = false
             },
         )
     }
@@ -102,8 +116,14 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             StatsLabel()
-            CategoryStats(statsList = categoryStats)
-            CorrectAnswersStats(stats = correctAnswersStats)
+            CategoryStatistics(
+                isLoading = isCategoryStatsLoading,
+                stats = categoryStats,
+            )
+            CorrectAnswersStatistics(
+                isLoading = isCorrectAnswersStatsLoading,
+                stats = correctAnswersStats,
+            )
         }
     }
 }
@@ -116,10 +136,69 @@ private fun StatsLabel() {
 }
 
 @Composable
-private fun CategoryStats(statsList: List<CategoryStats>) {
+private fun CategoryStatistics(
+    isLoading: Boolean,
+    stats: List<CategoryStats>,
+) {
+    if (isLoading) {
+        CategoryStatsLoading()
+    } else {
+        CategoryStatsLoaded(stats = stats)
+    }
+}
+
+@Composable
+private fun CorrectAnswersStatistics(
+    isLoading: Boolean,
+    stats: CorrectAnswersStats,
+) {
+    if (isLoading) {
+        CorrectAnswersStatsLoading()
+    } else {
+        CorrectAnswersStatsLoaded(stats = stats)
+    }
+}
+
+@Composable
+private fun CategoryStatsLoading() {
     Column {
         CategoryStatsLabel()
-        CategoryStatsList(statsList = statsList)
+        CategoryStatsListLoading()
+    }
+}
+
+@Composable
+private fun CategoryStatsListLoading() {
+    SpacedLazyColumn {
+        items(count = StatsViewModel.CATEGORIES_COUNT) {
+            StatsRowLoading()
+        }
+    }
+}
+
+@Composable
+private fun CorrectAnswersStatsLoading() {
+    Column {
+        CorrectAnswersStatsLabel()
+        StatsRowLoading()
+    }
+}
+
+@Composable
+private fun StatsRowLoading() {
+    TwoTextsRow(
+        modifier = Modifier
+            .shimmer(),
+        leftText = "",
+        rightText ="",
+    )
+}
+
+@Composable
+private fun CategoryStatsLoaded(stats: List<CategoryStats>) {
+    Column {
+        CategoryStatsLabel()
+        CategoryStatsList(statsList = stats)
     }
 }
 
@@ -132,9 +211,7 @@ private fun CategoryStatsLabel() {
 
 @Composable
 private fun CategoryStatsList(statsList: List<CategoryStats>) {
-    LazyColumn(
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
+    SpacedLazyColumn {
         val statsListSorted = statsList.sortedByDescending { it.answersGiven }
         items(statsListSorted) {
             CategoryStatsRow(it)
@@ -151,7 +228,7 @@ private fun CategoryStatsRow(stats: CategoryStats) {
 }
 
 @Composable
-private fun CorrectAnswersStats(stats: CorrectAnswersStats) {
+private fun CorrectAnswersStatsLoaded(stats: CorrectAnswersStats) {
     Column {
         CorrectAnswersStatsLabel()
         CorrectAnswersStatsRow(stats = stats)
@@ -180,35 +257,55 @@ private fun CorrectAnswersStatsRow(stats: CorrectAnswersStats) {
     )
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+
+@Preview(showBackground = true)
 @Composable
-private fun PreviewCategoryStats() {
+private fun PreviewCorrectAnswersStatsLoading() {
     CodingQuizTheme {
-        CategoryStats(statsList = categoryStats)
+        CorrectAnswersStatsLoading()
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCategoryStatsLoading() {
+    CodingQuizTheme {
+        CategoryStatsLoading()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewCategoryStats() {
+    CodingQuizTheme {
+        CategoryStatsLoaded(stats = categoryStats)
+    }
+}
+
+@Preview(showBackground = true)
 @Composable
 private fun PreviewCorrectAnswersStats() {
     CodingQuizTheme {
-        CorrectAnswersStats(stats = correctAnswersStats)
+        CorrectAnswersStatsLoaded(stats = correctAnswersStats)
     }
 }
 
 private val categoryStats = listOf(
     CategoryStats(
-        com.example.techquiz.data.domain.Category("Demo1"),
+        category = Category("Demo1"),
         2137,
     ),
     CategoryStats(
-        com.example.techquiz.data.domain.Category("Demo2"),
-        21,
+        category = Category("Demo2"),
+        answersGiven = 21,
     ),
     CategoryStats(
-        com.example.techquiz.data.domain.Category("Demo3"),
-        37,
+        category = Category("Demo3"),
+        answersGiven = 37,
     ),
 )
 
-private val correctAnswersStats = CorrectAnswersStats(20, 25)
+private val correctAnswersStats = CorrectAnswersStats(
+    correctAnswers = 20,
+    allAnswers = 25,
+)

@@ -13,8 +13,8 @@ import com.example.techquiz.util.wrapAsResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
 import org.koin.core.component.inject
@@ -27,13 +27,13 @@ class LoginViewModel(
 
     private val userRepository: UserRepository by inject()
 
-    private val _authResult = MutableSharedFlow<Result<GoogleIdTokenCredential>>()
+    private val _authResult = MutableStateFlow<Result<GoogleIdTokenCredential>?>(null)
     val authResult
-        get() = _authResult.asSharedFlow()
+        get() = _authResult.asStateFlow()
 
-    private val _user = MutableSharedFlow<Result<User>>()
+    private val _user = MutableStateFlow<Result<User>?>(null)
     val user
-        get() = _user.asSharedFlow()
+        get() = _user.asStateFlow()
 
     private val googleIdOptionLogIn = GetGoogleIdOption.Builder()
         .setFilterByAuthorizedAccounts(true)
@@ -53,7 +53,7 @@ class LoginViewModel(
 
         logInResult.fold(
             onSuccess = {
-                _authResult.emit(Result.success(it))
+                _authResult.value = logInResult
             },
             onFailure = {
                 signInResult = startAuth(context, googleIdOptionSignIn)
@@ -62,10 +62,10 @@ class LoginViewModel(
 
         signInResult?.fold(
             onSuccess = {
-                _authResult.emit(Result.success(it))
+                _authResult.value = signInResult!!
             },
             onFailure = {
-                _authResult.emit(Result.failure(it))
+                _authResult.value = signInResult!!
             },
         )
     }
@@ -110,7 +110,7 @@ class LoginViewModel(
         token: String?,
     ): Unit = wrapAsResult {
         userRepository.getUser(token)
-    }.let { _user.emit(it) }
+    }.let { _user.value = it }
 
     override fun onCleared() {
         super.onCleared()

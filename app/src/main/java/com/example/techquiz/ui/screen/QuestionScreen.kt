@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.FilledTonalButton
@@ -44,6 +43,7 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.ui.common.HeaderTextLarge
+import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
@@ -54,9 +54,12 @@ import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
 import com.example.techquiz.viewmodel.UserViewModel
+import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
+
+private const val COLUMNS_NUM = 2
 
 @Composable
 fun QuestionScreen(
@@ -72,27 +75,37 @@ fun QuestionScreen(
     val snackbarHostState = remember {
         SnackbarHostState()
     }
-    val questionResult by questionViewModel.question.collectAsStateWithLifecycle()
-    val answerAddResult by givenAnswerViewModel.answerAddResult.collectAsStateWithLifecycle()
+    val questionResult by questionViewModel.question
+        .collectAsStateWithLifecycle()
+    val answerAddResult by givenAnswerViewModel.answerAddResult
+        .collectAsStateWithLifecycle()
+    val questionNumber by questionViewModel.questionNumber
+        .collectAsStateWithLifecycle()
+    val selectedAnswers by givenAnswerViewModel.selectedAnswers
+        .collectAsStateWithLifecycle()
+    val timeLeft by timerViewModel.timeLeft
+        .collectAsStateWithLifecycle()
+
     var question by remember {
         mutableStateOf(QuestionViewModel.DEFAULT_QUESTION)
     }
-    val questionNumber by questionViewModel.questionNumber.collectAsStateWithLifecycle()
-    val selectedAnswers by givenAnswerViewModel.selectedAnswers.collectAsStateWithLifecycle()
-    val timeLeft by timerViewModel.timeLeft.collectAsStateWithLifecycle()
 
-    val showExitDialog = rememberSaveable { mutableStateOf(false) }
+    var isLoading by remember {
+        mutableStateOf(true)
+    }
+
+    val showExitDialog = rememberSaveable {
+        mutableStateOf(false)
+    }
 
     val context = LocalContext.current
 
     LaunchedEffect(questionResult) {
-        givenAnswerViewModel.clearSelectedAnswers()
-        questionResult.fold(
+        questionResult?.fold(
             onSuccess = {
-                if (it != QuestionViewModel.DEFAULT_QUESTION) {
-                    question = it
-                    timerViewModel.start()
-                }
+                isLoading = false
+                question = it
+                timerViewModel.start()
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
@@ -117,26 +130,56 @@ fun QuestionScreen(
         showExitDialog.toggleValue()
     }
 
+    val dialogMessage = stringResource(id = R.string.quiz_exit_message)
+
+    val onDialogDismiss: () -> Unit = {
+        showExitDialog.toggleValue()
+    }
+
+    val onDialogConfirmation: () -> Unit = {
+        showExitDialog.toggleValue()
+        if (givenAnswerViewModel.quizResults.isEmpty()) {
+            navigateToCategories()
+        }
+        else {
+            coroutineScope.launch {
+                givenAnswerViewModel.sendAnswers(
+                    userUUID = userViewModel.userUuid,
+                    token = userViewModel.token,
+                )
+            }
+        }
+    }
+
     if (showExitDialog.value) {
         ExitDialog(
-            message = stringResource(id = R.string.quiz_exit_message),
-            onDismissRequest = { showExitDialog.toggleValue() },
-            onConfirmation = {
-                showExitDialog.toggleValue()
-                if (givenAnswerViewModel.quizResults.isEmpty())
-                    navigateToCategories()
-                else coroutineScope.launch {
-                    givenAnswerViewModel.sendAnswers(
-                        userUUID = userViewModel.userUuid,
-                        token = userViewModel.token,
-                    )
-                }
-            },
+            message = dialogMessage,
+            onDismissRequest = onDialogDismiss,
+            onConfirmation = onDialogConfirmation,
         )
     }
 
     LaunchedEffect(Unit) {
-        questionViewModel.fetchQuestions(category)
+        if (questionResult == null) {
+            questionViewModel.fetchQuestions(category)
+        }
+    }
+
+    val sendAnswers: () -> Unit = {
+        timerViewModel.clear()
+        givenAnswerViewModel.addAnswer(question)
+
+        coroutineScope.launch {
+            if (questionViewModel.isQuestionLast()) {
+                givenAnswerViewModel.sendAnswers(
+                    userUUID = userViewModel.userUuid,
+                    token = userViewModel.token,
+                )
+            } else {
+                questionViewModel.nextQuestion()
+            }
+        }
+        givenAnswerViewModel.clearSelectedAnswers()
     }
 
     Scaffold(
@@ -153,69 +196,85 @@ fun QuestionScreen(
             verticalArrangement = Arrangement.SpaceBetween,
         ) {
             QuestionHeader(
+                isLoading = isLoading,
                 categoryName = category.name,
                 questionNumber = questionNumber,
                 multipleCorrectAnswers = question.answers.count { it.isCorrect } > 1,
             )
-            QuestionTextCard(question)
+            QuestionTextCard(
+                isLoading = isLoading,
+                question = question,
+            )
             AnswersGrid(
+                isLoading = isLoading,
                 answers = question.answers,
                 selectedAnswers = selectedAnswers,
             ) {
                 givenAnswerViewModel.toggleAnswer(it)
             }
-            Timer(timeLeft = timeLeft)
+            Timer(
+                isLoading = isLoading,
+                timeLeft = timeLeft,
+            )
             NextQuestionButtonRow(
+                isLoading = { isLoading },
                 isQuestionLast = questionViewModel::isQuestionLast,
-            ) { isQuestionLast ->
-                timerViewModel.clear()
-                givenAnswerViewModel.addAnswer(question)
-
-                if (isQuestionLast) {
-                    coroutineScope.launch {
-                        givenAnswerViewModel.sendAnswers(
-                            userUUID = userViewModel.userUuid,
-                            token = userViewModel.token,
-                        )
-                    }
-                }
-
-                questionViewModel.nextQuestion()
-            }
+                onClick = sendAnswers,
+            )
         }
     }
 
     if (timeLeft == 0L) {
-        givenAnswerViewModel.addAnswer(
-            question = question,
-        )
+        sendAnswers()
     }
 }
 
 @Composable
 private fun QuestionHeader(
+    isLoading: Boolean,
     categoryName: String,
     questionNumber: Int,
     multipleCorrectAnswers: Boolean,
 ) {
-    val headerText = buildString {
-        append(
-            stringResource(
-                id = R.string.question_header,
-                categoryName,
-                questionNumber,
-            )
+    if (isLoading) {
+        QuestionHeaderLoading(
+            categoryName = categoryName,
         )
-
-        if (multipleCorrectAnswers) {
-            append(" ")
-            append(
-                stringResource(
-                    id = R.string.question_header_multiple_choice,
-                )
-            )
-        }
+    } else {
+        QuestionHeaderLoaded(
+            categoryName = categoryName,
+            questionNumber = questionNumber,
+            multipleCorrectAnswers = multipleCorrectAnswers,
+        )
     }
+}
+
+@Composable
+private fun QuestionHeaderLoading(
+    categoryName: String,
+) {
+    HeaderTextLarge(
+        modifier = Modifier
+            .shimmer(),
+        text = buildHeaderTextString(
+            categoryName = categoryName,
+            questionNumber = 1,
+            multipleCorrectAnswers = false,
+        ),
+    )
+}
+
+@Composable
+private fun QuestionHeaderLoaded(
+    categoryName: String,
+    questionNumber: Int,
+    multipleCorrectAnswers: Boolean,
+) {
+    val headerText = buildHeaderTextString(
+        categoryName,
+        questionNumber,
+        multipleCorrectAnswers,
+    )
 
     HeaderTextLarge(
         text = headerText,
@@ -223,21 +282,79 @@ private fun QuestionHeader(
 }
 
 @Composable
-private fun QuestionTextCard(question: Question) {
+private fun buildHeaderTextString(
+    categoryName: String,
+    questionNumber: Int,
+    multipleCorrectAnswers: Boolean
+) = buildString {
+    append(
+        stringResource(
+            id = R.string.question_header,
+            categoryName,
+            questionNumber,
+        )
+    )
+
+    if (multipleCorrectAnswers) {
+        append(" ")
+        append(
+            stringResource(
+                id = R.string.question_header_multiple_choice,
+            )
+        )
+    }
+}
+
+@Composable
+private fun QuestionTextCard(
+    isLoading: Boolean,
+    question: Question,
+) {
+    if (isLoading) {
+        QuestionTextCardLoading()
+    } else {
+        QuestionTextCardLoaded(question = question)
+    }
+}
+
+@Composable
+private fun QuestionTextCardLoading() {
+    TextCard(
+        modifier = Modifier
+            .shimmer(),
+        text = "",
+    )
+}
+
+@Composable
+private fun QuestionTextCardLoaded(
+    question: Question,
+) {
+    TextCard(text = question.text)
+}
+
+@Composable
+private fun TextCard(
+    modifier: Modifier = Modifier,
+    textModifier: Modifier = Modifier,
+    text: String,
+) {
     Card(
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .wrapContentHeight(),
+            .wrapContentHeight()
+            .then(modifier),
     ) {
         Text(
-            text = question.text,
+            text = text,
             modifier = Modifier
                 .padding(
                     horizontal = 24.dp,
                     vertical = 12.dp
                 )
-                .fillMaxWidth(),
+                .fillMaxWidth()
+                .then(textModifier),
             textAlign = TextAlign.Center,
         )
     }
@@ -245,12 +362,13 @@ private fun QuestionTextCard(question: Question) {
 
 @Composable
 private fun AnswersGrid(
+    isLoading: Boolean,
     answers: List<PossibleAnswer>,
     selectedAnswers: List<PossibleAnswer>,
     onClick: (PossibleAnswer) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
-        columns = GridCells.Fixed(2),
+        columns = GridCells.Fixed(COLUMNS_NUM),
     ) {
         items(answers) {
             val isSelected = selectedAnswers.contains(it)
@@ -260,6 +378,9 @@ private fun AnswersGrid(
                 else MaterialTheme.colorScheme.secondary
 
             PossibleAnswer(
+                modifier = Modifier
+                    .aspectRatio(1.5f),
+                isLoading = isLoading,
                 answer = it,
                 color,
             ) {
@@ -271,13 +392,45 @@ private fun AnswersGrid(
 
 @Composable
 private fun PossibleAnswer(
+    modifier: Modifier = Modifier,
+    isLoading: Boolean,
     answer: PossibleAnswer,
     color: Color,
     onClick: () -> Unit,
 ) {
-    FilledTonalButton(
-        modifier = Modifier.aspectRatio(1.5f),
-        shape = RoundedCornerShape(12.dp),
+    if (isLoading) {
+        PossibleAnswerLoading(modifier)
+    } else {
+        PossibleAnswerLoaded(
+            modifier = modifier,
+            answer = answer,
+            color = color,
+            onClick = onClick,
+        )
+    }
+}
+
+@Composable
+private fun PossibleAnswerLoading(
+    modifier: Modifier = Modifier,
+) {
+    ShapedFilledTonalButton(
+        modifier = Modifier
+            .then(modifier)
+            .shimmer(),
+        onClick = { },
+    ) { }
+}
+
+@Composable
+private fun PossibleAnswerLoaded(
+    modifier: Modifier = Modifier,
+    answer: PossibleAnswer,
+    color: Color,
+    onClick: () -> Unit,
+) {
+    ShapedFilledTonalButton(
+        modifier = modifier,
         colors = ButtonDefaults.buttonColors(color),
         onClick = onClick,
     ) {
@@ -289,17 +442,26 @@ private fun PossibleAnswer(
 }
 
 @Composable
-private fun Timer(timeLeft: Long) {
+private fun Timer(
+    isLoading: Boolean,
+    timeLeft: Long,
+) {
     val timeLeftText = pluralStringResource(
         id = R.plurals.question_time_left,
         count = timeLeft.toInt(),
         timeLeft.toInt(),
     )
 
+    var modifier = Modifier
+        .fillMaxWidth()
+        .padding(16.dp)
+
+    if (isLoading) {
+        modifier = modifier.shimmer()
+    }
+
     Text(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp),
+        modifier = modifier,
         text = timeLeftText,
         textAlign = TextAlign.Center,
         fontSize = 24.sp,
@@ -308,67 +470,177 @@ private fun Timer(timeLeft: Long) {
 
 @Composable
 private fun NextQuestionButtonRow(
+    isLoading: () -> Boolean,
     isQuestionLast: () -> Boolean,
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        FilledTonalButton(
-            onClick = {
-                onClick(isQuestionLast())
-            },
-        ) {
-            val textId =
-                if (isQuestionLast()) R.string.question_finish
-                else R.string.question_next
-
-            Text(text = stringResource(id = textId))
-        }
+    if (isLoading()) {
+        NextQuestionButtonRowLoading()
+    } else {
+        NextQuestionButtonRowLoaded(
+            isQuestionLast = isQuestionLast,
+            onClick = onClick,
+        )
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
 @Composable
-private fun PreviewQuestionTextCard() {
+private fun NextQuestionButtonRowLoading() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        NextQuestionButton(
+            modifier = Modifier
+                .shimmer(),
+            isQuestionLast = { false },
+            onClick = { },
+        )
+    }
+}
+
+@Composable
+private fun NextQuestionButtonRowLoaded(
+    isQuestionLast: () -> Boolean,
+    onClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        NextQuestionButton(
+            isQuestionLast = isQuestionLast,
+            onClick = onClick,
+        )
+    }
+}
+
+@Composable
+private fun NextQuestionButton(
+    modifier: Modifier = Modifier,
+    isQuestionLast: () -> Boolean,
+    onClick: () -> Unit,
+) {
+    FilledTonalButton(
+        modifier = modifier,
+        onClick = onClick,
+    ) {
+        val textId =
+            if (isQuestionLast()) R.string.question_finish
+            else R.string.question_next
+
+        Text(text = stringResource(id = textId))
+    }
+}
+
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewQuestionHeaderLoading() {
     CodingQuizTheme {
-        QuestionTextCard(
+        QuestionHeaderLoading(
+            categoryName = question.category.name,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewQuestionHeaderLoaded() {
+    CodingQuizTheme {
+        QuestionHeaderLoaded(
+            categoryName = question.category.name,
+            questionNumber = questionNumber,
+            multipleCorrectAnswers = true,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewQuestionTextCardLoading() {
+    CodingQuizTheme {
+        QuestionTextCardLoading()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewQuestionTextCardLoaded() {
+    CodingQuizTheme {
+        QuestionTextCardLoaded(
             question = question,
         )
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
-private fun PreviewAnswers() {
+private fun PreviewAnswersLoading() {
     CodingQuizTheme {
         AnswersGrid(
+            isLoading = true,
             answers = answers,
             selectedAnswers = selectedAnswers,
         ) {}
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
-private fun PreviewTimer() {
+private fun PreviewAnswersLoaded() {
     CodingQuizTheme {
-        Timer(timeLeft = 2137)
+        AnswersGrid(
+            isLoading = false,
+            answers = answers,
+            selectedAnswers = selectedAnswers,
+        ) {}
     }
 }
 
-@Preview(showBackground = true, apiLevel = 33)
+@Preview(showBackground = true)
 @Composable
-private fun PreviewNextQuestionButtonRow() {
+private fun PreviewTimerLoading() {
     CodingQuizTheme {
-        NextQuestionButtonRow({ false }) {}
+        Timer(
+            isLoading = true,
+            timeLeft = 2137,
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewTimerLoaded() {
+    CodingQuizTheme {
+        Timer(
+            isLoading = false,
+            timeLeft = 2137
+        )
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewNextQuestionButtonRowLoading() {
+    CodingQuizTheme {
+        NextQuestionButtonRowLoading()
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewNextQuestionButtonRowLoaded() {
+    CodingQuizTheme {
+        NextQuestionButtonRowLoaded({ false }) {}
     }
 }
 
 private val question = Question(
     id = 0,
-    category = Category("0"),
+    category = Category("Demo Category"),
     text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
             "sed do eiusmod tempor incididunt ut labore et dolore " +
             "magna aliqua. Ut enim ad minim veniam, quis nostrud " +
@@ -380,6 +652,8 @@ private val question = Question(
             "deserunt mollit anim id est laborum.",
     answers = emptyList(),
 )
+
+private const val questionNumber = 3
 
 private val answers = listOf(
     PossibleAnswer("Demo Answer 1", false),
