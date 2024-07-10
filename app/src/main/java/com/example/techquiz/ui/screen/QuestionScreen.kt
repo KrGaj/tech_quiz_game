@@ -76,7 +76,7 @@ fun QuestionScreen(
         SnackbarHostState()
     }
     val questionResult by questionViewModel.question
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
     val answerAddResult by givenAnswerViewModel.answerAddResult
         .collectAsStateWithLifecycle()
     val questionNumber by questionViewModel.questionNumber
@@ -164,6 +164,22 @@ fun QuestionScreen(
         questionViewModel.fetchQuestions(category)
     }
 
+    val sendAnswers: () -> Unit = {
+        timerViewModel.clear()
+        givenAnswerViewModel.addAnswer(question)
+
+        coroutineScope.launch {
+            if (questionViewModel.isQuestionLast()) {
+                givenAnswerViewModel.sendAnswers(
+                    userUUID = userViewModel.userUuid,
+                    token = userViewModel.token,
+                )
+            } else {
+                questionViewModel.nextQuestion()
+            }
+        }
+    }
+
     Scaffold(
         modifier = Modifier
             .padding(12.dp),
@@ -201,30 +217,13 @@ fun QuestionScreen(
             NextQuestionButtonRow(
                 isLoading = { isLoading },
                 isQuestionLast = questionViewModel::isQuestionLast,
-            ) { isQuestionLast ->
-                timerViewModel.clear()
-                givenAnswerViewModel.addAnswer(question)
-
-                if (isQuestionLast) {
-                    coroutineScope.launch {
-                        givenAnswerViewModel.sendAnswers(
-                            userUUID = userViewModel.userUuid,
-                            token = userViewModel.token,
-                        )
-                    }
-                }
-
-                coroutineScope.launch {
-                    questionViewModel.nextQuestion()
-                }
-            }
+                onClick = sendAnswers,
+            )
         }
     }
 
     if (timeLeft == 0L) {
-        givenAnswerViewModel.addAnswer(
-            question = question,
-        )
+        sendAnswers()
     }
 }
 
@@ -471,7 +470,7 @@ private fun Timer(
 private fun NextQuestionButtonRow(
     isLoading: () -> Boolean,
     isQuestionLast: () -> Boolean,
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
     if (isLoading()) {
         NextQuestionButtonRowLoading()
@@ -502,7 +501,7 @@ private fun NextQuestionButtonRowLoading() {
 @Composable
 private fun NextQuestionButtonRowLoaded(
     isQuestionLast: () -> Boolean,
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
@@ -520,13 +519,11 @@ private fun NextQuestionButtonRowLoaded(
 private fun NextQuestionButton(
     modifier: Modifier = Modifier,
     isQuestionLast: () -> Boolean,
-    onClick: (Boolean) -> Unit,
+    onClick: () -> Unit,
 ) {
     FilledTonalButton(
         modifier = modifier,
-        onClick = {
-            onClick(isQuestionLast())
-        },
+        onClick = onClick,
     ) {
         val textId =
             if (isQuestionLast()) R.string.question_finish

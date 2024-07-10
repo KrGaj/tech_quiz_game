@@ -42,9 +42,9 @@ fun LoginScreen(
     navigateToCategories: () -> Unit,
 ) {
     val authResult by loginViewModel.authResult
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
     val user by loginViewModel.user
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
     val snackbarHostState = remember {
         SnackbarHostState()
     }

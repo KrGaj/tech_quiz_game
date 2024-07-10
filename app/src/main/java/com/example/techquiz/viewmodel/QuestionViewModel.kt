@@ -5,9 +5,7 @@ import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.util.wrapAsResult
-import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
@@ -21,9 +19,9 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
     private val questionRepository: QuestionRepository by inject()
 
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
-    private val _question = MutableSharedFlow<Result<Question>>()
+    private val _question = MutableStateFlow<Result<Question>?>(null)
     val question
-        get() = _question.asSharedFlow()
+        get() = _question.asStateFlow()
 
     private val _questionNumber = MutableStateFlow(0)
     val questionNumber
@@ -43,7 +41,7 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
                 nextQuestion()
             },
             onFailure = {
-                _question.emit(Result.failure(it))
+                _question.value = Result.failure(it)
             }
         )
     }
@@ -51,12 +49,10 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
     fun isQuestionLast() =
         ::questionIterator.isInitialized && !questionIterator.hasNext()
 
-    suspend fun nextQuestion() {
-        if (!isQuestionLast()) {
-            val questionWithIndex = questionIterator.next()
-            _question.emit(Result.success(questionWithIndex.value))
-            _questionNumber.value = questionWithIndex.index + 1
-        }
+    fun nextQuestion() {
+        val questionWithIndex = questionIterator.next()
+        _question.value = Result.success(questionWithIndex.value)
+        _questionNumber.value = questionWithIndex.index + 1
     }
 
     override fun onCleared() {

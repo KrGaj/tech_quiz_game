@@ -44,9 +44,9 @@ fun StatsScreen(
         SnackbarHostState()
     }
     val categoryStatsResult by statsViewModel.categoryStats
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
     val correctAnswersStatsResult by statsViewModel.correctAnswersCount
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
 
     var categoryStats by remember {
         mutableStateOf(emptyList<CategoryStats>())

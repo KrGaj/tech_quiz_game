@@ -51,7 +51,7 @@ fun CategoriesScreen(
     navigateToQuestionScreen: (Category) -> Unit,
 ) {
     val categoriesResult by categoryViewModel.categories
-        .collectAsStateWithLifecycle(initialValue = null)
+        .collectAsStateWithLifecycle()
     var categories by remember {
         mutableStateOf(emptyList<Category>())
     }
