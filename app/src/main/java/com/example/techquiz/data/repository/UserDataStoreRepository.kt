@@ -14,11 +14,12 @@ class UserDataStoreRepository(
 ) {
     val userFlow: Flow<UserPreferences> = dataStore.data.map { preferences ->
         val uuidStr = preferences[KEY_USER_UUID]
-        val userUuid = uuidStr?.let { UUID.fromString(it) } ?: UUID(0, 0)
+        val userUUID = uuidStr?.let { UUID.fromString(it) }
+            ?: UUID(0, 0)
         val userToken = preferences[KEY_USER_TOKEN]
 
         UserPreferences(
-            userUUID = userUuid,
+            userUUID = userUUID,
             userToken = userToken ?: "",
         )
     }

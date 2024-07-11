@@ -30,7 +30,7 @@ val repositoryModule = module {
         protocol = URLProtocol.HTTPS
         host = "quizapi.io"
         path("/api/v1/")
-        parameters.append("apiKey", "x7AsPaezRnoHTJs2LMOAbFkZlwTlqtEnyyjViMXT")
+        parameters.append("apiKey", "")
     }
 
     val answerApiUrlBuilder: UrlBuilderBlock = {
