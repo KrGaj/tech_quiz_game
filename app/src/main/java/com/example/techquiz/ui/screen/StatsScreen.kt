@@ -29,16 +29,13 @@ import com.example.techquiz.ui.common.SpacedLazyColumn
 import com.example.techquiz.ui.common.TwoTextsRow
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
-import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
-import com.example.techquiz.viewmodel.UserViewModel
 import com.valentinilk.shimmer.shimmer
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StatsScreen(
     statsViewModel: StatsViewModel = koinViewModel(),
-    userViewModel: UserViewModel = koinActivityViewModel(),
 ) {
     val snackbarHostState = remember {
         SnackbarHostState()
@@ -95,14 +92,8 @@ fun StatsScreen(
     }
 
     LaunchedEffect(Unit) {
-        statsViewModel.getMostAnsweredCategories(
-            token = userViewModel.token,
-            userUUID = userViewModel.userUuid,
-        )
-        statsViewModel.getCorrectAnswersCount(
-            token = userViewModel.token,
-            userUUID = userViewModel.userUuid,
-        )
+        statsViewModel.getMostAnsweredCategories()
+        statsViewModel.getCorrectAnswersCount()
     }
 
     Scaffold(

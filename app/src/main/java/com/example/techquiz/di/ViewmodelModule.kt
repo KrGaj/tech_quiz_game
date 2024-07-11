@@ -7,7 +7,6 @@ import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
-import com.example.techquiz.viewmodel.UserViewModel
 import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.androidx.viewmodel.dsl.viewModelOf
 import org.koin.dsl.module
@@ -19,7 +18,11 @@ val viewModelModule = module {
     viewModelOf(::QuizResultsViewModel)
     viewModelOf(::StatsViewModel)
     viewModelOf(::TimerViewModel)
-    viewModelOf(::UserViewModel)
 
-    viewModel { params -> LoginViewModel(params.get()) }
+    viewModel { params ->
+        LoginViewModel(
+            userDataStoreRepository = get(),
+            webClientId = params.get(),
+        )
+    }
 }

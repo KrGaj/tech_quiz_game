@@ -6,19 +6,21 @@ import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
+import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
 import org.koin.core.component.inject
 import org.koin.core.scope.Scope
-import java.util.UUID
 
 class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
     override val scope: Scope by lazy { createScope(this) }
 
     private val givenAnswerRepository: GivenAnswerRepository by inject()
+    private val userDataStoreRepository: UserDataStoreRepository by inject()
 
     private val _selectedAnswers = MutableStateFlow(listOf<PossibleAnswer>())
     val selectedAnswers
@@ -59,16 +61,14 @@ class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
         )
     }
 
-    suspend fun sendAnswers(
-        userUUID: UUID?,
-        token: String?,
-    ) {
+    suspend fun sendAnswers() {
         val answers = quizResults.map(::mapQuizResultToGivenAnswer)
+        val userPreferences = userDataStoreRepository.userFlow.first()
 
         _answerAddResult.value = wrapAsResult {
             givenAnswerRepository.insertAnswers(
-                token = token,
-                userUUID = userUUID,
+                token = userPreferences.userToken,
+                userUUID = userPreferences.userUUID,
                 answers = answers,
             )
 

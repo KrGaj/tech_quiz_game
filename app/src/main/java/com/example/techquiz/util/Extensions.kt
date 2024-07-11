@@ -25,7 +25,7 @@ internal suspend inline fun <reified T : Any> HttpClient.getWithToken(
     token: String?,
     builder: HttpRequestBuilder.() -> Unit = {},
 ): HttpResponse = get(resource) {
-    headers.append("Authorization", token.toString())
+    setAuthorizationHeader(token)
     builder()
 }
 
@@ -34,8 +34,14 @@ internal suspend inline fun <reified T : Any> HttpClient.postWithToken(
     token: String?,
     builder: HttpRequestBuilder.() -> Unit = {},
 ): HttpResponse = post(resource) {
-    headers.append("Authorization", token.toString())
+    setAuthorizationHeader(token)
     builder()
+}
+
+private fun HttpRequestBuilder.setAuthorizationHeader(
+    token: String?,
+) {
+    headers.append("Authorization", "Bearer $token")
 }
 
 fun MutableState<Boolean>.toggleValue() {
