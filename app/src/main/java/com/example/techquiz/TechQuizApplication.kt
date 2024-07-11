@@ -1,6 +1,7 @@
 package com.example.techquiz
 
 import android.app.Application
+import com.example.techquiz.di.dataStoreModule
 import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.repositoryModule
 import com.example.techquiz.di.sslManagerModule
@@ -11,6 +12,7 @@ import org.koin.core.context.startKoin
 
 class TechQuizApplication : Application() {
     private val koinModules = listOf(
+        dataStoreModule,
         httpClientModule,
         sslManagerModule,
         repositoryModule,

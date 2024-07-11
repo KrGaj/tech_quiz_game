@@ -8,6 +8,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import com.example.techquiz.data.domain.User
 import com.example.techquiz.data.domain.exception.InvalidCredentialTypeException
+import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.data.repository.UserRepository
 import com.example.techquiz.util.wrapAsResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -19,8 +20,10 @@ import org.koin.core.component.KoinScopeComponent
 import org.koin.core.component.createScope
 import org.koin.core.component.inject
 import org.koin.core.scope.Scope
+import java.util.UUID
 
 class LoginViewModel(
+    private val userDataStoreRepository: UserDataStoreRepository,
     webClientId: String,
 ) : ViewModel(), KoinScopeComponent {
     override val scope: Scope by lazy { createScope(this) }
@@ -104,6 +107,14 @@ class LoginViewModel(
         } else {
             return Result.failure(InvalidCredentialTypeException())
         }
+    }
+
+    suspend fun setToken(token: String) {
+        userDataStoreRepository.setUserToken(token)
+    }
+
+    suspend fun setUserUUID(uuid: UUID) {
+        userDataStoreRepository.setUserUUID(uuid)
     }
 
     suspend fun fetchUser(
