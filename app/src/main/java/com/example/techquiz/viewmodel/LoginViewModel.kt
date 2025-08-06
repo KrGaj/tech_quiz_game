@@ -63,14 +63,7 @@ class LoginViewModel(
             },
         )
 
-        signInResult?.fold(
-            onSuccess = {
-                _authResult.value = signInResult!!
-            },
-            onFailure = {
-                _authResult.value = signInResult!!
-            },
-        )
+        signInResult?.let { _authResult.value = it }
     }
 
     private suspend fun startAuth(

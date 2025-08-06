@@ -25,7 +25,6 @@ import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen
 import com.example.techquiz.util.navtype.CategoryNavType
 import com.example.techquiz.util.navtype.QuizSummaryNavType
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 
 @Composable

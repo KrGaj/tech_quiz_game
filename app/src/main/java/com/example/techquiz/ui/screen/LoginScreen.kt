@@ -1,5 +1,6 @@
 package com.example.techquiz.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -76,6 +77,7 @@ fun LoginScreen(
             },
             onFailure = {
                 isLoading = false
+                Log.d("DEMO ERROR No. 2137", it.message.toString())
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
