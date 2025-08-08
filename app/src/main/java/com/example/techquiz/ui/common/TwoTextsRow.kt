@@ -25,8 +25,7 @@ fun TwoTextsRow(
     Card(
         modifier = Modifier
             .then(modifier)
-            .fillMaxWidth()
-        ,
+            .fillMaxWidth(),
     ) {
         Row(
             modifier = Modifier

@@ -7,14 +7,18 @@ import java.security.KeyStore
 import javax.net.ssl.SSLContext
 import javax.net.ssl.TrustManagerFactory
 
+private const val KEYSTORE_PATH = "keystore/keystore.bks"
+private const val KEYSTORE_PASSWORD = "DemoApka"
+private const val SSL_MANAGER_PROTOCOL = "TLSv1.3"
+
 val sslManagerModule = module {
     single {
         val sslManagerConfig: SslManagerConfig = { config ->
             config.engine {
                 sslManager = {
                     val keyStoreFile = androidContext().assets
-                        .open("keystore/keystore.bks")
-                    val keyStorePassword = "DemoApka".toCharArray()
+                        .open(KEYSTORE_PATH)
+                    val keyStorePassword = KEYSTORE_PASSWORD.toCharArray()
 
                     it.sslSocketFactory = getSSLContext(
                         keyStoreFile,
@@ -35,7 +39,7 @@ private fun getSSLContext(
     keyStorePassword: CharArray,
 ): SSLContext? =
     SSLContext.getInstance(
-        "TLSv1.3",
+        SSL_MANAGER_PROTOCOL,
     ).also {
         it.init(
             null,

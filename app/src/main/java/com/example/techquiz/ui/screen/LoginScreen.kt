@@ -1,5 +1,6 @@
 package com.example.techquiz.ui.screen
 
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -26,9 +27,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
-import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
-import com.example.techquiz.viewmodel.UserViewModel
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -37,7 +36,6 @@ import org.koin.core.parameter.parametersOf
 @Composable
 fun LoginScreen(
     webClientId: String = stringResource(id = R.string.web_client_id),
-    userViewModel: UserViewModel = koinActivityViewModel(),
     loginViewModel: LoginViewModel = koinViewModel { parametersOf(webClientId) },
     navigateToCategories: () -> Unit,
 ) {
@@ -55,10 +53,12 @@ fun LoginScreen(
 
     LaunchedEffect(authResult) {
         authResult?.fold(
-            onSuccess = {
+            onSuccess = { credential ->
+                val token = credential.idToken
+
                 isLoading = true
-                userViewModel.setCredential(it)
-                loginViewModel.fetchUser(userViewModel.token)
+                loginViewModel.setToken(token)
+                loginViewModel.fetchUser(token)
             },
             onFailure = {
                 handleFailure(
@@ -71,12 +71,13 @@ fun LoginScreen(
 
     LaunchedEffect(user) {
         user?.fold(
-            onSuccess = {
-                userViewModel.userUuid = it.uuid
+            onSuccess = { user ->
+                loginViewModel.setUserUUID(user.uuid)
                 navigateToCategories()
             },
             onFailure = {
                 isLoading = false
+                Log.d("DEMO ERROR No. 2137", it.message.toString())
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },

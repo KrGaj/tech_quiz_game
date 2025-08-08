@@ -6,6 +6,7 @@ import io.ktor.client.engine.android.Android
 import io.ktor.client.engine.android.AndroidEngineConfig
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiationConfig
 import io.ktor.client.plugins.defaultRequest
 import io.ktor.client.plugins.resources.Resources
 import io.ktor.http.ContentType
@@ -40,7 +41,7 @@ val httpClientModule = module {
 }
 
 private fun configureContentNegotiation(
-    configure: ContentNegotiation.Config,
+    configure: ContentNegotiationConfig,
 ) = configure.json(
     Json {
         prettyPrint = true

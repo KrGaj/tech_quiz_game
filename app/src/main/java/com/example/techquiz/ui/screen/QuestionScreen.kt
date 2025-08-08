@@ -48,12 +48,10 @@ import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
-import com.example.techquiz.util.koinActivityViewModel
 import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
-import com.example.techquiz.viewmodel.UserViewModel
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
@@ -66,7 +64,6 @@ fun QuestionScreen(
     questionViewModel: QuestionViewModel = koinViewModel(),
     givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
-    userViewModel: UserViewModel = koinActivityViewModel(),
     category: Category,
     navigateToCategories: () -> Unit,
     navigateToResults: (List<QuizResult>) -> Unit,
@@ -143,10 +140,8 @@ fun QuestionScreen(
         }
         else {
             coroutineScope.launch {
-                givenAnswerViewModel.sendAnswers(
-                    userUUID = userViewModel.userUuid,
-                    token = userViewModel.token,
-                )
+                timerViewModel.clear()
+                givenAnswerViewModel.sendAnswers()
             }
         }
     }
@@ -165,16 +160,13 @@ fun QuestionScreen(
         }
     }
 
-    val sendAnswers: () -> Unit = {
+    val nextQuestionOrSendAnswers: () -> Unit = {
         timerViewModel.clear()
         givenAnswerViewModel.addAnswer(question)
 
         coroutineScope.launch {
             if (questionViewModel.isQuestionLast()) {
-                givenAnswerViewModel.sendAnswers(
-                    userUUID = userViewModel.userUuid,
-                    token = userViewModel.token,
-                )
+                givenAnswerViewModel.sendAnswers()
             } else {
                 questionViewModel.nextQuestion()
             }
@@ -219,13 +211,13 @@ fun QuestionScreen(
             NextQuestionButtonRow(
                 isLoading = { isLoading },
                 isQuestionLast = questionViewModel::isQuestionLast,
-                onClick = sendAnswers,
+                onClick = nextQuestionOrSendAnswers,
             )
         }
     }
 
     if (timeLeft == 0L) {
-        sendAnswers()
+        nextQuestionOrSendAnswers()
     }
 }
 
