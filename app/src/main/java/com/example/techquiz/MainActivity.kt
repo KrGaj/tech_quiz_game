@@ -16,39 +16,36 @@ import com.example.techquiz.navigation.AppNavHost
 import com.example.techquiz.navigation.BottomNavBar
 import com.example.techquiz.navigation.Screen
 import com.example.techquiz.ui.theme.CodingQuizTheme
-import org.koin.compose.KoinContext
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         setContent {
-            KoinContext {
-                CodingQuizTheme {
-                    val navController = rememberNavController()
-                    val navBackStackEntry by navController.currentBackStackEntryAsState()
+            CodingQuizTheme {
+                val navController = rememberNavController()
+                val navBackStackEntry by navController.currentBackStackEntryAsState()
 
-                    // A surface container using the 'background' color from the theme
-                    Scaffold(
-                        bottomBar = {
-                            when (navBackStackEntry?.destination?.route) {
-                                Screen.Categories.route,
-                                Screen.Statistics.route -> BottomNavBar(
-                                    navController = navController,
-                                    destinationRoute = navBackStackEntry?.destination?.route,
-                                )
-                                else -> Unit
-                            }
-                        },
-                    ) {
-                        Surface(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(it),
-                            color = MaterialTheme.colorScheme.background
-                        ) {
-                            AppNavHost(navController)
+                // A surface container using the 'background' color from the theme
+                Scaffold(
+                    bottomBar = {
+                        when (navBackStackEntry?.destination?.route) {
+                            Screen.Categories.route,
+                            Screen.Statistics.route -> BottomNavBar(
+                                navController = navController,
+                                destinationRoute = navBackStackEntry?.destination?.route,
+                            )
+                            else -> Unit
                         }
+                    },
+                ) {
+                    Surface(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(it),
+                        color = MaterialTheme.colorScheme.background
+                    ) {
+                        AppNavHost(navController)
                     }
                 }
             }

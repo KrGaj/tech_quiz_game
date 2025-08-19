@@ -6,13 +6,11 @@ import java.util.UUID
 
 interface StatsRepository {
     suspend fun getMostAnsweredCategories(
-        token: String?,
         userUUID: UUID?,
         count: Int,
     ): List<CategoryStats>
 
     suspend fun getCorrectAnswersCount(
-        token: String?,
         userUUID: UUID?,
     ): CorrectAnswersStats
 

@@ -67,7 +67,6 @@ class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
 
         _answerAddResult.value = wrapAsResult {
             givenAnswerRepository.insertAnswers(
-                token = userPreferences.userToken,
                 userUUID = userPreferences.userUUID,
                 answers = answers,
             )

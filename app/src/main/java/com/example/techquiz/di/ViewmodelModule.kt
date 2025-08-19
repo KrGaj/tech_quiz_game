@@ -1,5 +1,6 @@
 package com.example.techquiz.di
 
+import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.viewmodel.CategoryViewModel
 import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
@@ -15,9 +16,14 @@ val viewModelModule = module {
     viewModelOf(::CategoryViewModel)
     viewModelOf(::GivenAnswerViewModel)
     viewModelOf(::QuestionViewModel)
-    viewModelOf(::QuizResultsViewModel)
     viewModelOf(::StatsViewModel)
     viewModelOf(::TimerViewModel)
+
+    viewModel { (quizResults: List<QuizResult>) ->
+        QuizResultsViewModel(
+            quizResults = quizResults,
+        )
+    }
 
     viewModel { params ->
         LoginViewModel(

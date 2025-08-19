@@ -16,107 +16,49 @@ import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.LoginViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
-import io.ktor.client.HttpClient
-import io.ktor.http.URLProtocol
-import io.ktor.http.path
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
-import org.koin.core.parameter.parametersOf
-import org.koin.core.scope.Scope
+import org.koin.core.qualifier.named
 import org.koin.dsl.module
 
 val repositoryModule = module {
-    val questionApiUrlBuilder: UrlBuilderBlock = {
-        protocol = URLProtocol.HTTPS
-        host = "quizapi.io"
-        path("/api/v1/")
-        parameters.append("apiKey", "")
-    }
-
-    val answerApiUrlBuilder: UrlBuilderBlock = {
-        protocol = URLProtocol.HTTPS
-        host = ""
-    }
-
-    configureCategoryRepository(questionApiUrlBuilder)
-    configureQuestionRepository(questionApiUrlBuilder)
-    configureGivenAnswerRepository(answerApiUrlBuilder)
-    configureStatsRepository(answerApiUrlBuilder)
+    configureCategoryRepository()
+    configureQuestionRepository()
+    configureGivenAnswerRepository()
+    configureStatsRepository()
     configureUserDataStoreRepository()
-    configureUserRepository(answerApiUrlBuilder)
+    configureUserRepository()
 }
 
-private fun Module.configureCategoryRepository(
-    questionApiUrlBuilder: UrlBuilderBlock,
-) = scope<CategoryViewModel> {
+private fun Module.configureCategoryRepository() = scope<CategoryViewModel> {
     scoped<CategoryRepository> {
-        CategoryRepositoryDefault(
-            getHttpClient(
-                urlBuilder = questionApiUrlBuilder,
-                sslManagerConfig = null,
-            )
-        )
+        CategoryRepositoryDefault(httpClient = get(named(QUIZ_API_CLIENT)))
     }
 }
 
-private fun Module.configureQuestionRepository(
-    questionApiUrlBuilder: UrlBuilderBlock,
-) = scope<QuestionViewModel> {
+private fun Module.configureQuestionRepository() = scope<QuestionViewModel> {
     scoped<QuestionRepository> {
-        QuestionRepositoryDefault(
-            getHttpClient(
-                urlBuilder = questionApiUrlBuilder,
-                sslManagerConfig = null,
-            )
-        )
+        QuestionRepositoryDefault(httpClient = get(named(QUIZ_API_CLIENT)))
     }
 }
 
-private fun Module.configureGivenAnswerRepository(
-    answerApiUrlBuilder: UrlBuilderBlock,
-) = scope<GivenAnswerViewModel> {
+private fun Module.configureGivenAnswerRepository() = scope<GivenAnswerViewModel> {
     scoped<GivenAnswerRepository> {
-        GivenAnswerRepositoryDefault(
-            getHttpClient(
-                urlBuilder = answerApiUrlBuilder,
-                sslManagerConfig = get<SslManagerConfig>(),
-            )
-        )
+        GivenAnswerRepositoryDefault(httpClient = get(named(TECH_QUIZ_BACKEND_CLIENT)))
     }
 }
 
-private fun Module.configureStatsRepository(
-    answerApiUrlBuilder: UrlBuilderBlock,
-) = scope<StatsViewModel> {
+private fun Module.configureStatsRepository() = scope<StatsViewModel> {
     scoped<StatsRepository> {
-        StatsRepositoryDefault(
-            getHttpClient(
-                urlBuilder = answerApiUrlBuilder,
-                sslManagerConfig = get<SslManagerConfig>(),
-            )
-        )
+        StatsRepositoryDefault(httpClient = get(named(TECH_QUIZ_BACKEND_CLIENT)))
     }
 }
 
 private fun Module.configureUserDataStoreRepository() =
     singleOf(::UserDataStoreRepository)
 
-private fun Module.configureUserRepository(
-    answerApiUrlBuilder: UrlBuilderBlock,
-) = scope<LoginViewModel> {
+private fun Module.configureUserRepository() = scope<LoginViewModel> {
     scoped<UserRepository> {
-        UserRepositoryDefault(
-            getHttpClient(
-                urlBuilder = answerApiUrlBuilder,
-                sslManagerConfig = get<SslManagerConfig>(),
-            )
-        )
+        UserRepositoryDefault(httpClient = get(named(TECH_QUIZ_BACKEND_CLIENT)))
     }
-}
-
-private fun Scope.getHttpClient(
-    urlBuilder: UrlBuilderBlock,
-    sslManagerConfig: SslManagerConfig?,
-): HttpClient = get {
-    parametersOf(urlBuilder, sslManagerConfig)
 }
