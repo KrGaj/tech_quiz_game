@@ -1,16 +1,15 @@
 package com.example.techquiz.navigation
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import com.example.techquiz.R
 
 @Composable
 fun BottomNavBar(
@@ -29,7 +28,7 @@ fun BottomNavBar(
             },
             icon = {
                 Icon(
-                    Icons.Filled.Home,
+                    painter = painterResource(id = R.drawable.home_24px),
                     contentDescription = null
                 )
             },
@@ -43,7 +42,7 @@ fun BottomNavBar(
             onClick = { navController.navigate(Screen.Statistics.route) },
             icon = {
                 Icon(
-                    Icons.Filled.Info,
+                    painter = painterResource(id = R.drawable.info_24px),
                     contentDescription = null
                 )
             },
