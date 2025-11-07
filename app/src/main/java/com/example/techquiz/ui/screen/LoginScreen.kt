@@ -60,7 +60,7 @@ fun LoginScreen(
 
                 isLoading = true
                 loginViewModel.setToken(token)
-                loginViewModel.fetchUser(token)
+                loginViewModel.fetchUser()
             },
             onFailure = {
                 handleFailure(
