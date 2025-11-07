@@ -15,7 +15,7 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
 import io.ktor.http.path
 import io.ktor.serialization.kotlinx.json.json
-import kotlinx.coroutines.flow.lastOrNull
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
 import okhttp3.CertificatePinner
 import okhttp3.OkHttpClient
@@ -90,7 +90,7 @@ val httpClientModule = module {
         }.also {
             it.plugin(HttpSend).intercept { request ->
                 val userDataStoreRepository: UserDataStoreRepository = get()
-                val user = userDataStoreRepository.userFlow.lastOrNull()
+                val user = userDataStoreRepository.userFlow.firstOrNull()
                 if (user != null) {
                     request.headers.append(
                         name = "Authorization",
