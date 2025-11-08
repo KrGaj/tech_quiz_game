@@ -16,11 +16,11 @@ class UserDataStoreRepository(
         val uuidStr = preferences[KEY_USER_UUID]
         val userUUID = uuidStr?.let { UUID.fromString(it) }
             ?: UUID(0, 0)
-        val userToken = preferences[KEY_USER_TOKEN]
+        val userToken = preferences[KEY_USER_TOKEN] ?: ""
 
         UserPreferences(
             userUUID = userUUID,
-            userToken = userToken ?: "",
+            userToken = userToken,
         )
     }
 

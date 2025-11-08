@@ -5,7 +5,6 @@ import java.util.UUID
 
 interface GivenAnswerRepository {
     suspend fun insertAnswers(
-        token: String?,
         userUUID: UUID?,
         answers: List<GivenAnswer>,
     )

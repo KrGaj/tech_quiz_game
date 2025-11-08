@@ -30,7 +30,6 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         statsRepository.getMostAnsweredCategories(
-            token = userPreferences.userToken,
             userUUID = userPreferences.userUUID,
             count = CATEGORIES_COUNT,
         )
@@ -40,7 +39,6 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         statsRepository.getCorrectAnswersCount(
-            token = userPreferences.userToken,
             userUUID = userPreferences.userUUID,
         )
     }.also { _answersCount.value = it }

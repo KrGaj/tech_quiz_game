@@ -31,11 +31,13 @@ import com.example.techquiz.viewmodel.LoginViewModel
 import com.valentinilk.shimmer.shimmer
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
+import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
+import java.util.Properties
 
 @Composable
 fun LoginScreen(
-    webClientId: String = stringResource(id = R.string.web_client_id),
+    webClientId: String = koinInject<Properties>().getProperty("googleClientId"),
     loginViewModel: LoginViewModel = koinViewModel { parametersOf(webClientId) },
     navigateToCategories: () -> Unit,
 ) {
@@ -58,7 +60,7 @@ fun LoginScreen(
 
                 isLoading = true
                 loginViewModel.setToken(token)
-                loginViewModel.fetchUser(token)
+                loginViewModel.fetchUser()
             },
             onFailure = {
                 handleFailure(

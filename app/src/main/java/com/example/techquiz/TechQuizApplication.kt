@@ -3,8 +3,8 @@ package com.example.techquiz
 import android.app.Application
 import com.example.techquiz.di.dataStoreModule
 import com.example.techquiz.di.httpClientModule
+import com.example.techquiz.di.propertiesReaderModule
 import com.example.techquiz.di.repositoryModule
-import com.example.techquiz.di.sslManagerModule
 import com.example.techquiz.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
@@ -14,7 +14,7 @@ class TechQuizApplication : Application() {
     private val koinModules = listOf(
         dataStoreModule,
         httpClientModule,
-        sslManagerModule,
+        propertiesReaderModule,
         repositoryModule,
         viewModelModule,
     )

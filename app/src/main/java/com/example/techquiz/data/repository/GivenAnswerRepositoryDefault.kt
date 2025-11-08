@@ -4,8 +4,8 @@ import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.dto.request.GivenAnswerDTO
 import com.example.techquiz.data.dto.request.QuestionReqDTO
 import com.example.techquiz.data.resources.GivenAnswers
-import com.example.techquiz.util.postWithToken
 import io.ktor.client.HttpClient
+import io.ktor.client.plugins.resources.post
 import io.ktor.client.request.setBody
 import java.util.UUID
 
@@ -14,7 +14,6 @@ class GivenAnswerRepositoryDefault(
     private val httpClient: HttpClient,
 ) : GivenAnswerRepository {
     override suspend fun insertAnswers(
-        token: String?,
         userUUID: UUID?,
         answers: List<GivenAnswer>,
     ) {
@@ -31,9 +30,8 @@ class GivenAnswerRepositoryDefault(
             )
         }
 
-        httpClient.postWithToken(
+        httpClient.post(
             resource = GivenAnswers(),
-            token = token,
         ) {
             setBody(answersDTO)
         }

@@ -110,10 +110,8 @@ class LoginViewModel(
         userDataStoreRepository.setUserUUID(uuid)
     }
 
-    suspend fun fetchUser(
-        token: String?,
-    ): Unit = wrapAsResult {
-        userRepository.getUser(token)
+    suspend fun fetchUser(): Unit = wrapAsResult {
+        userRepository.getUser()
     }.let { _user.value = it }
 
     override fun onCleared() {

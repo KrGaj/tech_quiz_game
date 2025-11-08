@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">TechQuiz</string>
-    <string name="web_client_id">insert_your_server_client_id</string>
     <string name="sign_in_button_label">Sign In with Google</string>
 
     <plurals name="question_time_left">
