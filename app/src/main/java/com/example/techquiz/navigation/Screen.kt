@@ -5,7 +5,7 @@ import com.example.techquiz.R
 
 sealed class Screen(
     val route: String,
-    @StringRes val resourceId: Int,
+    @param:StringRes val resourceId: Int,
     val navArg: String = "",
 ) {
     data object Login : Screen(

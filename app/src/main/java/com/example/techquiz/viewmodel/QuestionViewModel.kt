@@ -4,7 +4,6 @@ import androidx.lifecycle.ViewModel
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.repository.QuestionRepository
-import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.component.KoinScopeComponent
@@ -28,7 +27,7 @@ class QuestionViewModel : ViewModel(), KoinScopeComponent {
         get() = _questionNumber.asStateFlow()
 
     suspend fun fetchQuestions(category: Category) {
-        val result = wrapAsResult {
+        val result = Result.runCatching {
             questionRepository.getRandomQuestions(
                 quantity = QUESTION_COUNT,
                 category = category,

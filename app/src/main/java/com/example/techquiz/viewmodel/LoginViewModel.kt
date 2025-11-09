@@ -10,7 +10,6 @@ import com.example.techquiz.data.domain.User
 import com.example.techquiz.data.domain.exception.InvalidCredentialTypeException
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.data.repository.UserRepository
-import com.example.techquiz.util.wrapAsResult
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
@@ -110,7 +109,7 @@ class LoginViewModel(
         userDataStoreRepository.setUserUUID(uuid)
     }
 
-    suspend fun fetchUser(): Unit = wrapAsResult {
+    suspend fun fetchUser(): Unit = Result.runCatching {
         userRepository.getUser()
     }.let { _user.value = it }
 

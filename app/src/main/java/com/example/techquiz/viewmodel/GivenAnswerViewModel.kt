@@ -7,7 +7,6 @@ import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
-import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -65,7 +64,7 @@ class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
         val answers = quizResults.map(::mapQuizResultToGivenAnswer)
         val userPreferences = userDataStoreRepository.userFlow.first()
 
-        _answerAddResult.value = wrapAsResult {
+        _answerAddResult.value = Result.runCatching {
             givenAnswerRepository.insertAnswers(
                 userUUID = userPreferences.userUUID,
                 answers = answers,

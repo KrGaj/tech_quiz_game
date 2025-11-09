@@ -5,7 +5,6 @@ import com.example.techquiz.data.dto.response.stats.CategoryStats
 import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
-import com.example.techquiz.util.wrapAsResult
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -26,7 +25,7 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
     private val _answersCount = MutableStateFlow<Result<CorrectAnswersStats>?>(null)
     val correctAnswersCount get() = _answersCount.asStateFlow()
 
-    suspend fun getMostAnsweredCategories() = wrapAsResult {
+    suspend fun getMostAnsweredCategories() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         statsRepository.getMostAnsweredCategories(
@@ -35,7 +34,7 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
         )
     }.also { _categoryStats.value = it }
 
-    suspend fun getCorrectAnswersCount() = wrapAsResult {
+    suspend fun getCorrectAnswersCount() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         statsRepository.getCorrectAnswersCount(
