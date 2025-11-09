@@ -1,6 +1,5 @@
 package com.example.techquiz.ui.screen
 
-import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -34,11 +32,8 @@ import com.example.techquiz.data.domain.Category
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
-import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
-import com.example.techquiz.util.findActivity
 import com.example.techquiz.util.getHttpFailureMessage
-import com.example.techquiz.util.toggleValue
 import com.example.techquiz.viewmodel.CategoryViewModel
 import com.valentinilk.shimmer.shimmer
 import org.koin.androidx.compose.koinViewModel
@@ -63,8 +58,6 @@ fun CategoriesScreen(
     }
 
     val context = LocalContext.current
-
-    BackButtonHandler()
 
     LaunchedEffect(categoriesResult) {
         categoriesResult?.fold(
@@ -104,30 +97,6 @@ fun CategoriesScreen(
                 )
             }
         }
-    }
-}
-
-@Composable
-private fun BackButtonHandler() {
-    val context = LocalContext.current
-
-    val showExitAppDialog = rememberSaveable {
-        mutableStateOf(false)
-    }
-
-    BackHandler {
-        showExitAppDialog.toggleValue()
-    }
-
-    if (showExitAppDialog.value) {
-        ExitDialog(
-            message = stringResource(id = R.string.app_exit_message),
-            onDismissRequest = { showExitAppDialog.toggleValue() },
-            onConfirmation = {
-                showExitAppDialog.toggleValue()
-                context.findActivity().finish()
-            }
-        )
     }
 }
 
