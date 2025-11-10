@@ -14,7 +14,7 @@ class StatsRepositoryDefault(
     override suspend fun getMostAnsweredCategories(
         userUUID: UUID?,
         count: Int,
-    ): List<CategoryStats> {
+    ): Result<List<CategoryStats>> = Result.runCatching {
         val response = httpClient.get(
             resource = Stats.MostAnsweredCategories(
                 userUUID = userUUID,
@@ -22,18 +22,18 @@ class StatsRepositoryDefault(
             ),
         )
 
-        return response.body()
+        return@runCatching response.body()
     }
 
     override suspend fun getCorrectAnswersCount(
         userUUID: UUID?,
-    ): CorrectAnswersStats {
+    ): Result<CorrectAnswersStats> = Result.runCatching {
         val response = httpClient.get(
             resource = Stats.CorrectAnswersCount(
                 userUUID = userUUID,
             ),
         )
 
-        return response.body()
+        return@runCatching response.body()
     }
 }

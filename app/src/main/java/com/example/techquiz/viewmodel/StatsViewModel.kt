@@ -19,22 +19,26 @@ class StatsViewModel(
     private val _answersCount = MutableStateFlow<Result<CorrectAnswersStats>?>(null)
     val correctAnswersCount get() = _answersCount.asStateFlow()
 
-    suspend fun getMostAnsweredCategories() = Result.runCatching {
+    suspend fun getMostAnsweredCategories() {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
-        statsRepository.getMostAnsweredCategories(
+        val statsResult = statsRepository.getMostAnsweredCategories(
             userUUID = userPreferences.userUUID,
             count = CATEGORIES_COUNT,
         )
-    }.also { _categoryStats.value = it }
 
-    suspend fun getCorrectAnswersCount() = Result.runCatching {
+        _categoryStats.value = statsResult
+    }
+
+    suspend fun getCorrectAnswersCount() {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
-        statsRepository.getCorrectAnswersCount(
+        val statsResult = statsRepository.getCorrectAnswersCount(
             userUUID = userPreferences.userUUID,
         )
-    }.also { _answersCount.value = it }
+
+        _answersCount.value = statsResult
+    }
 
     companion object {
         const val CATEGORIES_COUNT = 3
