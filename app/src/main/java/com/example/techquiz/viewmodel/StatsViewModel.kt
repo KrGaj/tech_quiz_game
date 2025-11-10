@@ -24,20 +24,24 @@ class StatsViewModel(
     suspend fun getMostAnsweredCategories() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
-        statsRepository.getMostAnsweredCategories(
+        val statsResult = statsRepository.getMostAnsweredCategories(
             userUuid = userPreferences.userUuid,
             count = CATEGORIES_COUNT,
         )
-    }.also { _categoryStats.value = it }
+
+        _categoryStats.value = statsResult
+    }
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getCorrectAnswersCount() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
-        statsRepository.getCorrectAnswersCount(
+        val statsResult = statsRepository.getCorrectAnswersCount(
             userUuid = userPreferences.userUuid,
         )
-    }.also { _answersCount.value = it }
+
+        _answersCount.value = statsResult
+    }
 
     companion object {
         const val CATEGORIES_COUNT = 3
