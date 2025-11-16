@@ -6,6 +6,8 @@ import com.example.techquiz.data.resources.Stats
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.get
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.util.UUID
 
 class StatsRepositoryDefault(
@@ -14,26 +16,30 @@ class StatsRepositoryDefault(
     override suspend fun getMostAnsweredCategories(
         userUUID: UUID?,
         count: Int,
-    ): Result<List<CategoryStats>> = Result.runCatching {
-        val response = httpClient.get(
-            resource = Stats.MostAnsweredCategories(
-                userUUID = userUUID,
-                count = count,
-            ),
-        )
+    ): Result<List<CategoryStats>> = withContext(Dispatchers.IO) {
+        Result.runCatching {
+            val response = httpClient.get(
+                resource = Stats.MostAnsweredCategories(
+                    userUUID = userUUID,
+                    count = count,
+                ),
+            )
 
-        return@runCatching response.body()
+            return@runCatching response.body()
+        }
     }
 
     override suspend fun getCorrectAnswersCount(
         userUUID: UUID?,
-    ): Result<CorrectAnswersStats> = Result.runCatching {
-        val response = httpClient.get(
-            resource = Stats.CorrectAnswersCount(
-                userUUID = userUUID,
-            ),
-        )
+    ): Result<CorrectAnswersStats> = withContext(Dispatchers.IO) {
+        Result.runCatching {
+            val response = httpClient.get(
+                resource = Stats.CorrectAnswersCount(
+                    userUUID = userUUID,
+                ),
+            )
 
-        return@runCatching response.body()
+            return@runCatching response.body()
+        }
     }
 }
