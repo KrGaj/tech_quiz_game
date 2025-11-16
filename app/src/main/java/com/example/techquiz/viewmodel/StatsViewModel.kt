@@ -1,27 +1,33 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.dto.response.stats.CategoryStats
-import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.ui.screen.StatsScreenState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.update
 import kotlin.uuid.ExperimentalUuidApi
 
 class StatsViewModel(
     private val statsRepository: StatsRepository,
     private val userDataStoreRepository: UserDataStoreRepository,
 ) : ViewModel() {
-    private val _categoryStats = MutableStateFlow<Result<List<CategoryStats>>?>(null)
-    val categoryStats get() = _categoryStats.asStateFlow()
+    private val _uiState = MutableStateFlow(value = StatsScreenState())
+    val uiState get() = _uiState.asStateFlow()
 
-    private val _answersCount = MutableStateFlow<Result<CorrectAnswersStats>?>(null)
-    val correctAnswersCount get() = _answersCount.asStateFlow()
+    suspend fun getStats() {
+        _uiState.update { it.copy(error = null, isLoading = true) }
+
+        getCategoriesStats()
+        getCorrectAnswersStats()
+
+        _uiState.update { it.copy(isLoading = false) }
+    }
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun getMostAnsweredCategories() = Result.runCatching {
+    suspend fun getCategoriesStats() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         val statsResult = statsRepository.getMostAnsweredCategories(
@@ -29,26 +35,31 @@ class StatsViewModel(
             count = CATEGORIES_COUNT,
         )
 
-        _categoryStats.value = statsResult
+        _uiState.update { state ->
+            statsResult.fold(
+                onSuccess = { state.copy(mostAnsweredCategories = it) },
+                onFailure = { state.copy(error = it) },
+            )
+        }
     }
 
     @OptIn(ExperimentalUuidApi::class)
-    suspend fun getCorrectAnswersCount() = Result.runCatching {
+    suspend fun getCorrectAnswersStats() = Result.runCatching {
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         val statsResult = statsRepository.getCorrectAnswersCount(
             userUuid = userPreferences.userUuid,
         )
 
-        _answersCount.value = statsResult
+        _uiState.update { state ->
+            statsResult.fold(
+                onSuccess = { state.copy(correctAnswersStats = it) },
+                onFailure = { state.copy(error = it) },
+            )
+        }
     }
 
     companion object {
         const val CATEGORIES_COUNT = 3
-
-        val DEFAULT_CORRECT_STATS = CorrectAnswersStats(
-            correctAnswers = 0,
-            allAnswers = 0,
-        )
     }
 }
