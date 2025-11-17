@@ -2,6 +2,6 @@ package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.User
 
-interface UserRepository {
+fun interface UserRepository {
     suspend fun getUser(): User
 }
