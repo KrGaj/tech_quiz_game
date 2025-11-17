@@ -10,17 +10,11 @@ import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import org.koin.core.component.KoinScopeComponent
-import org.koin.core.component.createScope
-import org.koin.core.component.inject
-import org.koin.core.scope.Scope
 
-class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
-    override val scope: Scope by lazy { createScope(this) }
-
-    private val givenAnswerRepository: GivenAnswerRepository by inject()
-    private val userDataStoreRepository: UserDataStoreRepository by inject()
-
+class GivenAnswerViewModel(
+    private val givenAnswerRepository: GivenAnswerRepository,
+    private val userDataStoreRepository: UserDataStoreRepository,
+) : ViewModel() {
     private val _selectedAnswers = MutableStateFlow(listOf<PossibleAnswer>())
     val selectedAnswers
         get() = _selectedAnswers.asStateFlow()
@@ -80,10 +74,4 @@ class GivenAnswerViewModel : ViewModel(), KoinScopeComponent {
         question = quizResult.question,
         correct = quizResult.isAnsweredCorrectly,
     )
-
-    override fun onCleared() {
-        super.onCleared()
-        givenAnswerRepository.closeHttpClient()
-        scope.close()
-    }
 }

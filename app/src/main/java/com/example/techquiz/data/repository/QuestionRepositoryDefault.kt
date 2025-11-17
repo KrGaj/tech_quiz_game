@@ -51,9 +51,4 @@ class QuestionRepositoryDefault(
             answers = possibleAnswers.shuffled(),
         )
     }
-
-
-    override fun closeHttpClient() {
-        httpClient.close()
-    }
 }

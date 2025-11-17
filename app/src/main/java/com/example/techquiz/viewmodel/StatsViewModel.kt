@@ -8,17 +8,11 @@ import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
-import org.koin.core.component.KoinScopeComponent
-import org.koin.core.component.createScope
-import org.koin.core.component.inject
-import org.koin.core.scope.Scope
 
-class StatsViewModel : ViewModel(), KoinScopeComponent {
-    override val scope: Scope by lazy { createScope(this) }
-
-    private val statsRepository: StatsRepository by inject()
-    private val userDataStoreRepository: UserDataStoreRepository by inject()
-
+class StatsViewModel(
+    private val statsRepository: StatsRepository,
+    private val userDataStoreRepository: UserDataStoreRepository,
+) : ViewModel() {
     private val _categoryStats = MutableStateFlow<Result<List<CategoryStats>>?>(null)
     val categoryStats get() = _categoryStats.asStateFlow()
 
@@ -41,12 +35,6 @@ class StatsViewModel : ViewModel(), KoinScopeComponent {
             userUUID = userPreferences.userUUID,
         )
     }.also { _answersCount.value = it }
-
-    override fun onCleared() {
-        super.onCleared()
-        statsRepository.closeHttpClient()
-        scope.close()
-    }
 
     companion object {
         const val CATEGORIES_COUNT = 3

@@ -19,8 +19,4 @@ class UserRepositoryDefault(
             uuid = body.uuid,
         )
     }
-
-    override fun closeHttpClient() {
-        httpClient.close()
-    }
 }

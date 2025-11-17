@@ -5,26 +5,14 @@ import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import org.koin.core.component.KoinScopeComponent
-import org.koin.core.component.createScope
-import org.koin.core.component.inject
-import org.koin.core.scope.Scope
 
-class CategoryViewModel: ViewModel(), KoinScopeComponent {
-    override val scope: Scope by lazy { createScope(this) }
-
-    private val categoryRepository: CategoryRepository by inject()
-
+class CategoryViewModel(
+    private val categoryRepository: CategoryRepository,
+): ViewModel() {
     private val _categories = MutableStateFlow<Result<List<Category>>?>(null)
     val categories get() = _categories.asStateFlow()
 
     suspend fun fetchCategories() = Result.runCatching {
         categoryRepository.getAllCategories()
     }.let { _categories.value = it }
-
-    override fun onCleared() {
-        super.onCleared()
-        categoryRepository.closeHttpClient()
-        scope.close()
-    }
 }

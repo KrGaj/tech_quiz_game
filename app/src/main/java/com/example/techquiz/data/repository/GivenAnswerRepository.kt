@@ -8,6 +8,4 @@ interface GivenAnswerRepository {
         userUUID: UUID?,
         answers: List<GivenAnswer>,
     )
-
-    fun closeHttpClient()
 }

@@ -13,6 +13,4 @@ interface StatsRepository {
     suspend fun getCorrectAnswersCount(
         userUUID: UUID?,
     ): CorrectAnswersStats
-
-    fun closeHttpClient()
 }

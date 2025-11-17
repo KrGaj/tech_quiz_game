@@ -8,6 +8,4 @@ interface QuestionRepository {
         quantity: Int,
         category: Category,
     ): List<Question>
-
-    fun closeHttpClient()
 }
