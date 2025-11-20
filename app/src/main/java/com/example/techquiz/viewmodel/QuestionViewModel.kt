@@ -21,12 +21,10 @@ class QuestionViewModel(
         get() = _questionNumber.asStateFlow()
 
     suspend fun fetchQuestions(category: Category) {
-        val result = Result.runCatching {
-            questionRepository.getRandomQuestions(
-                quantity = QUESTION_COUNT,
-                category = category,
-            )
-        }
+        val result = questionRepository.getRandomQuestions(
+            quantity = QUESTION_COUNT,
+            category = category,
+        )
 
         result.fold(
             onSuccess = {
