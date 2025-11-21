@@ -8,9 +8,9 @@ interface StatsRepository {
     suspend fun getMostAnsweredCategories(
         userUUID: UUID?,
         count: Int,
-    ): List<CategoryStats>
+    ): Result<List<CategoryStats>>
 
     suspend fun getCorrectAnswersCount(
         userUUID: UUID?,
-    ): CorrectAnswersStats
+    ): Result<CorrectAnswersStats>
 }

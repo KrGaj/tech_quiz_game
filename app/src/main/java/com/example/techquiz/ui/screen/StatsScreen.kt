@@ -7,12 +7,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -31,69 +31,48 @@ import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.viewmodel.StatsViewModel
 import com.valentinilk.shimmer.shimmer
+import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 
 @Composable
 fun StatsScreen(
     statsViewModel: StatsViewModel = koinViewModel(),
 ) {
+    val uiState by statsViewModel.uiState.collectAsStateWithLifecycle()
+
+    LaunchedEffect(Unit) {
+        statsViewModel.getStats()
+    }
+
+    val coroutineScope = rememberCoroutineScope()
+
+    PullToRefreshBox(
+        isRefreshing = uiState.isLoading,
+        onRefresh = {
+            coroutineScope.launch { statsViewModel.getStats() }
+        },
+    ) {
+        StatsScreen(
+            uiState = uiState,
+        )
+    }
+}
+
+@Composable
+private fun StatsScreen(
+    uiState: StatsScreenState,
+) {
     val snackbarHostState = remember {
         SnackbarHostState()
-    }
-    val categoryStatsResult by statsViewModel.categoryStats
-        .collectAsStateWithLifecycle()
-    val correctAnswersStatsResult by statsViewModel.correctAnswersCount
-        .collectAsStateWithLifecycle()
-
-    var categoryStats by remember {
-        mutableStateOf(emptyList<CategoryStats>())
-    }
-
-    var correctAnswersStats by remember {
-        mutableStateOf(StatsViewModel.DEFAULT_CORRECT_STATS)
-    }
-
-    var isCategoryStatsLoading by remember {
-        mutableStateOf(true)
-    }
-
-    var isCorrectAnswersStatsLoading by remember {
-        mutableStateOf(true)
     }
 
     val context = LocalContext.current
 
-    LaunchedEffect(categoryStatsResult) {
-        categoryStatsResult?.fold(
-            onSuccess = {
-                categoryStats = it
-                isCategoryStatsLoading = false
-            },
-            onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
-                snackbarHostState.showSnackbar(context.getString(messageRes))
-                isCategoryStatsLoading = false
-            },
-        )
-    }
-
-    LaunchedEffect(correctAnswersStatsResult) {
-        correctAnswersStatsResult?.fold(
-            onSuccess = {
-                correctAnswersStats = it
-                isCorrectAnswersStatsLoading = false
-            },
-            onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
-                snackbarHostState.showSnackbar(context.getString(messageRes))
-                isCorrectAnswersStatsLoading = false
-            },
-        )
-    }
-
-    LaunchedEffect(Unit) {
-        statsViewModel.getMostAnsweredCategories()
-        statsViewModel.getCorrectAnswersCount()
+    LaunchedEffect(uiState) {
+        uiState.error?.let {
+            val messageRes = getHttpFailureMessage(it as Exception)
+            snackbarHostState.showSnackbar(context.getString(messageRes))
+        }
     }
 
     Scaffold(
@@ -107,13 +86,14 @@ fun StatsScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
             StatsLabel()
+
             CategoryStatistics(
-                isLoading = isCategoryStatsLoading,
-                stats = categoryStats,
+                isLoading = uiState.isLoading,
+                stats = uiState.mostAnsweredCategories,
             )
             CorrectAnswersStatistics(
-                isLoading = isCorrectAnswersStatsLoading,
-                stats = correctAnswersStats,
+                isLoading = uiState.isLoading,
+                stats = uiState.correctAnswersStats,
             )
         }
     }
@@ -248,6 +228,19 @@ private fun CorrectAnswersStatsRow(stats: CorrectAnswersStats) {
     )
 }
 
+
+@Preview(showBackground = true)
+@Composable
+private fun PreviewStatsScreen() {
+    CodingQuizTheme {
+        val uiState = StatsScreenState(
+            mostAnsweredCategories = categoryStats,
+            correctAnswersStats = correctAnswersStats,
+        )
+
+        StatsScreen(uiState)
+    }
+}
 
 @Preview(showBackground = true)
 @Composable
