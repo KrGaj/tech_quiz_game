@@ -13,8 +13,8 @@ class QuestionRepositoryDefault(
     private val httpClient: HttpClient,
 ) : QuestionRepository {
     override suspend fun getRandomQuestions(
-        quantity: Int,
         category: Category,
+        quantity: Int,
     ): Result<List<Question>> = Result.runCatching {
         val response = httpClient.get(
             Questions(
