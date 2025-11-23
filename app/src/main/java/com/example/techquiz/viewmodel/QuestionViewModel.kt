@@ -22,8 +22,8 @@ class QuestionViewModel(
 
     suspend fun fetchQuestions(category: Category) {
         val result = questionRepository.getRandomQuestions(
-            quantity = QUESTION_COUNT,
             category = category,
+            quantity = QUESTION_COUNT,
         )
 
         result.fold(
