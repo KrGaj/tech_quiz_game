@@ -16,7 +16,7 @@ class GivenAnswerRepositoryDefault(
 ) : GivenAnswerRepository {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun insertAnswers(
-        userUuid: Uuid?,
+        userUuid: Uuid,
         answers: List<GivenAnswer>,
     ) {
         val answersDTO = answers.map {

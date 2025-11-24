@@ -8,12 +8,12 @@ import kotlin.uuid.Uuid
 interface StatsRepository {
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getMostAnsweredCategories(
-        userUuid: Uuid?,
+        userUuid: Uuid,
         count: Int,
     ): List<CategoryStats>
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getCorrectAnswersCount(
-        userUuid: Uuid?,
+        userUuid: Uuid,
     ): CorrectAnswersStats
 }

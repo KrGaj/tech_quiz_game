@@ -10,7 +10,7 @@ class Stats {
     @OptIn(ExperimentalUuidApi::class)
     class MostAnsweredCategories(
         val parent: Stats = Stats(),
-        val userUuid: Uuid?,
+        val userUuid: Uuid,
         val count: Int,
     )
 
@@ -18,6 +18,6 @@ class Stats {
     @OptIn(ExperimentalUuidApi::class)
     class CorrectAnswersCount(
         val parent: Stats = Stats(),
-        val userUuid: Uuid?,
+        val userUuid: Uuid,
     )
 }
