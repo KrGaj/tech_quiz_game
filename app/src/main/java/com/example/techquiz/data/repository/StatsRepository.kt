@@ -10,10 +10,10 @@ interface StatsRepository {
     suspend fun getMostAnsweredCategories(
         userUuid: Uuid?,
         count: Int,
-    ): List<CategoryStats>
+    ): Result<List<CategoryStats>>
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getCorrectAnswersCount(
         userUuid: Uuid?,
-    ): CorrectAnswersStats
+    ): Result<CorrectAnswersStats>
 }

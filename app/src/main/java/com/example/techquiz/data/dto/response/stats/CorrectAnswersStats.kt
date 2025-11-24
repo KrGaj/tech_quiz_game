@@ -4,6 +4,6 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class CorrectAnswersStats(
-    val correctAnswers: Long,
-    val allAnswers: Long,
+    val correctAnswers: Long = 0,
+    val allAnswers: Long = 0,
 )
