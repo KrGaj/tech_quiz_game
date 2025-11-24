@@ -1,7 +1,9 @@
 package com.example.techquiz.data.domain
 
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
+@OptIn(ExperimentalUuidApi::class)
 data class User(
-    val uuid: UUID,
+    val uuid: Uuid,
 )

@@ -34,7 +34,9 @@ import org.koin.androidx.compose.koinViewModel
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 import java.util.Properties
+import kotlin.uuid.ExperimentalUuidApi
 
+@OptIn(ExperimentalUuidApi::class)
 @Composable
 fun LoginScreen(
     webClientId: String = koinInject<Properties>().getProperty("googleClientId"),
@@ -74,7 +76,7 @@ fun LoginScreen(
     LaunchedEffect(user) {
         user?.fold(
             onSuccess = { user ->
-                loginViewModel.setUserUUID(user.uuid)
+                loginViewModel.setUserUuid(user.uuid)
                 navigateToCategories()
             },
             onFailure = {

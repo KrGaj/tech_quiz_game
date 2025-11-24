@@ -1,11 +1,13 @@
 package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.GivenAnswer
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 fun interface GivenAnswerRepository {
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun insertAnswers(
-        userUUID: UUID?,
+        userUuid: Uuid?,
         answers: List<GivenAnswer>,
     )
 }

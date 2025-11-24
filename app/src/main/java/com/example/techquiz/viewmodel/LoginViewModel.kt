@@ -15,7 +15,8 @@ import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class LoginViewModel(
     private val userDataStoreRepository: UserDataStoreRepository,
@@ -98,8 +99,9 @@ class LoginViewModel(
         userDataStoreRepository.setUserToken(token)
     }
 
-    suspend fun setUserUUID(uuid: UUID) {
-        userDataStoreRepository.setUserUUID(uuid)
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun setUserUuid(uuid: Uuid) {
+        userDataStoreRepository.setUserUuid(uuid)
     }
 
     suspend fun fetchUser(): Unit = Result.runCatching {

@@ -1,14 +1,13 @@
 package com.example.techquiz.data.dto.response
 
-import com.example.techquiz.util.UUIDSerializer
 import kotlinx.serialization.Serializable
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Serializable
+@OptIn(ExperimentalUuidApi::class)
 data class UserDTO(
-    @Serializable(
-        with = UUIDSerializer::class
-    ) val uuid: UUID,
+    val uuid: Uuid,
     val username: String,
     val email: String,
 )

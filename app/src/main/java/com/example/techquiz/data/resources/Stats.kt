@@ -1,22 +1,23 @@
 package com.example.techquiz.data.resources
 
-import com.example.techquiz.util.UUIDSerializer
 import io.ktor.resources.Resource
-import kotlinx.serialization.Serializable
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 @Resource("/stats")
 class Stats {
     @Resource("most_answered_categories")
+    @OptIn(ExperimentalUuidApi::class)
     class MostAnsweredCategories(
         val parent: Stats = Stats(),
-        @Serializable(with = UUIDSerializer::class) val userUUID: UUID?,
+        val userUuid: Uuid?,
         val count: Int,
     )
 
     @Resource("correct_answers_count")
+    @OptIn(ExperimentalUuidApi::class)
     class CorrectAnswersCount(
         val parent: Stats = Stats(),
-        @Serializable(with = UUIDSerializer::class) val userUUID: UUID?,
+        val userUuid: Uuid?,
     )
 }
