@@ -2,15 +2,18 @@ package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.dto.response.stats.CategoryStats
 import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 interface StatsRepository {
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun getMostAnsweredCategories(
-        userUUID: UUID?,
+        userUuid: Uuid?,
         count: Int,
     ): List<CategoryStats>
 
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun getCorrectAnswersCount(
-        userUUID: UUID?,
+        userUuid: Uuid?,
     ): CorrectAnswersStats
 }

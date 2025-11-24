@@ -53,6 +53,7 @@ import com.example.techquiz.viewmodel.GivenAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
 import com.valentinilk.shimmer.shimmer
+import io.ktor.client.plugins.ResponseException
 import kotlinx.coroutines.launch
 import org.koin.androidx.compose.koinViewModel
 import org.koin.core.parameter.parametersOf
@@ -106,7 +107,11 @@ fun QuestionScreen(
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
-                snackbarHostState.showSnackbar(context.getString(messageRes))
+                if (it is ResponseException) {
+                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status))
+                } else {
+                    snackbarHostState.showSnackbar(context.getString(messageRes))
+                }
             },
         )
     }
@@ -118,7 +123,11 @@ fun QuestionScreen(
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
-                snackbarHostState.showSnackbar(context.getString(messageRes))
+                if (it is ResponseException) {
+                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status))
+                } else {
+                    snackbarHostState.showSnackbar(context.getString(messageRes))
+                }
             }
         )
     }

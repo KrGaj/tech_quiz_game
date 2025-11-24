@@ -10,6 +10,7 @@ import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
+import kotlin.uuid.ExperimentalUuidApi
 
 class GivenAnswerViewModel(
     private val givenAnswerRepository: GivenAnswerRepository,
@@ -54,13 +55,14 @@ class GivenAnswerViewModel(
         )
     }
 
+    @OptIn(ExperimentalUuidApi::class)
     suspend fun sendAnswers() {
         val answers = quizResults.map(::mapQuizResultToGivenAnswer)
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         _answerAddResult.value = Result.runCatching {
             givenAnswerRepository.insertAnswers(
-                userUUID = userPreferences.userUUID,
+                userUuid = userPreferences.userUuid,
                 answers = answers,
             )
 

@@ -8,24 +8,29 @@ import com.example.techquiz.data.domain.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
+import kotlin.uuid.toKotlinUuid
 
 class UserDataStoreRepository(
     private val dataStore: DataStore<Preferences>,
 ) {
+    @OptIn(ExperimentalUuidApi::class)
     val userFlow: Flow<UserPreferences> = dataStore.data.map { preferences ->
         val uuidStr = preferences[KEY_USER_UUID]
-        val userUUID = uuidStr?.let { UUID.fromString(it) }
-            ?: UUID(0, 0)
+        val userUuid = uuidStr?.let { UUID.fromString(it).toKotlinUuid() }
+            ?: UUID(0, 0).toKotlinUuid()
         val userToken = preferences[KEY_USER_TOKEN] ?: ""
 
         UserPreferences(
-            userUUID = userUUID,
+            userUuid = userUuid,
             userToken = userToken,
         )
     }
 
-    suspend fun setUserUUID(
-        uuid: UUID,
+    @OptIn(ExperimentalUuidApi::class)
+    suspend fun setUserUuid(
+        uuid: Uuid,
     ) {
         dataStore.edit { preferences ->
             preferences[KEY_USER_UUID] = uuid.toString()

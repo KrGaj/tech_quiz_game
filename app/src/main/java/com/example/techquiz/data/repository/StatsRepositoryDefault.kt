@@ -6,18 +6,20 @@ import com.example.techquiz.data.resources.Stats
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.plugins.resources.get
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 class StatsRepositoryDefault(
     private val httpClient: HttpClient,
 ) : StatsRepository {
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun getMostAnsweredCategories(
-        userUUID: UUID?,
+        userUuid: Uuid?,
         count: Int,
     ): List<CategoryStats> {
         val response = httpClient.get(
             resource = Stats.MostAnsweredCategories(
-                userUUID = userUUID,
+                userUuid = userUuid,
                 count = count,
             ),
         )
@@ -25,12 +27,13 @@ class StatsRepositoryDefault(
         return response.body()
     }
 
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun getCorrectAnswersCount(
-        userUUID: UUID?,
+        userUuid: Uuid?,
     ): CorrectAnswersStats {
         val response = httpClient.get(
             resource = Stats.CorrectAnswersCount(
-                userUUID = userUUID,
+                userUuid = userUuid,
             ),
         )
 

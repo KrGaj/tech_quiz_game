@@ -7,14 +7,16 @@ import com.example.techquiz.data.resources.GivenAnswers
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post
 import io.ktor.client.request.setBody
-import java.util.UUID
+import kotlin.uuid.ExperimentalUuidApi
+import kotlin.uuid.Uuid
 
 // TODO improve
 class GivenAnswerRepositoryDefault(
     private val httpClient: HttpClient,
 ) : GivenAnswerRepository {
+    @OptIn(ExperimentalUuidApi::class)
     override suspend fun insertAnswers(
-        userUUID: UUID?,
+        userUuid: Uuid?,
         answers: List<GivenAnswer>,
     ) {
         val answersDTO = answers.map {
@@ -24,7 +26,7 @@ class GivenAnswerRepositoryDefault(
             )
 
             GivenAnswerDTO(
-                userUUID = userUUID,
+                userUuid = userUuid,
                 question = questionDTO,
                 isCorrect = it.correct,
             )
