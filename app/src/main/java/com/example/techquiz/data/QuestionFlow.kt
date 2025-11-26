@@ -1,19 +1,14 @@
 package com.example.techquiz.data
 
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.repository.GivenAnswerRepository
 import com.example.techquiz.data.repository.QuestionRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import kotlin.uuid.ExperimentalUuidApi
-import kotlin.uuid.Uuid
 
 class QuestionFlow(
     private val questionRepository: QuestionRepository,
-    private val givenAnswerRepository: GivenAnswerRepository,
 ) {
     private lateinit var questionIterator: Iterator<IndexedValue<Question>>
 
@@ -69,23 +64,6 @@ class QuestionFlow(
 
     private fun hasNextQuestion() =
         ::questionIterator.isInitialized && questionIterator.hasNext()
-
-    @OptIn(ExperimentalUuidApi::class)
-    suspend fun sendQuestionGivenAnswers(
-        answers: List<GivenAnswer>,
-        userUuid: Uuid,
-    ) {
-        val result = Result.runCatching {
-            givenAnswerRepository.insertAnswers(
-                userUuid = userUuid,
-                answers = answers,
-            )
-        }
-
-        _state.value = State(
-            error = result.exceptionOrNull(),
-        )
-    }
 
 
     data class State(
