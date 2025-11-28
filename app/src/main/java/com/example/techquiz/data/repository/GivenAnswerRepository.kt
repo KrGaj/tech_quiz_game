@@ -7,7 +7,7 @@ import kotlin.uuid.Uuid
 fun interface GivenAnswerRepository {
     @OptIn(ExperimentalUuidApi::class)
     suspend fun insertAnswers(
-        userUuid: Uuid?,
+        userUuid: Uuid,
         answers: List<GivenAnswer>,
     )
 }

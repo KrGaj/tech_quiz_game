@@ -4,6 +4,7 @@ import android.app.Application
 import com.example.techquiz.di.dataStoreModule
 import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.propertiesReaderModule
+import com.example.techquiz.di.questionFlowModule
 import com.example.techquiz.di.repositoryModule
 import com.example.techquiz.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
@@ -15,6 +16,7 @@ class TechQuizApplication : Application() {
         dataStoreModule,
         httpClientModule,
         propertiesReaderModule,
+        questionFlowModule,
         repositoryModule,
         viewModelModule,
     )

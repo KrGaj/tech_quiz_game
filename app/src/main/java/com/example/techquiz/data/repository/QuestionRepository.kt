@@ -5,7 +5,7 @@ import com.example.techquiz.data.domain.Question
 
 fun interface QuestionRepository {
     suspend fun getRandomQuestions(
-        quantity: Int,
         category: Category,
-    ): List<Question>
+        quantity: Int,
+    ): Result<List<Question>>
 }

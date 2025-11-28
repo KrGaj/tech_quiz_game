@@ -13,9 +13,9 @@ class QuestionRepositoryDefault(
     private val httpClient: HttpClient,
 ) : QuestionRepository {
     override suspend fun getRandomQuestions(
-        quantity: Int,
         category: Category,
-    ): List<Question> {
+        quantity: Int,
+    ): Result<List<Question>> = Result.runCatching {
         val response = httpClient.get(
             Questions(
                 category = category.name,
@@ -26,7 +26,7 @@ class QuestionRepositoryDefault(
         val responseBody: List<QuestionResDTO> = response.body()
         val questions = mapQuestionDtoToDomainQuestion(responseBody)
 
-        return questions.shuffled()
+        return@runCatching questions.shuffled()
     }
 
     private fun mapQuestionDtoToDomainQuestion(
