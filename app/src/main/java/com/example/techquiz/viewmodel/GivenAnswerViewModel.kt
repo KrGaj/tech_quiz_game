@@ -1,10 +1,9 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.repository.GivenAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -24,9 +23,9 @@ class GivenAnswerViewModel(
     val answerAddResult
         get() = _answerAddResult.asStateFlow()
 
-    private val _quizResults = mutableListOf<QuizResult>()
+    private val _givenAnswers = mutableListOf<GivenAnswer>()
     val quizResults
-        get() = _quizResults.toList()
+        get() = _givenAnswers.toList()
 
     fun toggleAnswer(answer: PossibleAnswer) {
         val modifiedAnswers = _selectedAnswers.value
@@ -46,34 +45,26 @@ class GivenAnswerViewModel(
         val isAnswerCorrect = question.answers
             .filter { it.isCorrect } == selectedAnswers.value
 
-        _quizResults.add(
-            QuizResult(
+        _givenAnswers.add(
+            GivenAnswer(
                 question = question,
-                givenAnswers = selectedAnswers.value,
-                isAnsweredCorrectly = isAnswerCorrect,
+                selectedPossibleAnswers = selectedAnswers.value,
+                isCorrect = isAnswerCorrect,
             )
         )
     }
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun sendAnswers() {
-        val answers = quizResults.map(::mapQuizResultToGivenAnswer)
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         _answerAddResult.value = Result.runCatching {
             givenAnswerRepository.insertAnswers(
                 userUuid = userPreferences.userUuid,
-                answers = answers,
+                answers = quizResults,
             )
 
-            answers.first().question.id
+            quizResults.first().question.id
         }
     }
-
-    private fun mapQuizResultToGivenAnswer(
-        quizResult: QuizResult
-    ) = GivenAnswer(
-        question = quizResult.question,
-        correct = quizResult.isAnsweredCorrectly,
-    )
 }

@@ -41,7 +41,7 @@ import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
@@ -67,7 +67,7 @@ fun QuestionScreen(
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
     category: Category,
     navigateToCategories: () -> Unit,
-    navigateToResults: (List<QuizResult>) -> Unit,
+    navigateToResults: (List<GivenAnswer>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember {
@@ -108,7 +108,7 @@ fun QuestionScreen(
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 if (it is ResponseException) {
-                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status))
+                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status.value))
                 } else {
                     snackbarHostState.showSnackbar(context.getString(messageRes))
                 }
@@ -124,7 +124,7 @@ fun QuestionScreen(
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
                 if (it is ResponseException) {
-                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status))
+                    snackbarHostState.showSnackbar(context.getString(messageRes, it.response.status.value))
                 } else {
                     snackbarHostState.showSnackbar(context.getString(messageRes))
                 }

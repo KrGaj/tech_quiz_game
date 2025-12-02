@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -46,8 +46,8 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun QuizSummaryScreen(
-    quizResults: List<QuizResult>,
-    quizResultsViewModel: QuizResultsViewModel = koinViewModel { parametersOf(quizResults) },
+    givenAnswers: List<GivenAnswer>,
+    quizResultsViewModel: QuizResultsViewModel = koinViewModel { parametersOf(givenAnswers) },
     onBackPressed: () -> Unit,
     navigateToCategories: () -> Unit,
 ) {
@@ -65,7 +65,7 @@ fun QuizSummaryScreen(
                 correctAnswers = correctAnswersCount,
                 allAnswers = answersCount,
             )
-            QuizResultsList(results = this.quizResults)
+            QuizResultsList(results = this.givenAnswers)
         }
 
         FinishButton(navigateToCategories)
@@ -97,7 +97,7 @@ private fun Score(
 }
 
 @Composable
-private fun QuizResultsList(results: List<QuizResult>) {
+private fun QuizResultsList(results: List<GivenAnswer>) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -108,10 +108,10 @@ private fun QuizResultsList(results: List<QuizResult>) {
 }
 
 @Composable
-private fun QuizResult(quizResult: QuizResult) {
+private fun QuizResult(givenAnswer: GivenAnswer) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    val answerCorrectColor = if (quizResult.isAnsweredCorrectly) {
+    val answerCorrectColor = if (givenAnswer.isCorrect) {
         Color(0xFF81C784)
     } else {
         Color(0xFFEF5350)
@@ -138,7 +138,7 @@ private fun QuizResult(quizResult: QuizResult) {
                     modifier = Modifier
                         .weight(0.8f)
                         .align(Alignment.CenterVertically),
-                    text = quizResult.question.text,
+                    text = givenAnswer.question.text,
                 )
 
                 Column(
@@ -157,7 +157,7 @@ private fun QuizResult(quizResult: QuizResult) {
             }
 
             if (isExpanded) {
-                val correctAnswers = quizResult.question.answers.filter { it.isCorrect }
+                val correctAnswers = givenAnswer.question.answers.filter { it.isCorrect }
                 val correctAnswersStr = buildAnswerString(
                     title = stringResource(
                         id = R.string.quiz_results_details_answers_correct,
@@ -169,7 +169,7 @@ private fun QuizResult(quizResult: QuizResult) {
                     title = stringResource(
                         id = R.string.quiz_results_details_answers_given,
                     ),
-                    answers = quizResult.givenAnswers,
+                    answers = givenAnswer.selectedPossibleAnswers,
                 )
 
                 HorizontalDivider(
@@ -227,7 +227,7 @@ private fun PreviewScore() {
 private fun PreviewQuizResultsList() {
     CodingQuizTheme {
         QuizResultsList(
-            results = quizResults,
+            results = givenAnswers,
         )
     }
 }
@@ -240,8 +240,8 @@ private fun PreviewFinishButton() {
     }
 }
 
-private val quizResults = listOf(
-    QuizResult(
+private val givenAnswers = listOf(
+    GivenAnswer(
         question = Question(
             id = 0,
             category = com.example.techquiz.data.domain.Category("Demo"),
@@ -261,27 +261,27 @@ private val quizResults = listOf(
                 )
             ),
         ),
-        givenAnswers = emptyList(),
-        isAnsweredCorrectly = true,
+        selectedPossibleAnswers = emptyList(),
+        isCorrect = true,
     ),
-    QuizResult(
+    GivenAnswer(
         question = Question(
             id = 1,
             category = com.example.techquiz.data.domain.Category("Demo"),
             text = "Demo Question 2",
             answers = emptyList(),
         ),
-        givenAnswers = emptyList(),
-        isAnsweredCorrectly = false,
+        selectedPossibleAnswers = emptyList(),
+        isCorrect = false,
     ),
-    QuizResult(
+    GivenAnswer(
         question = Question(
             id = 2,
             category = com.example.techquiz.data.domain.Category("Demo"),
             text = "Demo Question 3, but very very very long for preview purposes",
             answers = emptyList(),
         ),
-        givenAnswers = emptyList(),
-        isAnsweredCorrectly = false,
+        selectedPossibleAnswers = emptyList(),
+        isCorrect = false,
     ),
 )

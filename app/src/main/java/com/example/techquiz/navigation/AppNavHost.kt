@@ -16,7 +16,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.QuizSummary
 import com.example.techquiz.ui.screen.CategoriesScreen
 import com.example.techquiz.ui.screen.LoginScreen
@@ -147,7 +147,7 @@ private fun configureQuestionScreenRoute(
 }
 
 private fun navigateToResultsScreen(
-    results: List<QuizResult>,
+    results: List<GivenAnswer>,
     navController: NavController,
 ) {
     val resultsJson = encodeQuizResults(results)
@@ -159,7 +159,7 @@ private fun navigateToResultsScreen(
 }
 
 private fun encodeQuizResults(
-    results: List<QuizResult>,
+    results: List<GivenAnswer>,
 ): String = Uri.encode(Json.encodeToString(QuizSummary(results)))
 
 private fun configureQuizResultsScreen(
@@ -177,7 +177,7 @@ private fun configureQuizResultsScreen(
         val results = deserializeQuizResults(backStackEntry)
 
         QuizSummaryScreen(
-            quizResults = results,
+            givenAnswers = results,
             onBackPressed = { backToCategoriesInclusive(navController) },
             navigateToCategories = { backToCategoriesInclusive(navController) },
         )
@@ -186,7 +186,7 @@ private fun configureQuizResultsScreen(
 
 private fun deserializeQuizResults(
     backStackEntry: NavBackStackEntry,
-): List<QuizResult> =
+): List<GivenAnswer> =
     backStackEntry.arguments?.let {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
             it.getParcelable(Screen.QuizSummary.navArg, QuizSummary::class.java)
