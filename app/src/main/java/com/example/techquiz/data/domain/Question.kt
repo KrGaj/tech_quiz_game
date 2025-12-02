@@ -10,5 +10,5 @@ data class Question(
     val id: Int = 0,
     val category: Category = Category(name = "No category"),
     val text: String = "Question is not loaded yet",
-    val answers: List<PossibleAnswer> = emptyList(),
+    val options: List<AnswerOption> = emptyList(),
 ) : Parcelable

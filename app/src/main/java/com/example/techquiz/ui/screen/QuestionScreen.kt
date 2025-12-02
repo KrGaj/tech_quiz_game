@@ -39,9 +39,9 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.PossibleAnswer
+import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.GivenAnswer
+import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
@@ -49,7 +49,7 @@ import com.example.techquiz.ui.dialog.ExitDialog
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.util.getHttpFailureMessage
 import com.example.techquiz.util.toggleValue
-import com.example.techquiz.viewmodel.GivenAnswerViewModel
+import com.example.techquiz.viewmodel.UserAnswerViewModel
 import com.example.techquiz.viewmodel.QuestionViewModel
 import com.example.techquiz.viewmodel.TimerViewModel
 import com.valentinilk.shimmer.shimmer
@@ -63,11 +63,11 @@ private const val COLUMNS_NUM = 2
 @Composable
 fun QuestionScreen(
     questionViewModel: QuestionViewModel = koinViewModel(),
-    givenAnswerViewModel: GivenAnswerViewModel = koinViewModel(),
+    userAnswerViewModel: UserAnswerViewModel = koinViewModel(),
     timerViewModel: TimerViewModel = koinViewModel { parametersOf(QuestionViewModel.TIMEOUT) },
     category: Category,
     navigateToCategories: () -> Unit,
-    navigateToResults: (List<GivenAnswer>) -> Unit,
+    navigateToResults: (List<UserAnswer>) -> Unit,
 ) {
     val coroutineScope = rememberCoroutineScope()
     val snackbarHostState = remember {
@@ -75,11 +75,11 @@ fun QuestionScreen(
     }
     val questionResult by questionViewModel.question
         .collectAsStateWithLifecycle()
-    val answerAddResult by givenAnswerViewModel.answerAddResult
+    val answerAddResult by userAnswerViewModel.answerAddResult
         .collectAsStateWithLifecycle()
     val questionNumber by questionViewModel.questionNumber
         .collectAsStateWithLifecycle()
-    val selectedAnswers by givenAnswerViewModel.selectedAnswers
+    val selectedAnswers by userAnswerViewModel.selectedAnswers
         .collectAsStateWithLifecycle()
     val timeLeft by timerViewModel.timeLeft
         .collectAsStateWithLifecycle()
@@ -119,7 +119,7 @@ fun QuestionScreen(
     LaunchedEffect(answerAddResult) {
         answerAddResult?.fold(
             onSuccess = {
-                navigateToResults(givenAnswerViewModel.quizResults)
+                navigateToResults(userAnswerViewModel.quizResults)
             },
             onFailure = {
                 val messageRes = getHttpFailureMessage(it as? Exception)
@@ -144,13 +144,13 @@ fun QuestionScreen(
 
     val onDialogConfirmation: () -> Unit = {
         showExitDialog.toggleValue()
-        if (givenAnswerViewModel.quizResults.isEmpty()) {
+        if (userAnswerViewModel.quizResults.isEmpty()) {
             navigateToCategories()
         }
         else {
             coroutineScope.launch {
                 timerViewModel.clear()
-                givenAnswerViewModel.sendAnswers()
+                userAnswerViewModel.sendAnswers()
             }
         }
     }
@@ -171,16 +171,16 @@ fun QuestionScreen(
 
     val nextQuestionOrSendAnswers: () -> Unit = {
         timerViewModel.clear()
-        givenAnswerViewModel.addAnswer(question)
+        userAnswerViewModel.addAnswer(question)
 
         coroutineScope.launch {
             if (questionViewModel.isQuestionLast()) {
-                givenAnswerViewModel.sendAnswers()
+                userAnswerViewModel.sendAnswers()
             } else {
                 questionViewModel.nextQuestion()
             }
         }
-        givenAnswerViewModel.clearSelectedAnswers()
+        userAnswerViewModel.clearSelectedAnswers()
     }
 
     Scaffold(
@@ -200,7 +200,7 @@ fun QuestionScreen(
                 isLoading = isLoading,
                 categoryName = category.name,
                 questionNumber = questionNumber,
-                multipleCorrectAnswers = question.answers.count { it.isCorrect } > 1,
+                multipleCorrectAnswers = question.options.count { it.isCorrect } > 1,
             )
             QuestionTextCard(
                 isLoading = isLoading,
@@ -208,10 +208,10 @@ fun QuestionScreen(
             )
             AnswersGrid(
                 isLoading = isLoading,
-                answers = question.answers,
+                answers = question.options,
                 selectedAnswers = selectedAnswers,
             ) {
-                givenAnswerViewModel.toggleAnswer(it)
+                userAnswerViewModel.toggleAnswer(it)
             }
             Timer(
                 isLoading = isLoading,
@@ -364,9 +364,9 @@ private fun TextCard(
 @Composable
 private fun AnswersGrid(
     isLoading: Boolean,
-    answers: List<PossibleAnswer>,
-    selectedAnswers: List<PossibleAnswer>,
-    onClick: (PossibleAnswer) -> Unit,
+    answers: List<AnswerOption>,
+    selectedAnswers: List<AnswerOption>,
+    onClick: (AnswerOption) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
         columns = GridCells.Fixed(COLUMNS_NUM),
@@ -395,7 +395,7 @@ private fun AnswersGrid(
 private fun PossibleAnswer(
     modifier: Modifier = Modifier,
     isLoading: Boolean,
-    answer: PossibleAnswer,
+    answer: AnswerOption,
     color: Color,
     onClick: () -> Unit,
 ) {
@@ -426,7 +426,7 @@ private fun PossibleAnswerLoading(
 @Composable
 private fun PossibleAnswerLoaded(
     modifier: Modifier = Modifier,
-    answer: PossibleAnswer,
+    answer: AnswerOption,
     color: Color,
     onClick: () -> Unit,
 ) {
@@ -651,19 +651,19 @@ private val question = Question(
             "eu fugiat nulla pariatur. Excepteur sint occaecat " +
             "cupidatat non proident, sunt in culpa qui officia " +
             "deserunt mollit anim id est laborum.",
-    answers = emptyList(),
+    options = emptyList(),
 )
 
 private const val questionNumber = 3
 
 private val answers = listOf(
-    PossibleAnswer("Demo Answer 1", false),
-    PossibleAnswer("Demo Answer 2", false),
-    PossibleAnswer("Demo Answer 3", false),
-    PossibleAnswer("Demo Answer 4", true),
+    AnswerOption("Demo Answer 1", false),
+    AnswerOption("Demo Answer 2", false),
+    AnswerOption("Demo Answer 3", false),
+    AnswerOption("Demo Answer 4", true),
 )
 
 private val selectedAnswers = listOf(
-    PossibleAnswer("Demo Answer 1", false),
-    PossibleAnswer("Demo Answer 4", true)
+    AnswerOption("Demo Answer 1", false),
+    AnswerOption("Demo Answer 4", true)
 )

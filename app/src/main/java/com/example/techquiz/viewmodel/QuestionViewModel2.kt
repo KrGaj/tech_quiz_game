@@ -3,11 +3,11 @@ package com.example.techquiz.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.QuestionFlow
-import com.example.techquiz.data.SelectedAnswersCollector
+import com.example.techquiz.data.UserAnswersCollector
 import com.example.techquiz.data.Timer
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.PossibleAnswer
-import com.example.techquiz.data.repository.GivenAnswerRepository
+import com.example.techquiz.data.domain.AnswerOption
+import com.example.techquiz.data.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.ui.screen.QuestionScreenState
 import kotlinx.coroutines.Dispatchers
@@ -21,11 +21,11 @@ import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 
 class QuestionViewModel2(
-    private val givenAnswerRepository: GivenAnswerRepository,
+    private val userAnswerRepository: UserAnswerRepository,
     private val userDataStoreRepository: UserDataStoreRepository,
     private val questionFlow: QuestionFlow,
     private val timer: Timer = Timer(),
-    private val selectedAnswersCollector: SelectedAnswersCollector = SelectedAnswersCollector(),
+    private val userAnswersCollector: UserAnswersCollector = UserAnswersCollector(),
 ) : ViewModel() {
     private val apiCallState = MutableStateFlow(ApiCallState())
 
@@ -38,15 +38,15 @@ class QuestionViewModel2(
     val uiState = combine(
         apiCallState,
         questionFlow.state,
-        selectedAnswersCollector.state,
+        userAnswersCollector.state,
         timer.timeLeft,
     ) { acState, qfState, collectorState, timeLeft ->
         return@combine QuestionScreenState(
             currentQuestion = qfState.currentQuestion,
             questionNumber = qfState.questionNumber,
-            selectedAnswers = collectorState.givenAnswers.lastOrNull()
-                ?.selectedPossibleAnswers ?: emptyList(),
-            givenAnswers = collectorState.givenAnswers,
+            selectedAnswers = collectorState.userAnswers.lastOrNull()
+                ?.selectedOptions ?: emptyList(),
+            userAnswers = collectorState.userAnswers,
             timeLeft = timeLeft,
             isLoading = acState.isLoading,
             isSendingAnswers = acState.isSendingAnswers,
@@ -61,7 +61,7 @@ class QuestionViewModel2(
     private fun observeCurrentQuestion() {
         viewModelScope.launch(Dispatchers.Default) {
             questionFlow.state.collect {
-                selectedAnswersCollector.addQuestion(
+                userAnswersCollector.addQuestion(
                     it.currentQuestion,
                 )
             }
@@ -118,9 +118,9 @@ class QuestionViewModel2(
         viewModelScope.launch {
             val user = userDataStoreRepository.userFlow.first()
             val result = Result.runCatching {
-                givenAnswerRepository.insertAnswers(
+                userAnswerRepository.insertAnswers(
                     userUuid = user.userUuid,
-                    answers = selectedAnswersCollector.state.value.givenAnswers,
+                    answers = userAnswersCollector.state.value.userAnswers,
                 )
             }
 
@@ -132,8 +132,8 @@ class QuestionViewModel2(
     }
 
     fun onPossibleAnswerClick(
-        answer: PossibleAnswer,
-    ) = selectedAnswersCollector.onAnswerClick(answer)
+        answer: AnswerOption,
+    ) = userAnswersCollector.onOptionClick(answer)
 
 
     companion object {

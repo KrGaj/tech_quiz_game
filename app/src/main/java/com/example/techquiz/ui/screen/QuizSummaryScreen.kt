@@ -36,9 +36,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techquiz.R
-import com.example.techquiz.data.domain.PossibleAnswer
+import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.GivenAnswer
+import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -46,8 +46,8 @@ import org.koin.core.parameter.parametersOf
 
 @Composable
 fun QuizSummaryScreen(
-    givenAnswers: List<GivenAnswer>,
-    quizResultsViewModel: QuizResultsViewModel = koinViewModel { parametersOf(givenAnswers) },
+    userAnswers: List<UserAnswer>,
+    quizResultsViewModel: QuizResultsViewModel = koinViewModel { parametersOf(userAnswers) },
     onBackPressed: () -> Unit,
     navigateToCategories: () -> Unit,
 ) {
@@ -65,7 +65,7 @@ fun QuizSummaryScreen(
                 correctAnswers = correctAnswersCount,
                 allAnswers = answersCount,
             )
-            QuizResultsList(results = this.givenAnswers)
+            QuizResultsList(results = this.userAnswers)
         }
 
         FinishButton(navigateToCategories)
@@ -97,7 +97,7 @@ private fun Score(
 }
 
 @Composable
-private fun QuizResultsList(results: List<GivenAnswer>) {
+private fun QuizResultsList(results: List<UserAnswer>) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(8.dp),
     ) {
@@ -108,10 +108,10 @@ private fun QuizResultsList(results: List<GivenAnswer>) {
 }
 
 @Composable
-private fun QuizResult(givenAnswer: GivenAnswer) {
+private fun QuizResult(userAnswer: UserAnswer) {
     var isExpanded by remember { mutableStateOf(false) }
 
-    val answerCorrectColor = if (givenAnswer.isCorrect) {
+    val answerCorrectColor = if (userAnswer.isCorrect) {
         Color(0xFF81C784)
     } else {
         Color(0xFFEF5350)
@@ -138,7 +138,7 @@ private fun QuizResult(givenAnswer: GivenAnswer) {
                     modifier = Modifier
                         .weight(0.8f)
                         .align(Alignment.CenterVertically),
-                    text = givenAnswer.question.text,
+                    text = userAnswer.question.text,
                 )
 
                 Column(
@@ -157,7 +157,7 @@ private fun QuizResult(givenAnswer: GivenAnswer) {
             }
 
             if (isExpanded) {
-                val correctAnswers = givenAnswer.question.answers.filter { it.isCorrect }
+                val correctAnswers = userAnswer.question.options.filter { it.isCorrect }
                 val correctAnswersStr = buildAnswerString(
                     title = stringResource(
                         id = R.string.quiz_results_details_answers_correct,
@@ -165,11 +165,11 @@ private fun QuizResult(givenAnswer: GivenAnswer) {
                     answers = correctAnswers,
                 )
 
-                val givenAnswersStr = buildAnswerString(
+                val userAnswersStr = buildAnswerString(
                     title = stringResource(
                         id = R.string.quiz_results_details_answers_given,
                     ),
-                    answers = givenAnswer.selectedPossibleAnswers,
+                    answers = userAnswer.selectedOptions,
                 )
 
                 HorizontalDivider(
@@ -181,7 +181,7 @@ private fun QuizResult(givenAnswer: GivenAnswer) {
                     thickness = 2.dp,
                     color = Color.Black,
                 )
-                Text(text = givenAnswersStr)
+                Text(text = userAnswersStr)
             }
         }
     }
@@ -201,7 +201,7 @@ private fun FinishButton(navigateToCategories: () -> Unit) {
 
 private fun buildAnswerString(
     title: String,
-    answers: List<PossibleAnswer>,
+    answers: List<AnswerOption>,
 ) = buildString {
     append(title)
     append(" ")
@@ -227,7 +227,7 @@ private fun PreviewScore() {
 private fun PreviewQuizResultsList() {
     CodingQuizTheme {
         QuizResultsList(
-            results = givenAnswers,
+            results = userAnswers,
         )
     }
 }
@@ -240,48 +240,48 @@ private fun PreviewFinishButton() {
     }
 }
 
-private val givenAnswers = listOf(
-    GivenAnswer(
+private val userAnswers = listOf(
+    UserAnswer(
         question = Question(
             id = 0,
             category = com.example.techquiz.data.domain.Category("Demo"),
             text = "Demo Question 1",
-            answers = listOf(
-                PossibleAnswer(
+            options = listOf(
+                AnswerOption(
                     text = "ABC",
                     isCorrect = false,
                 ),
-                PossibleAnswer(
+                AnswerOption(
                     text = "123",
                     isCorrect = true,
                 ),
-                PossibleAnswer(
+                AnswerOption(
                     text = "test",
                     isCorrect = true,
                 )
             ),
         ),
-        selectedPossibleAnswers = emptyList(),
+        selectedOptions = emptyList(),
         isCorrect = true,
     ),
-    GivenAnswer(
+    UserAnswer(
         question = Question(
             id = 1,
             category = com.example.techquiz.data.domain.Category("Demo"),
             text = "Demo Question 2",
-            answers = emptyList(),
+            options = emptyList(),
         ),
-        selectedPossibleAnswers = emptyList(),
+        selectedOptions = emptyList(),
         isCorrect = false,
     ),
-    GivenAnswer(
+    UserAnswer(
         question = Question(
             id = 2,
             category = com.example.techquiz.data.domain.Category("Demo"),
             text = "Demo Question 3, but very very very long for preview purposes",
-            answers = emptyList(),
+            options = emptyList(),
         ),
-        selectedPossibleAnswers = emptyList(),
+        selectedOptions = emptyList(),
         isCorrect = false,
     ),
 )
