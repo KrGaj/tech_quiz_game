@@ -5,12 +5,12 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class QuizSummary(
-    val results: List<GivenAnswer>,
+    val results: List<UserAnswer>,
 ) : Parcelable
 
 @Parcelize
-data class GivenAnswer(
+data class UserAnswer(
     val question: Question = Question(),
-    val selectedPossibleAnswers: List<PossibleAnswer> = emptyList(),
+    val selectedOptions: List<AnswerOption> = emptyList(),
     val isCorrect: Boolean = false,
 ) : Parcelable

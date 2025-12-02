@@ -53,7 +53,7 @@ class QuestionViewModel(
             id = 0,
             category = Category(name = "0"),
             text = "Questions not loaded yet",
-            answers = emptyList(),
+            options = emptyList(),
         )
     }
 }

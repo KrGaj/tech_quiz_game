@@ -1,21 +1,21 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.domain.PossibleAnswer
+import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.GivenAnswer
-import com.example.techquiz.data.repository.GivenAnswerRepository
+import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.data.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlin.uuid.ExperimentalUuidApi
 
-class GivenAnswerViewModel(
-    private val givenAnswerRepository: GivenAnswerRepository,
+class UserAnswerViewModel(
+    private val userAnswerRepository: UserAnswerRepository,
     private val userDataStoreRepository: UserDataStoreRepository,
 ) : ViewModel() {
-    private val _selectedAnswers = MutableStateFlow(listOf<PossibleAnswer>())
+    private val _selectedAnswers = MutableStateFlow(listOf<AnswerOption>())
     val selectedAnswers
         get() = _selectedAnswers.asStateFlow()
 
@@ -23,11 +23,11 @@ class GivenAnswerViewModel(
     val answerAddResult
         get() = _answerAddResult.asStateFlow()
 
-    private val _givenAnswers = mutableListOf<GivenAnswer>()
+    private val _userAnswers = mutableListOf<UserAnswer>()
     val quizResults
-        get() = _givenAnswers.toList()
+        get() = _userAnswers.toList()
 
-    fun toggleAnswer(answer: PossibleAnswer) {
+    fun toggleAnswer(answer: AnswerOption) {
         val modifiedAnswers = _selectedAnswers.value
             .toMutableList()
             .apply {
@@ -42,13 +42,13 @@ class GivenAnswerViewModel(
     }
 
     fun addAnswer(question: Question) {
-        val isAnswerCorrect = question.answers
+        val isAnswerCorrect = question.options
             .filter { it.isCorrect } == selectedAnswers.value
 
-        _givenAnswers.add(
-            GivenAnswer(
+        _userAnswers.add(
+            UserAnswer(
                 question = question,
-                selectedPossibleAnswers = selectedAnswers.value,
+                selectedOptions = selectedAnswers.value,
                 isCorrect = isAnswerCorrect,
             )
         )
@@ -59,7 +59,7 @@ class GivenAnswerViewModel(
         val userPreferences = userDataStoreRepository.userFlow.first()
 
         _answerAddResult.value = Result.runCatching {
-            givenAnswerRepository.insertAnswers(
+            userAnswerRepository.insertAnswers(
                 userUuid = userPreferences.userUuid,
                 answers = quizResults,
             )

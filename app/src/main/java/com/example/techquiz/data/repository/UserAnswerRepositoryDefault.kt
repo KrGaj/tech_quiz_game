@@ -1,9 +1,9 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.domain.GivenAnswer
-import com.example.techquiz.data.dto.request.GivenAnswerDTO
+import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.data.dto.request.UserAnswerDTO
 import com.example.techquiz.data.dto.request.QuestionReqDTO
-import com.example.techquiz.data.resources.GivenAnswers
+import com.example.techquiz.data.resources.UserAnswers
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post
 import io.ktor.client.request.setBody
@@ -11,13 +11,13 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 // TODO improve
-class GivenAnswerRepositoryDefault(
+class UserAnswerRepositoryDefault(
     private val httpClient: HttpClient,
-) : GivenAnswerRepository {
+) : UserAnswerRepository {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun insertAnswers(
         userUuid: Uuid,
-        answers: List<GivenAnswer>,
+        answers: List<UserAnswer>,
     ) {
         val answersDTO = answers.map {
             val questionDTO = QuestionReqDTO(
@@ -25,7 +25,7 @@ class GivenAnswerRepositoryDefault(
                 category = it.question.category,
             )
 
-            GivenAnswerDTO(
+            UserAnswerDTO(
                 userUuid = userUuid,
                 question = questionDTO,
                 isCorrect = it.isCorrect,
@@ -33,7 +33,7 @@ class GivenAnswerRepositoryDefault(
         }
 
         httpClient.post(
-            resource = GivenAnswers(),
+            resource = UserAnswers(),
         ) {
             setBody(answersDTO)
         }

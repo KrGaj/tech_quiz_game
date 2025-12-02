@@ -2,7 +2,7 @@ package com.example.techquiz.data
 
 import app.cash.turbine.test
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.PossibleAnswer
+import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.repository.QuestionRepository
 import io.kotest.matchers.shouldBe
@@ -145,12 +145,12 @@ class QuestionFlowTest {
                 id = 1,
                 category = CATEGORY,
                 text = "Question ABC",
-                answers = listOf(
-                    PossibleAnswer(
+                options = listOf(
+                    AnswerOption(
                         text = "Yes",
                         isCorrect = true,
                     ),
-                    PossibleAnswer(
+                    AnswerOption(
                         text = "No",
                         isCorrect = false,
                     ),
@@ -160,12 +160,12 @@ class QuestionFlowTest {
                 id = 2,
                 category = CATEGORY,
                 text = "Question xD",
-                answers = listOf(
-                    PossibleAnswer(
+                options = listOf(
+                    AnswerOption(
                         text = "A",
                         isCorrect = false,
                     ),
-                    PossibleAnswer(
+                    AnswerOption(
                         text = "B",
                         isCorrect = true,
                     ),
@@ -175,12 +175,12 @@ class QuestionFlowTest {
                 id = 3,
                 category = CATEGORY,
                 text = "Example Question",
-                answers = listOf(
-                    PossibleAnswer(
+                options = listOf(
+                    AnswerOption(
                         text = "1",
                         isCorrect = true,
                     ),
-                    PossibleAnswer(
+                    AnswerOption(
                         text = "2",
                         isCorrect = false,
                     ),
@@ -190,12 +190,12 @@ class QuestionFlowTest {
                 id = 5,
                 category = CATEGORY,
                 text = "Question DEF",
-                answers = listOf(
-                    PossibleAnswer(
+                options = listOf(
+                    AnswerOption(
                         text = "Up",
                         isCorrect = true,
                     ),
-                    PossibleAnswer(
+                    AnswerOption(
                         text = "Down",
                         isCorrect = false,
                     ),
@@ -205,12 +205,12 @@ class QuestionFlowTest {
                 id = 8,
                 category = CATEGORY,
                 text = "Question MZ ETZ 251",
-                answers = listOf(
-                    PossibleAnswer(
+                options = listOf(
+                    AnswerOption(
                         text = "Slow",
                         isCorrect = false,
                     ),
-                    PossibleAnswer(
+                    AnswerOption(
                         text = "Fast",
                         isCorrect = true,
                     ),
