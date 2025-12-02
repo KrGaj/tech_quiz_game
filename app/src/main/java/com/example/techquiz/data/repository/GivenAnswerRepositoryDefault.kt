@@ -28,7 +28,7 @@ class GivenAnswerRepositoryDefault(
             GivenAnswerDTO(
                 userUuid = userUuid,
                 question = questionDTO,
-                isCorrect = it.correct,
+                isCorrect = it.isCorrect,
             )
         }
 

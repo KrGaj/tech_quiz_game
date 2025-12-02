@@ -1,13 +1,13 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 
 class QuizResultsViewModel(
-    val quizResults: List<QuizResult>,
+    val givenAnswers: List<GivenAnswer>,
 ) : ViewModel() {
     val correctAnswersCount
-        get() = quizResults.count { it.isAnsweredCorrectly }
+        get() = givenAnswers.count { it.isCorrect }
     val answersCount
-        get() = quizResults.count()
+        get() = givenAnswers.count()
 }

@@ -2,7 +2,7 @@ package com.example.techquiz.data
 
 import com.example.techquiz.data.domain.PossibleAnswer
 import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.GivenAnswer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -13,42 +13,48 @@ class SelectedAnswersCollector {
 
     fun onAnswerClick(
         answer: PossibleAnswer,
-    ) {
-        val updatedSelectedAnswers = _state.value.selectedAnswers
+    ) = _state.update {
+        if (it.givenAnswers.isEmpty()) {
+            return@update it
+        }
+
+        val currentItem = it.givenAnswers.last()
+
+        val updatedSelectedAnswers = currentItem.selectedPossibleAnswers
             .toMutableList()
             .apply {
                 if (!remove(answer)) add(answer)
             }
-
-        _state.update { it.copy(selectedAnswers = updatedSelectedAnswers) }
-    }
-
-    fun confirmAnswer(
-        question: Question,
-    ) {
-        val isAnswerCorrect = question.answers
-            .filter { it.isCorrect } == state.value.selectedAnswers
-
-        val confirmedAnswers = _state.value.confirmedAnswers
-            .toMutableList()
-
-        confirmedAnswers.add(
-            QuizResult(
-                question = question,
-                givenAnswers = state.value.selectedAnswers,
-                isAnsweredCorrectly = isAnswerCorrect,
-            )
+        val updatedGivenAnswer = currentItem.copy(
+            selectedPossibleAnswers = updatedSelectedAnswers,
         )
+        val result = it.givenAnswers
+            .toMutableList().apply {
+                this[lastIndex] = updatedGivenAnswer
+            }
 
-        _state.update { State(confirmedAnswers = confirmedAnswers) }
+        return@update it.copy(givenAnswers = result)
     }
 
-    fun reset() {
-        _state.value = State()
+    fun addQuestion(
+        question: Question,
+    ) = _state.update { state ->
+        if (state.givenAnswers.any { it.question == question }) {
+            return@update state
+        }
+
+        val newItem = GivenAnswer(
+            question = question,
+        )
+        val updatedGivenAnswers = state.givenAnswers
+            .toMutableList()
+            .also { it.add(newItem) }
+        return@update state.copy(
+            givenAnswers = updatedGivenAnswers,
+        )
     }
 
     data class State(
-        val selectedAnswers: List<PossibleAnswer> = emptyList(),
-        val confirmedAnswers: List<QuizResult> = emptyList(),
+        val givenAnswers: List<GivenAnswer> = emptyList(),
     )
 }

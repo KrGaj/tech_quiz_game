@@ -6,12 +6,11 @@ import com.example.techquiz.data.QuestionFlow
 import com.example.techquiz.data.SelectedAnswersCollector
 import com.example.techquiz.data.Timer
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.GivenAnswer
 import com.example.techquiz.data.domain.PossibleAnswer
-import com.example.techquiz.data.domain.QuizResult
 import com.example.techquiz.data.repository.GivenAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.ui.screen.QuestionScreenState
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -31,7 +30,10 @@ class QuestionViewModel2(
     private val apiCallState = MutableStateFlow(ApiCallState())
 
     private val questionFlowState get() = questionFlow.state
-    private val collectorState = selectedAnswersCollector.state
+
+    init {
+        observeCurrentQuestion()
+    }
 
     val uiState = combine(
         apiCallState,
@@ -42,7 +44,9 @@ class QuestionViewModel2(
         return@combine QuestionScreenState(
             currentQuestion = qfState.currentQuestion,
             questionNumber = qfState.questionNumber,
-            selectedAnswers = collectorState.selectedAnswers,
+            selectedAnswers = collectorState.givenAnswers.lastOrNull()
+                ?.selectedPossibleAnswers ?: emptyList(),
+            givenAnswers = collectorState.givenAnswers,
             timeLeft = timeLeft,
             isLoading = acState.isLoading,
             isSendingAnswers = acState.isSendingAnswers,
@@ -53,6 +57,16 @@ class QuestionViewModel2(
         started = SharingStarted.Eagerly,
         initialValue = QuestionScreenState(),
     )
+
+    private fun observeCurrentQuestion() {
+        viewModelScope.launch(Dispatchers.Default) {
+            questionFlow.state.collect {
+                selectedAnswersCollector.addQuestion(
+                    it.currentQuestion,
+                )
+            }
+        }
+    }
 
     fun startQuestionFlow(
         category: Category,
@@ -79,8 +93,6 @@ class QuestionViewModel2(
         apiCallState.value = ApiCallState(isLoading = true)
 
         timer.clear()
-        confirmSelectedAnswers()
-        selectedAnswersCollector.reset()
         questionFlow.nextQuestion()
 
         apiCallState.value = ApiCallState(isLoading = false)
@@ -90,11 +102,6 @@ class QuestionViewModel2(
             onTimeout = ::onTimeout,
         )
     }
-
-    private fun confirmSelectedAnswers() =
-        selectedAnswersCollector.confirmAnswer(
-            question = uiState.value.currentQuestion,
-        )
 
     private suspend fun onTimeout() =
         if (questionFlowState.value.hasNextQuestion) {
@@ -110,12 +117,10 @@ class QuestionViewModel2(
 
         viewModelScope.launch {
             val user = userDataStoreRepository.userFlow.first()
-            val answers = collectorState.value.confirmedAnswers
-                .map(::mapQuizResultToGivenAnswer)
             val result = Result.runCatching {
                 givenAnswerRepository.insertAnswers(
                     userUuid = user.userUuid,
-                    answers = answers,
+                    answers = selectedAnswersCollector.state.value.givenAnswers,
                 )
             }
 
@@ -125,13 +130,6 @@ class QuestionViewModel2(
             )
         }
     }
-
-    private fun mapQuizResultToGivenAnswer(
-        quizResult: QuizResult
-    ) = GivenAnswer(
-        question = quizResult.question,
-        correct = quizResult.isAnsweredCorrectly,
-    )
 
     fun onPossibleAnswerClick(
         answer: PossibleAnswer,
