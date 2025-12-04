@@ -92,6 +92,10 @@ dependencies {
     implementation(libs.compose.shimmer)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))

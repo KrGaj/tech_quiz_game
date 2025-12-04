@@ -6,7 +6,7 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 @Parcelize
-data class PossibleAnswer(
+data class AnswerOption(
     val text: String,
     val isCorrect: Boolean,
 ) : Parcelable

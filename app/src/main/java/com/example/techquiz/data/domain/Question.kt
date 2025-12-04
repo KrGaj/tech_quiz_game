@@ -7,8 +7,8 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class Question(
-    val id: Int,
-    val category: Category,
-    val text: String,
-    val answers: List<PossibleAnswer>,
+    val id: Int = 0,
+    val category: Category = Category(name = "No category"),
+    val text: String = "Question is not loaded yet",
+    val options: List<AnswerOption> = emptyList(),
 ) : Parcelable

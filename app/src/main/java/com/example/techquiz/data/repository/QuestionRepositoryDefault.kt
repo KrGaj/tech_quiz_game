@@ -1,7 +1,7 @@
 package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.PossibleAnswer
+import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.dto.response.QuestionResDTO
 import com.example.techquiz.data.resources.Questions
@@ -13,9 +13,9 @@ class QuestionRepositoryDefault(
     private val httpClient: HttpClient,
 ) : QuestionRepository {
     override suspend fun getRandomQuestions(
-        quantity: Int,
         category: Category,
-    ): List<Question> {
+        quantity: Int,
+    ): Result<List<Question>> = Result.runCatching {
         val response = httpClient.get(
             Questions(
                 category = category.name,
@@ -26,19 +26,19 @@ class QuestionRepositoryDefault(
         val responseBody: List<QuestionResDTO> = response.body()
         val questions = mapQuestionDtoToDomainQuestion(responseBody)
 
-        return questions.shuffled()
+        return@runCatching questions.shuffled()
     }
 
     private fun mapQuestionDtoToDomainQuestion(
         responseBody: List<QuestionResDTO>
     ) = responseBody.map { question ->
-        val possibleAnswers = question.answers.asSequence()
+        val answerOptions = question.answers.asSequence()
             .zip(question.correctAnswers.asSequence())
             .filter { it.first.value != null }
             .associate {
                 it.first.value as String to it.second.value
             }.map {
-                PossibleAnswer(
+                AnswerOption(
                     text = it.key,
                     isCorrect = it.value,
                 )
@@ -48,7 +48,7 @@ class QuestionRepositoryDefault(
             id = question.id,
             category = Category(question.category),
             text = question.questionText,
-            answers = possibleAnswers.shuffled(),
+            options = answerOptions.shuffled(),
         )
     }
 }

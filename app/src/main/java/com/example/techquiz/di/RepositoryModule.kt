@@ -2,8 +2,8 @@ package com.example.techquiz.di
 
 import com.example.techquiz.data.repository.CategoryRepository
 import com.example.techquiz.data.repository.CategoryRepositoryDefault
-import com.example.techquiz.data.repository.GivenAnswerRepository
-import com.example.techquiz.data.repository.GivenAnswerRepositoryDefault
+import com.example.techquiz.data.repository.UserAnswerRepository
+import com.example.techquiz.data.repository.UserAnswerRepositoryDefault
 import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
@@ -22,8 +22,8 @@ val repositoryModule = module {
         )
     }
 
-    factory<GivenAnswerRepository> {
-        GivenAnswerRepositoryDefault(
+    factory<UserAnswerRepository> {
+        UserAnswerRepositoryDefault(
             httpClient = get(named(TECH_QUIZ_BACKEND_CLIENT)),
         )
     }

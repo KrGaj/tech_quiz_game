@@ -6,8 +6,8 @@ import kotlin.uuid.Uuid
 
 @Serializable
 @OptIn(ExperimentalUuidApi::class)
-data class GivenAnswerDTO(
-    val userUuid: Uuid?,
+data class UserAnswerDTO(
+    val userUuid: Uuid,
     val question: QuestionReqDTO,
     val isCorrect: Boolean,
 )
