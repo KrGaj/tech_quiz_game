@@ -3,14 +3,14 @@ package com.example.techquiz.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techquiz.data.QuestionFlow
-import com.example.techquiz.data.UserAnswersCollector
 import com.example.techquiz.data.Timer
-import com.example.techquiz.data.domain.Category
+import com.example.techquiz.data.UserAnswersCollector
 import com.example.techquiz.data.domain.AnswerOption
+import com.example.techquiz.data.domain.Category
+import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.ui.screen.QuestionScreenState
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -26,13 +26,16 @@ class QuestionViewModel2(
     private val questionFlow: QuestionFlow,
     private val timer: Timer = Timer(),
     private val userAnswersCollector: UserAnswersCollector = UserAnswersCollector(),
+    private val category: Category,
 ) : ViewModel() {
     private val apiCallState = MutableStateFlow(ApiCallState())
 
     private val questionFlowState get() = questionFlow.state
 
     init {
-        observeCurrentQuestion()
+        startQuestionFlow(
+            category = category,
+        )
     }
 
     val uiState = combine(
@@ -57,16 +60,6 @@ class QuestionViewModel2(
         started = SharingStarted.Eagerly,
         initialValue = QuestionScreenState(),
     )
-
-    private fun observeCurrentQuestion() {
-        viewModelScope.launch(Dispatchers.Default) {
-            questionFlow.state.collect {
-                userAnswersCollector.addQuestion(
-                    it.currentQuestion,
-                )
-            }
-        }
-    }
 
     fun startQuestionFlow(
         category: Category,
@@ -131,9 +124,13 @@ class QuestionViewModel2(
         }
     }
 
-    fun onPossibleAnswerClick(
-        answer: AnswerOption,
-    ) = userAnswersCollector.onOptionClick(answer)
+    fun onAnswerOptionClick(
+        option: AnswerOption,
+        question: Question,
+    ) = userAnswersCollector.onOptionClick(
+        option = option,
+        question = question,
+    )
 
 
     companion object {

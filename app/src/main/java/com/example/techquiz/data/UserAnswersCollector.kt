@@ -13,51 +13,66 @@ class UserAnswersCollector {
 
     fun onOptionClick(
         option: AnswerOption,
+        question: Question,
     ) = _state.update {
-        if (it.userAnswers.isEmpty()) {
-            return@update it
+        val answerForQuestion = it.userAnswers.find {
+            elem -> elem.question == question
         }
 
-        val currentItem = it.userAnswers.last()
+        return@update when(answerForQuestion) {
+            null -> addNewAnswer(
+                state = it,
+                question = question,
+                selectedOption = option,
+            )
+            else -> modifyExistingAnswer(
+                state = it,
+                answer = answerForQuestion,
+                selectedOption = option,
+            )
+        }
+    }
 
-        val updatedSelected = currentItem.selectedOptions
+    private fun addNewAnswer(
+        state: State,
+        question: Question,
+        selectedOption: AnswerOption,
+    ): State {
+        val userAnswer = UserAnswer(
+            question = question,
+            selectedOptions = listOf(
+                selectedOption,
+            )
+        )
+        val userAnswersUpdated = state.userAnswers.toMutableList()
+            .also {
+                it.add(userAnswer)
+            }
+
+        return state.copy(userAnswers = userAnswersUpdated)
+    }
+
+    private fun modifyExistingAnswer(
+        state: State,
+        answer: UserAnswer,
+        selectedOption: AnswerOption,
+    ): State {
+        val answerIndex = state.userAnswers.indexOf(answer)
+        val updatedSelected = answer.selectedOptions
             .toMutableList()
             .apply {
-                if (!remove(option)) add(option)
+                if (!remove(selectedOption)) add(selectedOption)
             }
-        val updatedAnswer = currentItem.copy(
+        val updatedAnswer = answer.copy(
             selectedOptions = updatedSelected,
         )
-        val result = it.userAnswers.toMutableList().apply {
-            this[lastIndex] = updatedAnswer
-        }
+        val userAnswersUpdated = state.userAnswers.toMutableList()
+            .apply {
+                this[answerIndex] = updatedAnswer
+            }
 
-        return@update it.copy(userAnswers = result)
+        return state.copy(userAnswers = userAnswersUpdated)
     }
-
-    fun addQuestion(
-        question: Question,
-    ) = _state.update { state ->
-        if (!shouldAddQuestion(question, state.userAnswers)) {
-            return@update state
-        }
-
-        val newItem = UserAnswer(
-            question = question,
-        )
-        val updatedAnswers = state.userAnswers
-            .toMutableList()
-            .also { it.add(newItem) }
-        return@update state.copy(
-            userAnswers = updatedAnswers,
-        )
-    }
-
-    private fun shouldAddQuestion(
-        question: Question,
-        userAnswers: List<UserAnswer>,
-    ) = userAnswers.none { it.question == question }
-            && question != Question()
 
     data class State(
         val userAnswers: List<UserAnswer> = emptyList(),
