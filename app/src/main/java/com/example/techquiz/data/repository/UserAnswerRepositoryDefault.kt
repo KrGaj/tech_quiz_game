@@ -18,7 +18,7 @@ class UserAnswerRepositoryDefault(
     override suspend fun insertAnswers(
         userUuid: Uuid,
         answers: List<UserAnswer>,
-    ) {
+    ): Result<Unit> = Result.runCatching {
         val answersDTO = answers.map {
             val questionDTO = QuestionReqDTO(
                 id = it.question.id.toLong(),

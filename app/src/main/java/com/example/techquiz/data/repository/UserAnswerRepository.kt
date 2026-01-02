@@ -9,5 +9,5 @@ fun interface UserAnswerRepository {
     suspend fun insertAnswers(
         userUuid: Uuid,
         answers: List<UserAnswer>,
-    )
+    ): Result<Unit>
 }

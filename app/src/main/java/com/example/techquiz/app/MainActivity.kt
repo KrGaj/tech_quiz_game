@@ -1,4 +1,4 @@
-package com.example.techquiz
+package com.example.techquiz.app
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
