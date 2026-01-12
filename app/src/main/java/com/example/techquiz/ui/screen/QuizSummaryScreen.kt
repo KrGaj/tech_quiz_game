@@ -48,11 +48,10 @@ import org.koin.core.parameter.parametersOf
 fun QuizSummaryScreen(
     quizResults: List<QuizResult>,
     quizResultsViewModel: QuizResultsViewModel = koinViewModel { parametersOf(quizResults) },
-    onBackPressed: () -> Unit,
     navigateToCategories: () -> Unit,
 ) {
     BackHandler {
-        onBackPressed()
+        navigateToCategories()
     }
 
     Column(

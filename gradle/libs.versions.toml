@@ -1,8 +1,9 @@
 [versions]
-activity-compose = "1.12.0"
-agp = "8.13.1"
+activity-compose = "1.12.2"
+agp = "8.13.2"
+androidx-lifecycle = "2.10.0"
 androidx-test-ext-junit = "1.3.0"
-compose-bom = "2025.11.01"
+compose-bom = "2026.01.00"
 compose-shimmer = "1.3.3"
 core-ktx = "1.17.0"
 coroutines = "1.10.2"
@@ -12,20 +13,21 @@ espresso-core = "3.7.0"
 googleid = "1.1.1"
 junit = "4.13.2"
 koin-android = "4.1.1"
-kotlin = "2.2.21"
+kotlin = "2.3.0"
 kotlinx-serialization-json = "1.9.0"
-ksp = "2.3.3"
-ktor = "3.3.2"
-lifecycle-runtime-ktx = "2.10.0"
-navigation-compose = "2.9.6"
+ksp = "2.3.4"
+ktor = "3.3.3"
+navigation3 = "1.0.0"
 
 [libraries]
 activity-compose = { group = "androidx.activity", name = "activity-compose", version.ref = "activity-compose" }
 androidx-datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
-androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "lifecycle-runtime-ktx" }
+androidx-lifecycle-viewmodel-navigation3 = { module = "androidx.lifecycle:lifecycle-viewmodel-navigation3", version.ref = "androidx-lifecycle" }
+androidx-lifecycle-runtime-compose = { module = "androidx.lifecycle:lifecycle-runtime-compose", version.ref = "androidx-lifecycle" }
 androidx-material = { module = "androidx.compose.material:material" }
 androidx-material3 = { module = "androidx.compose.material3:material3" }
-androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "navigation-compose" }
+androidx-navigation3-runtime = { module = "androidx.navigation3:navigation3-runtime", version.ref = "navigation3" }
+androidx-navigation3-ui = { module = "androidx.navigation3:navigation3-ui", version.ref = "navigation3" }
 androidx-test-ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidx-test-ext-junit" }
 androidx-ui = { module = "androidx.compose.ui:ui" }
 androidx-ui-graphics = { module = "androidx.compose.ui:ui-graphics" }
@@ -50,7 +52,7 @@ ktor-client-content-negotiation = { module = "io.ktor:ktor-client-content-negoti
 ktor-client-core = { module = "io.ktor:ktor-client-core", version.ref = "ktor" }
 ktor-client-resources = { module = "io.ktor:ktor-client-resources", version.ref = "ktor" }
 ktor-serialization-kotlinx-json = { module = "io.ktor:ktor-serialization-kotlinx-json", version.ref = "ktor" }
-lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "lifecycle-runtime-ktx" }
+lifecycle-runtime-ktx = { group = "androidx.lifecycle", name = "lifecycle-runtime-ktx", version.ref = "androidx-lifecycle" }
 
 [plugins]
 androidApplication = { id = "com.android.application", version.ref = "agp" }
