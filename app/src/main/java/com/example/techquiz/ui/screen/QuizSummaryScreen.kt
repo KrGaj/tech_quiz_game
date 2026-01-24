@@ -109,7 +109,7 @@ private fun QuizResultsList(
 
 @Composable
 private fun QuizResult(
-    givenAnswer: UserAnswer,
+    userAnswer: UserAnswer,
 ) {
     var isExpanded by remember { mutableStateOf(false) }
 

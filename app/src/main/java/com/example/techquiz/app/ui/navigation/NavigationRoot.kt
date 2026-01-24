@@ -23,7 +23,7 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.ui.screen.CategoriesScreen
 import com.example.techquiz.ui.screen.QuestionScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
@@ -135,7 +135,7 @@ fun NavigationRoot() {
 private fun getQuizNavEntryProvider(
     navigateCategoriesToQuestion: (Category) -> Unit,
     navigateQuestionToCategories: () -> Unit,
-    navigateQuestionToResults: (List<QuizResult>) -> Unit,
+    navigateQuestionToResults: (List<UserAnswer>) -> Unit,
     navigateResultsToCategories: () -> Unit,
 ): (NavKey) -> NavEntry<NavKey> = entryProvider {
     entry<QuizRoute.Categories> {
@@ -154,7 +154,7 @@ private fun getQuizNavEntryProvider(
 
     entry<QuizRoute.QuizSummary> { navKey ->
         QuizSummaryScreen(
-            quizResults = navKey.userAnswers,
+            userAnswers = navKey.userAnswers,
             navigateToCategories = navigateResultsToCategories,
         )
     }
