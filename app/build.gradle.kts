@@ -1,9 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.parcelize)
     alias(libs.plugins.serialization)
@@ -39,12 +36,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_17
-        }
     }
 
     buildFeatures {
@@ -83,6 +74,7 @@ dependencies {
 
     implementation(libs.koin.androidx.compose)
 
+    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.resources)
