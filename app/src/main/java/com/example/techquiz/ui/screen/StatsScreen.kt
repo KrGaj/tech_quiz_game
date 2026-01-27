@@ -97,7 +97,7 @@ fun StatsScreen(
     }
 
     Scaffold(
-        modifier = Modifier.padding(12.dp),
+        modifier = Modifier.padding(horizontal = 12.dp),
         snackbarHost = {
             SnackbarHost(hostState = snackbarHostState)
         }

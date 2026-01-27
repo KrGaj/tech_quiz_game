@@ -55,8 +55,7 @@ fun QuizSummaryScreen(
     }
 
     Column(
-        modifier = Modifier
-            .padding(12.dp),
+        modifier = Modifier.padding(horizontal = 12.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         with(quizResultsViewModel) {
