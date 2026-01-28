@@ -22,12 +22,15 @@ import androidx.navigation3.runtime.rememberDecoratedNavEntries
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
+import com.example.techquiz.app.ui.question.QuestionScreen
+import com.example.techquiz.app.ui.question.QuestionViewModel
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.ui.screen.CategoriesScreen
-import com.example.techquiz.ui.screen.QuestionScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen
+import org.koin.androidx.compose.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 @Composable
 fun NavigationRoot() {
@@ -55,7 +58,7 @@ fun NavigationRoot() {
             navigateQuestionToCategories = {
                 quizBackStack.removeLastOrNull()
             },
-            navigateQuestionToResults = {
+            navigateQuestionToSummary = {
                 quizBackStack.removeLastOrNull()
                 quizBackStack.add(
                     QuizRoute.QuizSummary(
@@ -135,7 +138,7 @@ fun NavigationRoot() {
 private fun getQuizNavEntryProvider(
     navigateCategoriesToQuestion: (Category) -> Unit,
     navigateQuestionToCategories: () -> Unit,
-    navigateQuestionToResults: (List<UserAnswer>) -> Unit,
+    navigateQuestionToSummary: (List<UserAnswer>) -> Unit,
     navigateResultsToCategories: () -> Unit,
 ): (NavKey) -> NavEntry<NavKey> = entryProvider {
     entry<QuizRoute.Categories> {
@@ -145,10 +148,17 @@ private fun getQuizNavEntryProvider(
     }
 
     entry<QuizRoute.Question> { navKey ->
+        val questionViewModel: QuestionViewModel = koinViewModel {
+            parametersOf(navKey.category)
+        }
+
         QuestionScreen(
-            category = navKey.category,
-            navigateToCategories = navigateQuestionToCategories,
-            navigateToResults = navigateQuestionToResults,
+            questionViewModel = questionViewModel,
+            navigateFromQuestion = { userAnswers ->
+                userAnswers.takeIf { it.isNotEmpty() }?.let {
+                    navigateQuestionToSummary(it)
+                } ?: navigateQuestionToCategories()
+            },
         )
     }
 

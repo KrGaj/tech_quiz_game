@@ -7,12 +7,16 @@ import com.example.techquiz.data.UserAnswersCollector
 import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.Question
+import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.data.domain.UserPreferences
 import com.example.techquiz.data.repository.QuestionRepository
 import com.example.techquiz.data.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.util.getHttpFailureMessage
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.matchers.shouldBe
+import io.kotest.matchers.shouldNotBe
+import io.kotest.matchers.types.shouldBeTypeOf
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -45,6 +49,8 @@ class QuestionViewModelTest {
     private lateinit var userAnswersCollector: UserAnswersCollector
     private lateinit var timer: Timer
 
+    private lateinit var userAnswers: List<UserAnswer>
+
     @OptIn(
         ExperimentalCoroutinesApi::class,
         ExperimentalUuidApi::class,
@@ -60,9 +66,16 @@ class QuestionViewModelTest {
         userAnswersCollector = mockk()
         timer = mockk()
 
+        userAnswers = QUESTIONS.map {
+            UserAnswer(
+                question = it,
+                selectedOptions = listOf(it.options.random()),
+            )
+        }
+
         coEvery {
             userAnswersCollector.state
-        } returns MutableStateFlow(UserAnswersCollector.State())
+        } returns MutableStateFlow(UserAnswersCollector.State(userAnswers))
             .asStateFlow()
 
         every {
@@ -119,14 +132,15 @@ class QuestionViewModelTest {
     fun `Fetching data updates UI state`() = runTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
-            skipItems(2)
+            skipItems(1)
 
-            awaitItem() shouldBe QuestionUiState(
+            awaitItem() shouldBe QuestionUiState.Success(
                 question = QUESTIONS.first().toQuestionDataUiState(
                     questionNumber = 1,
+                    selectedOptions = userAnswers.first().selectedOptions,
                     isLast = false,
                 ),
-                timeLeft = TIMEOUT,
+                timeLeft = TIMEOUT.inWholeSeconds,
             )
         }
     }
@@ -142,17 +156,11 @@ class QuestionViewModelTest {
 
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
-            skipItems(2)
+            skipItems(1)
 
-            awaitItem().let {
-                it.question shouldBe null
-                it.isLoading shouldBe false
-                it.selectedAnswers shouldBe emptyList()
-                it.userAnswers shouldBe emptyList()
-                it.timeLeft shouldBe TIMEOUT
-                it.isLoading shouldBe false
-                it.error shouldBe IllegalStateException()
-            }
+            awaitItem() shouldBe QuestionUiState.Error(
+                getHttpFailureMessage(IllegalStateException()),
+            )
         }
     }
 
@@ -162,13 +170,10 @@ class QuestionViewModelTest {
             testScheduler.advanceUntilIdle()
 
             val initialState = awaitItem()
-            initialState.isLoading shouldBe false
-
-            val loadingState = awaitItem()
-            loadingState.isLoading shouldBe true
+            initialState shouldBe QuestionUiState.Loading
 
             val finalState = awaitItem()
-            finalState.isLoading shouldBe false
+            finalState shouldNotBe QuestionUiState.Loading
         }
     }
 
@@ -182,13 +187,15 @@ class QuestionViewModelTest {
 
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
-            skipItems(3)
+            skipItems(2)
 
             onTimeoutSlot.captured.invoke()
 
-            val item = awaitItem()
-            println(item.toString())
-            item.question?.questionText shouldBe QUESTIONS[1].text
+            awaitItem().let {
+                it.shouldBeTypeOf<QuestionUiState.Success>()
+                it.question.questionText shouldBe QUESTIONS[1].text
+            }
+
         }
     }
 
@@ -198,14 +205,16 @@ class QuestionViewModelTest {
             testScheduler.advanceUntilIdle()
             viewModel.onNextQuestionClick()
 
-            skipItems(3)
-            awaitItem() shouldBe QuestionUiState(
-                QUESTIONS[1].toQuestionDataUiState(
+            skipItems(2)
+            awaitItem().let {
+                it.shouldBeTypeOf<QuestionUiState.Success>()
+                it.question shouldBe QUESTIONS[1].toQuestionDataUiState(
                     questionNumber = 2,
+                    selectedOptions = userAnswers[1].selectedOptions,
                     isLast = false,
-                ),
-                timeLeft = TIMEOUT,
-            )
+                )
+                it.timeLeft shouldBe TIMEOUT
+            }
         }
     }
 
@@ -219,14 +228,15 @@ class QuestionViewModelTest {
                 testScheduler.advanceUntilIdle()
             }
 
-            skipItems(6)
+            skipItems(5)
 
-            awaitItem() shouldBe QuestionUiState(
-                QUESTIONS.last().toQuestionDataUiState(
+            awaitItem() shouldBe QuestionUiState.Success(
+                question = QUESTIONS.last().toQuestionDataUiState(
                     questionNumber = QUESTIONS.size,
+                    selectedOptions = userAnswers.last().selectedOptions,
                     isLast = true,
                 ),
-                timeLeft = TIMEOUT,
+                timeLeft = TIMEOUT.inWholeSeconds,
             )
         }
     }
@@ -241,7 +251,7 @@ class QuestionViewModelTest {
                 testScheduler.advanceUntilIdle()
             }
 
-            skipItems(7)
+            skipItems(6)
 
             viewModel.onNextQuestionClick()
             testScheduler.advanceUntilIdle()
@@ -262,16 +272,18 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            (0..<QUESTIONS.size - 1).forEach { _ ->
+            QUESTIONS.forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
 
-            skipItems(7)
+            skipItems(6)
             onTimeoutSlot.captured.invoke()
             testScheduler.advanceUntilIdle()
 
             coVerify(exactly = 1) { userAnswerRepository.insertAnswers(any(), any()) }
+
+            cancelAndIgnoreRemainingEvents()
         }
     }
 
@@ -280,18 +292,18 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            (0..<QUESTIONS.size - 1).forEach { _ ->
+            QUESTIONS.forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
 
-            skipItems(7)
+            skipItems(6)
 
             viewModel.onSendAnswersClick()
             testScheduler.advanceUntilIdle()
 
-            awaitItem().isSendingAnswers shouldBe true
-            awaitItem().isSendingAnswers shouldBe false
+            awaitItem() shouldBe QuestionUiState.SendingAnswers
+            awaitItem() shouldBe QuestionUiState.AnswersSent(userAnswers)
         }
     }
 
@@ -316,9 +328,11 @@ class QuestionViewModelTest {
             viewModel.onSendAnswersClick()
             testScheduler.advanceUntilIdle()
 
-            skipItems(8)
+            skipItems(7)
 
-            awaitItem().error shouldBe IllegalStateException()
+            awaitItem() shouldBe QuestionUiState.Error(
+                getHttpFailureMessage(IllegalStateException()),
+            )
         }
     }
 

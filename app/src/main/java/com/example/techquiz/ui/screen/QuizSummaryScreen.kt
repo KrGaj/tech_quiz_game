@@ -266,7 +266,6 @@ private val userAnswers = listOf(
             ),
         ),
         selectedOptions = emptyList(),
-        isCorrect = true,
     ),
     UserAnswer(
         question = Question(
@@ -276,7 +275,6 @@ private val userAnswers = listOf(
             options = emptyList(),
         ),
         selectedOptions = emptyList(),
-        isCorrect = false,
     ),
     UserAnswer(
         question = Question(
@@ -286,6 +284,5 @@ private val userAnswers = listOf(
             options = emptyList(),
         ),
         selectedOptions = emptyList(),
-        isCorrect = false,
     ),
 )

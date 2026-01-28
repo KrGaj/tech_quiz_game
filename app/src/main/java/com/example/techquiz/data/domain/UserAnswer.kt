@@ -9,5 +9,7 @@ import kotlinx.serialization.Serializable
 data class UserAnswer(
     val question: Question = Question(),
     val selectedOptions: List<AnswerOption> = emptyList(),
-    val isCorrect: Boolean = false,
-) : Parcelable
+) : Parcelable {
+    val isCorrect
+        get() = question.options.filter { it.isCorrect } == selectedOptions
+}

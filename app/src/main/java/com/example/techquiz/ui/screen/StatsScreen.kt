@@ -70,7 +70,7 @@ fun StatsScreen(
                 isCategoryStatsLoading = false
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
                 isCategoryStatsLoading = false
             },
@@ -84,7 +84,7 @@ fun StatsScreen(
                 isCorrectAnswersStatsLoading = false
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
                 isCorrectAnswersStatsLoading = false
             },

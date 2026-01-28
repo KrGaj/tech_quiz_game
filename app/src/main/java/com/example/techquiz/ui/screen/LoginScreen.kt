@@ -82,7 +82,7 @@ fun LoginScreen(
             onFailure = {
                 isLoading = false
                 Log.d("DEMO ERROR No. 2137", it.message.toString())
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )

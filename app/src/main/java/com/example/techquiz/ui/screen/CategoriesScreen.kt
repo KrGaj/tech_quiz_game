@@ -66,7 +66,7 @@ fun CategoriesScreen(
                 categories = it
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
