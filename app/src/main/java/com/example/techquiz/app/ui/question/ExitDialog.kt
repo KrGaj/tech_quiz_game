@@ -1,4 +1,4 @@
-package com.example.techquiz.ui.dialog
+package com.example.techquiz.app.ui.question
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column

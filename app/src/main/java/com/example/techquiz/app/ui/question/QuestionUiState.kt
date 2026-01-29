@@ -15,6 +15,7 @@ sealed class QuestionUiState {
 
     data class Loading(
         val categoryName: String,
+        val timeout: Long,
     ) : QuestionUiState()
 
     data object SendingAnswers : QuestionUiState()

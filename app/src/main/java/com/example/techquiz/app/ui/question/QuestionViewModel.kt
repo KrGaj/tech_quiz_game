@@ -44,6 +44,7 @@ class QuestionViewModel(
             sessionState.loadingState == LoadingState.PENDING ->
                 QuestionUiState.Loading(
                     categoryName = category.name,
+                    timeout = timeout.inWholeSeconds,
                 )
             sessionState.answersSendingState == AnswersSendingState.PENDING ->
                 QuestionUiState.SendingAnswers
@@ -75,7 +76,10 @@ class QuestionViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = QuestionUiState.Loading(categoryName = category.name),
+        initialValue = QuestionUiState.Loading(
+            categoryName = category.name,
+            timeout = timeout.inWholeSeconds,
+        ),
     )
 
     private fun loadQuestions() {
@@ -116,13 +120,6 @@ class QuestionViewModel(
             )
         }
     }
-
-    private suspend fun onTimeout() =
-        if (!_sessionState.value.hasOneQuestion) {
-            onNextQuestionClick()
-        } else {
-            onSendAnswersClick()
-        }
 
     fun setExitDialogVisibility(
         value: Boolean,
@@ -175,6 +172,13 @@ class QuestionViewModel(
             error = null,
         )
     }
+
+    private suspend fun onTimeout() =
+        if (!_sessionState.value.hasOneQuestion) {
+            onNextQuestionClick()
+        } else {
+            onSendAnswersClick()
+        }
 
     @OptIn(ExperimentalUuidApi::class)
     fun onSendAnswersClick() {

@@ -42,7 +42,6 @@ import kotlin.uuid.Uuid
 class QuestionViewModelTest {
     private lateinit var viewModel: QuestionViewModel
 
-    private lateinit var category: Category
     private lateinit var questionRepository: QuestionRepository
     private lateinit var userAnswerRepository: UserAnswerRepository
     private lateinit var userDataStoreRepository: UserDataStoreRepository
@@ -59,7 +58,6 @@ class QuestionViewModelTest {
     fun setUp() {
         Dispatchers.setMain(StandardTestDispatcher())
 
-        category = mockk()
         questionRepository = mockk()
         userAnswerRepository = mockk()
         userDataStoreRepository = mockk()
@@ -112,7 +110,7 @@ class QuestionViewModelTest {
         ))
 
         viewModel = QuestionViewModel(
-            category = category,
+            category = CATEGORY,
             questionRepository = questionRepository,
             userAnswerRepository = userAnswerRepository,
             userDataStoreRepository = userDataStoreRepository,
@@ -170,10 +168,16 @@ class QuestionViewModelTest {
             testScheduler.advanceUntilIdle()
 
             val initialState = awaitItem()
-            initialState shouldBe QuestionUiState.Loading
+            initialState shouldBe QuestionUiState.Loading(
+                categoryName = CATEGORY.name,
+                timeout = TIMEOUT.inWholeSeconds,
+            )
 
             val finalState = awaitItem()
-            finalState shouldNotBe QuestionUiState.Loading
+            finalState shouldNotBe QuestionUiState.Loading(
+                categoryName = CATEGORY.name,
+                timeout = TIMEOUT.inWholeSeconds,
+            )
         }
     }
 
@@ -213,7 +217,7 @@ class QuestionViewModelTest {
                     selectedOptions = userAnswers[1].selectedOptions,
                     isLast = false,
                 )
-                it.timeLeft shouldBe TIMEOUT
+                it.timeLeft shouldBe TIMEOUT.inWholeSeconds
             }
         }
     }
