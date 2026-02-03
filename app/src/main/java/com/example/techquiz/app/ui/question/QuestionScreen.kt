@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
+import com.example.techquiz.app.ui.common.ErrorScreen
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.AnswerOption
@@ -54,27 +55,10 @@ fun QuestionScreen(
         questionViewModel.setExitDialogVisibility(value = true)
     }
 
-    if (
-        uiState is QuestionUiState.Success
-        && (uiState as QuestionUiState.Success).isExitDialogVisible
-        ) {
-        ExitDialog(
-            message = stringResource(id = R.string.quiz_exit_message),
-            onConfirmation = {
-                questionViewModel.onSendAnswersClick()
-            },
-            onDismissRequest = {
-                questionViewModel.setExitDialogVisibility(value = false)
-            },
-        )
-    }
-
-    if (uiState is QuestionUiState.AnswersSent) {
-        navigateFromQuestion((uiState as QuestionUiState.AnswersSent).userAnswers)
-    }
-
     QuestionScreen(
         uiState = uiState,
+        onDialogConfirm = questionViewModel::onSendAnswersClick,
+        onDialogDismiss = { questionViewModel.setExitDialogVisibility(false) },
         onAnswerOptionClick = {
             questionViewModel.onAnswerOptionClick(
                 option = it,
@@ -82,17 +66,28 @@ fun QuestionScreen(
         },
         onNextQuestionClick = questionViewModel::onNextQuestionClick,
         onSendAnswersClick = questionViewModel::onSendAnswersClick,
+        onRetryClick = questionViewModel::onRetryClick,
+        navigateFromQuestion = navigateFromQuestion,
     )
 }
 
 @Composable
 private fun QuestionScreen(
     uiState: QuestionUiState,
+    onDialogConfirm: () -> Unit,
+    onDialogDismiss: () -> Unit,
     onAnswerOptionClick: (AnswerOption) -> Unit,
     onNextQuestionClick: () -> Unit,
     onSendAnswersClick: () -> Unit,
+    onRetryClick: () -> Unit,
+    navigateFromQuestion: (List<UserAnswer>) -> Unit,
 ) {
     when(uiState) {
+        is QuestionUiState.Success if uiState.isExitDialogVisible -> ExitDialog(
+            message = stringResource(id = R.string.quiz_exit_message),
+            onConfirm = onDialogConfirm,
+            onDismiss = onDialogDismiss,
+        )
         is QuestionUiState.Success -> QuestionScreenSuccess(
             uiState = uiState,
             onAnswerOptionClick = { onAnswerOptionClick(it.option) },
@@ -102,7 +97,13 @@ private fun QuestionScreen(
         is QuestionUiState.Loading -> QuestionScreenLoading(
             uiState = uiState,
         )
-        else -> TODO()
+        is QuestionUiState.EmptyCategory -> TODO()
+        is QuestionUiState.SendingAnswers -> TODO()
+        is QuestionUiState.AnswersSent -> navigateFromQuestion(uiState.userAnswers)
+        is QuestionUiState.Error -> ErrorScreen(
+            errorMessage = stringResource(id = uiState.errorMsgRes),
+            onRetryClick = onRetryClick,
+        )
     }
 }
 
@@ -144,27 +145,6 @@ private fun QuestionScreenSuccess(
 }
 
 @Composable
-private fun QuestionScreenLoading(
-    uiState: QuestionUiState.Loading,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        QuestionHeaderLoading(
-            categoryName = uiState.categoryName,
-        )
-        QuestionTextCardLoading()
-        AnswerOptionsGridLoading()
-        TimerLoading(
-            timeout = uiState.timeout,
-        )
-        BottomButtonRowLoading()
-    }
-}
-
-@Composable
 private fun QuestionHeaderLoaded(
     categoryName: String,
     questionNumber: Int,
@@ -182,85 +162,10 @@ private fun QuestionHeaderLoaded(
 }
 
 @Composable
-private fun QuestionHeaderLoading(
-    categoryName: String,
-) {
-    HeaderTextLarge(
-        modifier = Modifier
-            .shimmer(),
-        text = buildHeaderTextString(
-            categoryName = categoryName,
-            questionNumber = 1,
-            multipleCorrectAnswers = false,
-        ),
-    )
-}
-
-@Composable
-private fun buildHeaderTextString(
-    categoryName: String,
-    questionNumber: Int,
-    multipleCorrectAnswers: Boolean
-) = buildString {
-    append(
-        stringResource(
-            id = R.string.question_header,
-            categoryName,
-            questionNumber,
-        )
-    )
-
-    if (multipleCorrectAnswers) {
-        append(" ")
-        append(
-            stringResource(
-                id = R.string.question_header_multiple_choice,
-            )
-        )
-    }
-}
-
-@Composable
 private fun QuestionTextCardLoaded(
     question: QuestionDataUiState,
 ) {
     TextCard(text = question.questionText)
-}
-
-@Composable
-private fun QuestionTextCardLoading() {
-    TextCard(
-        modifier = Modifier
-            .shimmer(),
-        text = "",
-    )
-}
-
-@Composable
-private fun TextCard(
-    modifier: Modifier = Modifier,
-    textModifier: Modifier = Modifier,
-    text: String,
-) {
-    Card(
-        modifier = Modifier
-            .padding(8.dp)
-            .fillMaxWidth()
-            .wrapContentHeight()
-            .then(modifier),
-    ) {
-        Text(
-            text = text,
-            modifier = Modifier
-                .padding(
-                    horizontal = 24.dp,
-                    vertical = 12.dp
-                )
-                .fillMaxWidth()
-                .then(textModifier),
-            textAlign = TextAlign.Center,
-        )
-    }
 }
 
 @Composable
@@ -308,6 +213,148 @@ private fun AnswerOptionLoaded(
 }
 
 @Composable
+private fun TimerLoaded(
+    timeLeft: Long,
+) {
+    Timer(
+        isLoading = false,
+        timeLeft = timeLeft,
+    )
+}
+
+@Composable
+private fun BottomButtonRowLoaded(
+    isQuestionLast: () -> Boolean,
+    onNextQuestionClick: () -> Unit,
+    onSendAnswersClick: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.Center,
+    ) {
+        if (isQuestionLast()) {
+            SendAnswersButton(
+                onClick = onSendAnswersClick,
+            )
+        } else {
+            NextQuestionButton(
+                onClick = onNextQuestionClick,
+            )
+        }
+    }
+}
+
+@Composable
+private fun SendAnswersButton(
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    FilledTonalButton(
+        modifier = modifier,
+        onClick = onClick,
+    ) {
+        Text(text = stringResource(id = R.string.question_finish))
+    }
+}
+
+@Composable
+private fun QuestionScreenLoading(
+    uiState: QuestionUiState.Loading,
+) {
+    Column(
+        modifier = Modifier
+            .fillMaxSize(),
+        verticalArrangement = Arrangement.SpaceBetween,
+    ) {
+        QuestionHeaderLoading(
+            categoryName = uiState.categoryName,
+        )
+        QuestionTextCardLoading()
+        AnswerOptionsGridLoading()
+        TimerLoading(
+            timeout = uiState.timeout,
+        )
+        BottomButtonRowLoading()
+    }
+}
+
+@Composable
+private fun QuestionHeaderLoading(
+    categoryName: String,
+) {
+    HeaderTextLarge(
+        modifier = Modifier
+            .shimmer(),
+        text = buildHeaderTextString(
+            categoryName = categoryName,
+            questionNumber = 1,
+            multipleCorrectAnswers = false,
+        ),
+    )
+}
+
+@Composable
+private fun buildHeaderTextString(
+    categoryName: String,
+    questionNumber: Int,
+    multipleCorrectAnswers: Boolean
+) = buildString {
+    append(
+        stringResource(
+            id = R.string.question_header,
+            categoryName,
+            questionNumber,
+        )
+    )
+
+    if (multipleCorrectAnswers) {
+        append(" ")
+        append(
+            stringResource(
+                id = R.string.question_header_multiple_choice,
+            )
+        )
+    }
+}
+
+@Composable
+private fun QuestionTextCardLoading() {
+    TextCard(
+        modifier = Modifier
+            .shimmer(),
+        text = "",
+    )
+}
+
+@Composable
+private fun TextCard(
+    modifier: Modifier = Modifier,
+    textModifier: Modifier = Modifier,
+    text: String,
+) {
+    Card(
+        modifier = Modifier
+            .padding(8.dp)
+            .fillMaxWidth()
+            .wrapContentHeight()
+            .then(modifier),
+    ) {
+        Text(
+            text = text,
+            modifier = Modifier
+                .padding(
+                    horizontal = 24.dp,
+                    vertical = 12.dp
+                )
+                .fillMaxWidth()
+                .then(textModifier),
+            textAlign = TextAlign.Center,
+        )
+    }
+}
+
+@Composable
 private fun AnswerOptionsGridLoading() {
     SpacedLazyVerticalGrid(
         columns = GridCells.Fixed(COLUMNS_NUM),
@@ -331,16 +378,6 @@ private fun AnswerOptionLoading(
         enabled = false,
         onClick = { },
     ) { }
-}
-
-@Composable
-private fun TimerLoaded(
-    timeLeft: Long,
-) {
-    Timer(
-        isLoading = false,
-        timeLeft = timeLeft,
-    )
 }
 
 @Composable
@@ -396,29 +433,6 @@ private fun BottomButtonRowLoading() {
 }
 
 @Composable
-private fun BottomButtonRowLoaded(
-    isQuestionLast: () -> Boolean,
-    onNextQuestionClick: () -> Unit,
-    onSendAnswersClick: () -> Unit,
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        if (isQuestionLast()) {
-            SendAnswersButton(
-                onClick = onSendAnswersClick,
-            )
-        } else {
-            NextQuestionButton(
-                onClick = onNextQuestionClick,
-            )
-        }
-    }
-}
-
-@Composable
 private fun NextQuestionButton(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
@@ -428,19 +442,6 @@ private fun NextQuestionButton(
         onClick = onClick,
     ) {
         Text(text = stringResource(id = R.string.question_next))
-    }
-}
-
-@Composable
-private fun SendAnswersButton(
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit,
-) {
-    FilledTonalButton(
-        modifier = modifier,
-        onClick = onClick,
-    ) {
-        Text(text = stringResource(id = R.string.question_finish))
     }
 }
 

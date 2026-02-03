@@ -22,11 +22,11 @@ import androidx.compose.ui.window.Dialog
 @Composable
 fun ExitDialog(
     message: String,
-    onDismissRequest: () -> Unit,
-    onConfirmation: () -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit,
 ) {
     Dialog(
-        onDismissRequest = onDismissRequest,
+        onDismissRequest = onDismiss,
     ) {
         Card {
             Column(
@@ -34,7 +34,7 @@ fun ExitDialog(
             ) {
                 Text(text = message)
                 Spacer(modifier = Modifier.height(8.dp))
-                DialogButtons(onDismissRequest, onConfirmation)
+                DialogButtons(onDismiss, onConfirm)
             }
         }
     }
@@ -65,7 +65,7 @@ private fun DialogButtons(
 private fun PreviewBaseQuizDialog() {
     ExitDialog(
         message = "Test message",
-        onDismissRequest = {},
-        onConfirmation = {},
+        onDismiss = {},
+        onConfirm = {},
     )
 }

@@ -87,7 +87,10 @@ class QuestionViewModel(
             timer.clear()
 
             _sessionState.update {
-                it.copy(loadingState = LoadingState.PENDING)
+                it.copy(
+                    loadingState = LoadingState.PENDING,
+                    error = null,
+                )
             }
 
             val result = questionRepository.getRandomQuestions(
