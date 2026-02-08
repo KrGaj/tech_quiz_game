@@ -168,16 +168,10 @@ class QuestionViewModelTest {
             testScheduler.advanceUntilIdle()
 
             val initialState = awaitItem()
-            initialState shouldBe QuestionUiState.Loading(
-                categoryName = CATEGORY.name,
-                timeout = TIMEOUT.inWholeSeconds,
-            )
+            initialState shouldBe QuestionUiState.Loading
 
             val finalState = awaitItem()
-            finalState shouldNotBe QuestionUiState.Loading(
-                categoryName = CATEGORY.name,
-                timeout = TIMEOUT.inWholeSeconds,
-            )
+            finalState shouldNotBe QuestionUiState.Loading
         }
     }
 
@@ -306,7 +300,7 @@ class QuestionViewModelTest {
             viewModel.onSendAnswersClick()
             testScheduler.advanceUntilIdle()
 
-            awaitItem() shouldBe QuestionUiState.SendingAnswers
+            awaitItem() shouldBe QuestionUiState.Loading
             awaitItem() shouldBe QuestionUiState.AnswersSent(userAnswers)
         }
     }

@@ -41,13 +41,9 @@ class QuestionViewModel(
         timer.timeLeft,
     ) { sessionState, collectorState, timeLeft ->
         when {
-            sessionState.loadingState == LoadingState.PENDING ->
-                QuestionUiState.Loading(
-                    categoryName = category.name,
-                    timeout = timeout.inWholeSeconds,
-                )
-            sessionState.answersSendingState == AnswersSendingState.PENDING ->
-                QuestionUiState.SendingAnswers
+            sessionState.loadingState == LoadingState.PENDING
+                    || sessionState.answersSendingState == AnswersSendingState.PENDING ->
+                QuestionUiState.Loading
             sessionState.answersSendingState == AnswersSendingState.SUCCESS ->
                 QuestionUiState.AnswersSent(
                     userAnswers = collectorState.userAnswers,
@@ -76,10 +72,7 @@ class QuestionViewModel(
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5000L),
-        initialValue = QuestionUiState.Loading(
-            categoryName = category.name,
-            timeout = timeout.inWholeSeconds,
-        ),
+        initialValue = QuestionUiState.Loading,
     )
 
     private fun loadQuestions() {

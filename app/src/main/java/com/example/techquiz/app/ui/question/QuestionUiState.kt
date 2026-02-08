@@ -13,12 +13,7 @@ sealed class QuestionUiState {
         val isExitDialogVisible: Boolean = false,
     ) : QuestionUiState()
 
-    data class Loading(
-        val categoryName: String,
-        val timeout: Long,
-    ) : QuestionUiState()
-
-    data object SendingAnswers : QuestionUiState()
+    data object Loading : QuestionUiState()
 
     data class AnswersSent(
         val userAnswers: List<UserAnswer>,

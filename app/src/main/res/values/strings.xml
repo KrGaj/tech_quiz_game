@@ -23,6 +23,7 @@
     <string name="question_header_multiple_choice">(Multiple Choice)</string>
     <string name="question_next">Next question</string>
     <string name="question_finish">Finish quiz</string>
+    <string name="question_empty_category">There are no questions in this category</string>
 
     <string name="quiz_results_score">Your score: %1$d/%2$d</string>
     <string name="quiz_results_finish">Finish</string>

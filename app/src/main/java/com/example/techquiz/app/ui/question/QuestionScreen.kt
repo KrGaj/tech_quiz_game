@@ -2,6 +2,7 @@ package com.example.techquiz.app.ui.question
 
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
@@ -18,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
@@ -29,16 +31,17 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.app.ui.common.ErrorScreen
+import com.example.techquiz.app.ui.common.LoadingScreen
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
-import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.AnswerOption
+import com.example.techquiz.data.domain.Category
 import com.example.techquiz.data.domain.Question
 import com.example.techquiz.data.domain.UserAnswer
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid
 import com.example.techquiz.ui.theme.CodingQuizTheme
-import com.valentinilk.shimmer.shimmer
+import com.example.techquiz.ui.theme.Typography
 
 private const val COLUMNS_NUM = 2
 
@@ -94,11 +97,8 @@ private fun QuestionScreen(
             onNextQuestionClick = onNextQuestionClick,
             onSendAnswersClick = onSendAnswersClick,
         )
-        is QuestionUiState.Loading -> QuestionScreenLoading(
-            uiState = uiState,
-        )
-        is QuestionUiState.EmptyCategory -> TODO()
-        is QuestionUiState.SendingAnswers -> TODO()
+        is QuestionUiState.Loading -> LoadingScreen()
+        is QuestionUiState.EmptyCategory -> EmptyCategoryQuestionScreen()
         is QuestionUiState.AnswersSent -> navigateFromQuestion(uiState.userAnswers)
         is QuestionUiState.Error -> ErrorScreen(
             errorMessage = stringResource(id = uiState.errorMsgRes),
@@ -217,7 +217,6 @@ private fun TimerLoaded(
     timeLeft: Long,
 ) {
     Timer(
-        isLoading = false,
         timeLeft = timeLeft,
     )
 }
@@ -259,42 +258,6 @@ private fun SendAnswersButton(
 }
 
 @Composable
-private fun QuestionScreenLoading(
-    uiState: QuestionUiState.Loading,
-) {
-    Column(
-        modifier = Modifier
-            .fillMaxSize(),
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        QuestionHeaderLoading(
-            categoryName = uiState.categoryName,
-        )
-        QuestionTextCardLoading()
-        AnswerOptionsGridLoading()
-        TimerLoading(
-            timeout = uiState.timeout,
-        )
-        BottomButtonRowLoading()
-    }
-}
-
-@Composable
-private fun QuestionHeaderLoading(
-    categoryName: String,
-) {
-    HeaderTextLarge(
-        modifier = Modifier
-            .shimmer(),
-        text = buildHeaderTextString(
-            categoryName = categoryName,
-            questionNumber = 1,
-            multipleCorrectAnswers = false,
-        ),
-    )
-}
-
-@Composable
 private fun buildHeaderTextString(
     categoryName: String,
     questionNumber: Int,
@@ -316,15 +279,6 @@ private fun buildHeaderTextString(
             )
         )
     }
-}
-
-@Composable
-private fun QuestionTextCardLoading() {
-    TextCard(
-        modifier = Modifier
-            .shimmer(),
-        text = "",
-    )
 }
 
 @Composable
@@ -355,44 +309,7 @@ private fun TextCard(
 }
 
 @Composable
-private fun AnswerOptionsGridLoading() {
-    SpacedLazyVerticalGrid(
-        columns = GridCells.Fixed(COLUMNS_NUM),
-    ) {
-        items(count = 4) {
-            AnswerOptionLoading(
-                modifier = Modifier.aspectRatio(1.5f),
-            )
-        }
-    }
-}
-
-@Composable
-private fun AnswerOptionLoading(
-    modifier: Modifier = Modifier,
-) {
-    ShapedFilledTonalButton(
-        modifier = Modifier
-            .then(modifier)
-            .shimmer(),
-        enabled = false,
-        onClick = { },
-    ) { }
-}
-
-@Composable
-private fun TimerLoading(
-    timeout: Long,
-) {
-    Timer(
-        isLoading = true,
-        timeLeft = timeout,
-    )
-}
-
-@Composable
 private fun Timer(
-    isLoading: Boolean,
     timeLeft: Long,
 ) {
     val timeLeftText = pluralStringResource(
@@ -401,35 +318,14 @@ private fun Timer(
         timeLeft.toInt(),
     )
 
-    var modifier = Modifier
-        .fillMaxWidth()
-        .padding(16.dp)
-
-    if (isLoading) {
-        modifier = modifier.shimmer()
-    }
-
     Text(
-        modifier = modifier,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp),
         text = timeLeftText,
         textAlign = TextAlign.Center,
         fontSize = 24.sp,
     )
-}
-
-@Composable
-private fun BottomButtonRowLoading() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.Center,
-    ) {
-        NextQuestionButton(
-            modifier = Modifier
-                .shimmer(),
-            onClick = { },
-        )
-    }
 }
 
 @Composable
@@ -445,6 +341,19 @@ private fun NextQuestionButton(
     }
 }
 
+@Composable
+private fun EmptyCategoryQuestionScreen() {
+    Box(
+        modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text(
+            text = stringResource(id = R.string.question_empty_category),
+            style = Typography.bodyLarge,
+        )
+    }
+}
+
 
 @Preview(showBackground = true)
 @Composable
@@ -455,16 +364,6 @@ private fun PreviewQuestionScreenSuccess() {
             onAnswerOptionClick = {},
             onNextQuestionClick = {},
             onSendAnswersClick = {},
-        )
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-private fun PreviewQuestionScreenLoading() {
-    CodingQuizTheme {
-        QuestionScreenLoading(
-            uiState = UI_STATE_LOADING,
         )
     }
 }
@@ -506,9 +405,4 @@ private val UI_STATE_SUCCESS = QuestionUiState.Success(
     ),
     timeLeft = 30,
     isExitDialogVisible = false,
-)
-
-private val UI_STATE_LOADING = QuestionUiState.Loading(
-    categoryName = "Demo category",
-    timeout = 30,
 )
