@@ -2,7 +2,7 @@ package com.example.techquiz.app.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.UserAnswer
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey

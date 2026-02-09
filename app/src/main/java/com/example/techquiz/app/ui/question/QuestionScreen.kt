@@ -33,10 +33,10 @@ import com.example.techquiz.R
 import com.example.techquiz.app.ui.common.ErrorScreen
 import com.example.techquiz.app.ui.common.LoadingScreen
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
-import com.example.techquiz.data.domain.AnswerOption
+import com.example.techquiz.domain.models.AnswerOption
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.ShapedFilledTonalButton
 import com.example.techquiz.ui.common.SpacedLazyVerticalGrid

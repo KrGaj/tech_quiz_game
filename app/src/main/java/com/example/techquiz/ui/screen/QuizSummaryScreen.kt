@@ -36,9 +36,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.techquiz.R
-import com.example.techquiz.data.domain.AnswerOption
-import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.data.domain.Category
+import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import org.koin.androidx.compose.koinViewModel
@@ -248,7 +249,7 @@ private val userAnswers = listOf(
     UserAnswer(
         question = Question(
             id = 0,
-            category = com.example.techquiz.data.domain.Category("Demo"),
+            category = Category("Demo"),
             text = "Demo Question 1",
             options = listOf(
                 AnswerOption(
@@ -270,7 +271,7 @@ private val userAnswers = listOf(
     UserAnswer(
         question = Question(
             id = 1,
-            category = com.example.techquiz.data.domain.Category("Demo"),
+            category = Category("Demo"),
             text = "Demo Question 2",
             options = emptyList(),
         ),
@@ -279,7 +280,7 @@ private val userAnswers = listOf(
     UserAnswer(
         question = Question(
             id = 2,
-            category = com.example.techquiz.data.domain.Category("Demo"),
+            category = Category("Demo"),
             text = "Demo Question 3, but very very very long for preview purposes",
             options = emptyList(),
         ),

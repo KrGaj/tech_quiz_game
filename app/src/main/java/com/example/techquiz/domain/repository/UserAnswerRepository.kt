@@ -1,6 +1,6 @@
-package com.example.techquiz.data.repository
+package com.example.techquiz.domain.repository
 
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.UserAnswer
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

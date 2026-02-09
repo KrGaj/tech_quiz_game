@@ -1,7 +1,7 @@
-package com.example.techquiz.data.repository
+package com.example.techquiz.domain.repository
 
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.Question
+import com.example.techquiz.domain.models.Question
 
 fun interface QuestionRepository {
     suspend fun getRandomQuestions(

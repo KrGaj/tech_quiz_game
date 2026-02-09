@@ -2,9 +2,9 @@ package com.example.techquiz.di
 
 import com.example.techquiz.data.repository.CategoryRepository
 import com.example.techquiz.data.repository.CategoryRepositoryDefault
-import com.example.techquiz.data.repository.UserAnswerRepository
+import com.example.techquiz.domain.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserAnswerRepositoryDefault
-import com.example.techquiz.data.repository.QuestionRepository
+import com.example.techquiz.domain.repository.QuestionRepository
 import com.example.techquiz.data.repository.QuestionRepositoryDefault
 import com.example.techquiz.data.repository.StatsRepository
 import com.example.techquiz.data.repository.StatsRepositoryDefault

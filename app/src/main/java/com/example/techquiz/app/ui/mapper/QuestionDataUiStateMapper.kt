@@ -2,8 +2,8 @@ package com.example.techquiz.app.ui.mapper
 
 import com.example.techquiz.app.ui.question.AnswerOptionUiState
 import com.example.techquiz.app.ui.question.QuestionDataUiState
-import com.example.techquiz.data.domain.AnswerOption
-import com.example.techquiz.data.domain.Question
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.domain.models.Question
 
 fun Question.toQuestionDataUiState(
     questionNumber: Int,

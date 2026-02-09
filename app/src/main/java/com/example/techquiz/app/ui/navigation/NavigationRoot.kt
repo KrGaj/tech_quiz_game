@@ -25,7 +25,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.techquiz.app.ui.question.QuestionScreen
 import com.example.techquiz.app.ui.question.QuestionViewModel
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.ui.screen.CategoriesScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen

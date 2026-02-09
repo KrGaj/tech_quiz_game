@@ -1,4 +1,4 @@
-package com.example.techquiz.data.domain
+package com.example.techquiz.domain.models
 
 import android.os.Parcelable
 import kotlinx.parcelize.Parcelize

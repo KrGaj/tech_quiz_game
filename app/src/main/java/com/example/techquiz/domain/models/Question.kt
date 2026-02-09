@@ -1,6 +1,7 @@
-package com.example.techquiz.data.domain
+package com.example.techquiz.domain.models
 
 import android.os.Parcelable
+import com.example.techquiz.data.domain.Category
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
 

@@ -1,8 +1,8 @@
-package com.example.techquiz.data
+package com.example.techquiz.domain
 
-import com.example.techquiz.data.domain.AnswerOption
-import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.models.UserAnswer
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update

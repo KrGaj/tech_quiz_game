@@ -1,4 +1,4 @@
-package com.example.techquiz.data
+package com.example.techquiz.domain
 
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope

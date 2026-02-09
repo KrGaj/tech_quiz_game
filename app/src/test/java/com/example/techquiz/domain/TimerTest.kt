@@ -1,4 +1,4 @@
-package com.example.techquiz.data
+package com.example.techquiz.domain
 
 import io.kotest.matchers.shouldBe
 import io.mockk.every

@@ -1,9 +1,9 @@
-package com.example.techquiz.data
+package com.example.techquiz.domain
 
 import app.cash.turbine.test
-import com.example.techquiz.data.domain.AnswerOption
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.Question
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.domain.models.Question
 import io.kotest.inspectors.forOne
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe

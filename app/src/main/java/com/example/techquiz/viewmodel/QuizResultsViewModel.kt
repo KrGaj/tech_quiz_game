@@ -1,7 +1,7 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.UserAnswer
 
 class QuizResultsViewModel(
     val userAnswers: List<UserAnswer>,

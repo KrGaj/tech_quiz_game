@@ -1,9 +1,10 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.data.dto.request.UserAnswerDTO
 import com.example.techquiz.data.dto.request.QuestionReqDTO
 import com.example.techquiz.data.resources.UserAnswers
+import com.example.techquiz.domain.repository.UserAnswerRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.resources.post
 import io.ktor.client.request.setBody

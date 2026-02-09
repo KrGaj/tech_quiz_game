@@ -2,8 +2,8 @@ package com.example.techquiz.app.ui.question
 
 import androidx.annotation.StringRes
 import androidx.compose.runtime.Immutable
-import com.example.techquiz.data.domain.AnswerOption
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.domain.models.UserAnswer
 
 @Immutable
 sealed class QuestionUiState {

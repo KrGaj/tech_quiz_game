@@ -2,15 +2,15 @@ package com.example.techquiz.app.ui.question
 
 import app.cash.turbine.test
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
-import com.example.techquiz.data.Timer
-import com.example.techquiz.data.UserAnswersCollector
-import com.example.techquiz.data.domain.AnswerOption
+import com.example.techquiz.domain.Timer
+import com.example.techquiz.domain.UserAnswersCollector
+import com.example.techquiz.domain.models.AnswerOption
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.domain.UserAnswer
+import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.data.domain.UserPreferences
-import com.example.techquiz.data.repository.QuestionRepository
-import com.example.techquiz.data.repository.UserAnswerRepository
+import com.example.techquiz.domain.repository.QuestionRepository
+import com.example.techquiz.domain.repository.UserAnswerRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.util.getHttpFailureMessage
 import io.kotest.assertions.throwables.shouldNotThrow
