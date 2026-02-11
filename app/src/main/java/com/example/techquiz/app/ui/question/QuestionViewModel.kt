@@ -169,12 +169,17 @@ class QuestionViewModel(
         )
     }
 
-    private suspend fun onTimeout() =
+    private suspend fun onTimeout() {
+        userAnswersCollector.addEmptyAnswer(
+            question = _sessionState.value.questions.first(),
+        )
+
         if (!_sessionState.value.hasOneQuestion) {
             onNextQuestionClick()
         } else {
             onSendAnswersClick()
         }
+    }
 
     @OptIn(ExperimentalUuidApi::class)
     fun onSendAnswersClick() {

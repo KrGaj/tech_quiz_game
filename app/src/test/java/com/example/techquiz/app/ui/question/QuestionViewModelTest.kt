@@ -2,16 +2,14 @@ package com.example.techquiz.app.ui.question
 
 import app.cash.turbine.test
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
+import com.example.techquiz.data.domain.UserPreferences
+import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.domain.Timer
 import com.example.techquiz.domain.UserAnswersCollector
-import com.example.techquiz.domain.models.AnswerOption
-import com.example.techquiz.data.domain.Category
-import com.example.techquiz.domain.models.Question
 import com.example.techquiz.domain.models.UserAnswer
-import com.example.techquiz.data.domain.UserPreferences
 import com.example.techquiz.domain.repository.QuestionRepository
 import com.example.techquiz.domain.repository.UserAnswerRepository
-import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.test_data.Questions
 import com.example.techquiz.util.getHttpFailureMessage
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.matchers.shouldBe
@@ -22,6 +20,7 @@ import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.slot
+import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.delay
@@ -64,7 +63,7 @@ class QuestionViewModelTest {
         userAnswersCollector = mockk()
         timer = mockk()
 
-        userAnswers = QUESTIONS.map {
+        userAnswers = Questions.questions.map {
             UserAnswer(
                 question = it,
                 selectedOptions = listOf(it.options.random()),
@@ -77,6 +76,14 @@ class QuestionViewModelTest {
             .asStateFlow()
 
         every {
+            userAnswersCollector.addEmptyAnswer(any())
+        } returns Unit
+
+        every {
+            userAnswersCollector.onOptionClick(any(), any())
+        } returns Unit
+
+        every {
             timer.start(any(), any())
         } returns Unit
 
@@ -86,13 +93,13 @@ class QuestionViewModelTest {
 
         coEvery {
             timer.timeLeft
-        } returns MutableStateFlow(TIMEOUT).asStateFlow()
+        } returns MutableStateFlow(Questions.timeout).asStateFlow()
 
         coEvery {
             questionRepository.getRandomQuestions(any(), any())
         } coAnswers {
             delay(1.seconds)
-            Result.success(QUESTIONS.toList())
+            Result.success(Questions.questions.toList())
         }
 
         coEvery {
@@ -110,13 +117,13 @@ class QuestionViewModelTest {
         ))
 
         viewModel = QuestionViewModel(
-            category = CATEGORY,
+            category = Questions.category,
             questionRepository = questionRepository,
             userAnswerRepository = userAnswerRepository,
             userDataStoreRepository = userDataStoreRepository,
             userAnswersCollector = userAnswersCollector,
             timer = timer,
-            timeout = TIMEOUT,
+            timeout = Questions.timeout,
         )
     }
 
@@ -133,12 +140,12 @@ class QuestionViewModelTest {
             skipItems(1)
 
             awaitItem() shouldBe QuestionUiState.Success(
-                question = QUESTIONS.first().toQuestionDataUiState(
+                question = Questions.questions.first().toQuestionDataUiState(
                     questionNumber = 1,
                     selectedOptions = userAnswers.first().selectedOptions,
                     isLast = false,
                 ),
-                timeLeft = TIMEOUT.inWholeSeconds,
+                timeLeft = Questions.timeout.inWholeSeconds,
             )
         }
     }
@@ -191,7 +198,7 @@ class QuestionViewModelTest {
 
             awaitItem().let {
                 it.shouldBeTypeOf<QuestionUiState.Success>()
-                it.question.questionText shouldBe QUESTIONS[1].text
+                it.question.questionText shouldBe Questions.questions[1].text
             }
 
         }
@@ -206,12 +213,12 @@ class QuestionViewModelTest {
             skipItems(2)
             awaitItem().let {
                 it.shouldBeTypeOf<QuestionUiState.Success>()
-                it.question shouldBe QUESTIONS[1].toQuestionDataUiState(
+                it.question shouldBe Questions.questions[1].toQuestionDataUiState(
                     questionNumber = 2,
                     selectedOptions = userAnswers[1].selectedOptions,
                     isLast = false,
                 )
-                it.timeLeft shouldBe TIMEOUT.inWholeSeconds
+                it.timeLeft shouldBe Questions.timeout.inWholeSeconds
             }
         }
     }
@@ -221,7 +228,7 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            (0..<QUESTIONS.size - 1).forEach { _ ->
+            (0..<Questions.questions.size - 1).forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
@@ -229,12 +236,12 @@ class QuestionViewModelTest {
             skipItems(5)
 
             awaitItem() shouldBe QuestionUiState.Success(
-                question = QUESTIONS.last().toQuestionDataUiState(
-                    questionNumber = QUESTIONS.size,
+                question = Questions.questions.last().toQuestionDataUiState(
+                    questionNumber = Questions.questions.size,
                     selectedOptions = userAnswers.last().selectedOptions,
                     isLast = true,
                 ),
-                timeLeft = TIMEOUT.inWholeSeconds,
+                timeLeft = Questions.timeout.inWholeSeconds,
             )
         }
     }
@@ -244,7 +251,7 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            (0..<QUESTIONS.size - 1).forEach { _ ->
+            (0..<Questions.questions.size - 1).forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
@@ -255,6 +262,32 @@ class QuestionViewModelTest {
             testScheduler.advanceUntilIdle()
 
             shouldNotThrow<AssertionError> { expectNoEvents() }
+        }
+    }
+
+    @Test
+    fun `Timeout causes move to the next question`() = runTest {
+        val onTimeoutSlot = slot<suspend () -> Unit>()
+
+        every {
+            timer.start(any(), capture(onTimeoutSlot))
+        } returns Unit
+
+        viewModel.uiState.test {
+            testScheduler.advanceUntilIdle()
+
+            onTimeoutSlot.captured.invoke()
+            testScheduler.advanceUntilIdle()
+
+            skipItems(2)
+            awaitItem() shouldBe QuestionUiState.Success(
+                question = Questions.questions[1].toQuestionDataUiState(
+                    questionNumber = 2,
+                    selectedOptions = userAnswers[1].selectedOptions,
+                    isLast = false,
+                ),
+                timeLeft = Questions.timeout.inWholeSeconds,
+            )
         }
     }
 
@@ -270,7 +303,7 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            QUESTIONS.forEach { _ ->
+            Questions.questions.forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
@@ -285,12 +318,42 @@ class QuestionViewModelTest {
         }
     }
 
+    @OptIn(ExperimentalUuidApi::class)
+    @Test
+    fun `After timeout, answers are collected`() = runTest {
+        val onTimeoutSlot = slot<suspend () -> Unit>()
+
+        every {
+            timer.start(any(), capture(onTimeoutSlot))
+        } returns Unit
+
+        viewModel.uiState.test {
+            testScheduler.advanceUntilIdle()
+
+            onTimeoutSlot.captured.invoke()
+            testScheduler.advanceUntilIdle()
+
+            userAnswers[1].selectedOptions.forEach {
+                viewModel.onAnswerOptionClick(
+                    option = it,
+                )
+            }
+
+            onTimeoutSlot.captured.invoke()
+            testScheduler.advanceUntilIdle()
+
+            verify(exactly = 2) { userAnswersCollector.addEmptyAnswer(any()) }
+
+            cancelAndIgnoreRemainingEvents()
+        }
+    }
+
     @Test
     fun `Sending answers is indicated correctly`() = runTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            QUESTIONS.forEach { _ ->
+            Questions.questions.forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
@@ -318,7 +381,7 @@ class QuestionViewModelTest {
         viewModel.uiState.test {
             testScheduler.advanceUntilIdle()
 
-            (0..<QUESTIONS.size - 1).forEach { _ ->
+            (0..<Questions.questions.size - 1).forEach { _ ->
                 viewModel.onNextQuestionClick()
                 testScheduler.advanceUntilIdle()
             }
@@ -332,90 +395,5 @@ class QuestionViewModelTest {
                 getHttpFailureMessage(IllegalStateException()),
             )
         }
-    }
-
-
-    companion object {
-        private val TIMEOUT = 5.seconds
-
-        private val CATEGORY = Category(name = "Demo Category")
-
-        private val QUESTIONS = listOf(
-            Question(
-                id = 1,
-                category = CATEGORY,
-                text = "Question ABC",
-                options = listOf(
-                    AnswerOption(
-                        text = "Yes",
-                        isCorrect = true,
-                    ),
-                    AnswerOption(
-                        text = "No",
-                        isCorrect = false,
-                    ),
-                ),
-            ),
-            Question(
-                id = 2,
-                category = CATEGORY,
-                text = "Question xD",
-                options = listOf(
-                    AnswerOption(
-                        text = "A",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "B",
-                        isCorrect = true,
-                    ),
-                ),
-            ),
-            Question(
-                id = 3,
-                category = CATEGORY,
-                text = "Example Question",
-                options = listOf(
-                    AnswerOption(
-                        text = "1",
-                        isCorrect = true,
-                    ),
-                    AnswerOption(
-                        text = "2",
-                        isCorrect = false,
-                    ),
-                ),
-            ),
-            Question(
-                id = 5,
-                category = CATEGORY,
-                text = "Question DEF",
-                options = listOf(
-                    AnswerOption(
-                        text = "Up",
-                        isCorrect = true,
-                    ),
-                    AnswerOption(
-                        text = "Down",
-                        isCorrect = false,
-                    ),
-                ),
-            ),
-            Question(
-                id = 8,
-                category = CATEGORY,
-                text = "Question MZ ETZ 251",
-                options = listOf(
-                    AnswerOption(
-                        text = "Slow",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "Fast",
-                        isCorrect = true,
-                    ),
-                ),
-            ),
-        )
     }
 }

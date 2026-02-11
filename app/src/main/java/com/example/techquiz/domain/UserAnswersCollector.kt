@@ -9,7 +9,8 @@ import kotlinx.coroutines.flow.update
 
 class UserAnswersCollector {
     private val _state = MutableStateFlow(State())
-    val state get() = _state.asStateFlow()
+    val state
+        get() = _state.asStateFlow()
 
     fun onOptionClick(
         option: AnswerOption,
@@ -44,12 +45,8 @@ class UserAnswersCollector {
                 selectedOption,
             )
         )
-        val userAnswersUpdated = state.userAnswers.toMutableList()
-            .also {
-                it.add(userAnswer)
-            }
 
-        return state.copy(userAnswers = userAnswersUpdated)
+        return state.copy(userAnswers = state.userAnswers + userAnswer)
     }
 
     private fun modifyExistingAnswer(
@@ -72,6 +69,20 @@ class UserAnswersCollector {
             }
 
         return state.copy(userAnswers = userAnswersUpdated)
+    }
+
+    fun addEmptyAnswer(
+        question: Question,
+    ) {
+        _state.update {
+            if (it.userAnswers.any { item -> item.question == question }) {
+                it
+            } else {
+                it.copy(
+                    userAnswers = it.userAnswers + UserAnswer(question = question),
+                )
+            }
+        }
     }
 
     data class State(

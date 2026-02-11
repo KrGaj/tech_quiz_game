@@ -1,9 +1,9 @@
 package com.example.techquiz.domain
 
 import app.cash.turbine.test
-import com.example.techquiz.data.domain.Category
-import com.example.techquiz.domain.models.AnswerOption
-import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.models.UserAnswer
+import com.example.techquiz.test_data.Questions
+import io.kotest.inspectors.forNone
 import io.kotest.inspectors.forOne
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.shouldBe
@@ -21,7 +21,7 @@ class UserAnswersCollectorTest {
 
     @Test
     fun `Answers for question are collected`() = runTest {
-        QUESTIONS.forEach {
+        Questions.questions.forEach {
             collector.onOptionClick(
                 option = it.options.random(),
                 question = it,
@@ -29,13 +29,13 @@ class UserAnswersCollectorTest {
         }
 
         collector.state.test {
-            awaitItem().userAnswers.map { it.question } shouldBe QUESTIONS
+            awaitItem().userAnswers.map { it.question } shouldBe Questions.questions
         }
     }
 
     @Test
     fun `Selected options are added to the list`() = runTest {
-        val question = QUESTIONS.first()
+        val question = Questions.questions.first()
         val options = listOf(question.options[0], question.options[2])
 
         options.forEach {
@@ -55,9 +55,9 @@ class UserAnswersCollectorTest {
 
     @Test
     fun `Already collected answer is modified`() = runTest {
-        val questionDuplicate = QUESTIONS.last().copy()
+        val questionDuplicate = Questions.questions.last().copy()
 
-        QUESTIONS.forEach {
+        Questions.questions.forEach {
             collector.onOptionClick(
                 option = it.options.first(),
                 question = it,
@@ -71,7 +71,7 @@ class UserAnswersCollectorTest {
 
         collector.state.test {
             val state = awaitItem()
-            state.userAnswers.size shouldBe QUESTIONS.size
+            state.userAnswers.size shouldBe Questions.questions.size
 
             state.userAnswers.forOne {
                 it.question shouldBe questionDuplicate.copy()
@@ -91,7 +91,7 @@ class UserAnswersCollectorTest {
 
     @Test
     fun `Selecting the same answer second time removes it from the list`() = runTest {
-        val question = QUESTIONS.last()
+        val question = Questions.questions.last()
         val options = mutableListOf(
             question.options.first(),
             question.options.last(),
@@ -120,56 +120,50 @@ class UserAnswersCollectorTest {
         }
     }
 
-    companion object {
-        private val CATEGORY = Category(name = "Demo Category")
+    @Test
+    fun `Empty answer is added`() = runTest {
+        collector.state.test {
+            testScheduler.advanceUntilIdle()
 
-        private val QUESTIONS = listOf(
-            Question(
-                id = 1,
-                category = CATEGORY,
-                text = "Question ABC",
-                options = listOf(
-                    AnswerOption(
-                        text = "Yes",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "No",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "Both",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "It depends",
-                        isCorrect = true,
-                    ),
-                ),
-            ),
-            Question(
-                id = 2,
-                category = CATEGORY,
-                text = "Question xD",
-                options = listOf(
-                    AnswerOption(
-                        text = "A",
-                        isCorrect = false,
-                    ),
-                    AnswerOption(
-                        text = "B",
-                        isCorrect = true,
-                    ),
-                    AnswerOption(
-                        text = "C",
-                        isCorrect = true,
-                    ),
-                    AnswerOption(
-                        text = "D",
-                        isCorrect = false,
-                    ),
-                ),
-            ),
-        )
+            collector.addEmptyAnswer(
+                question = Questions.questions.first(),
+            )
+            testScheduler.advanceUntilIdle()
+
+            skipItems(1)
+            awaitItem() shouldBe UserAnswersCollector.State(
+                userAnswers = listOf(UserAnswer(question = Questions.questions.first())),
+            )
+        }
+    }
+
+    @Test
+    fun `Empty answer to questions already having answers is not collected`() = runTest {
+        collector.state.test {
+            testScheduler.advanceUntilIdle()
+
+            Questions.questions.slice(0..2).forEach {
+                collector.onOptionClick(
+                    option = it.options.random(),
+                    question = it,
+                )
+                testScheduler.advanceUntilIdle()
+            }
+
+            collector.addEmptyAnswer(
+                question = Questions.questions[2],
+            )
+            testScheduler.advanceUntilIdle()
+
+            skipItems(3)
+
+            val resultState = awaitItem()
+            resultState.userAnswers.forOne {
+                it.question shouldBe Questions.questions[2]
+            }
+            resultState.userAnswers.forNone {
+                it.selectedOptions shouldBe emptyList()
+            }
+        }
     }
 }

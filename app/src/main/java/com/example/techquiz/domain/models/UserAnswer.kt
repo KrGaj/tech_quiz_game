@@ -7,7 +7,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 @Parcelize
 data class UserAnswer(
-    val question: Question = Question(),
+    val question: Question,
     val selectedOptions: List<AnswerOption> = emptyList(),
 ) : Parcelable {
     val isCorrect
