@@ -21,7 +21,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
@@ -33,8 +32,8 @@ import com.example.techquiz.R
 import com.example.techquiz.app.ui.common.ErrorScreen
 import com.example.techquiz.app.ui.common.LoadingScreen
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
-import com.example.techquiz.domain.models.AnswerOption
 import com.example.techquiz.data.domain.Category
+import com.example.techquiz.domain.models.AnswerOption
 import com.example.techquiz.domain.models.Question
 import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.ui.common.HeaderTextLarge
@@ -44,8 +43,6 @@ import com.example.techquiz.ui.theme.CodingQuizTheme
 import com.example.techquiz.ui.theme.Typography
 
 private const val COLUMNS_NUM = 2
-
-// TODO refactor modifiers
 
 @Composable
 fun QuestionScreen(
@@ -116,27 +113,28 @@ private fun QuestionScreenSuccess(
 ) {
     Column(
         modifier = Modifier
-            .fillMaxSize(),
+            .fillMaxSize()
+            .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
-        QuestionHeaderLoaded(
+        QuestionHeader(
             categoryName = uiState.question.categoryName,
             questionNumber = uiState.question.questionNumber,
             multipleCorrectAnswers = uiState.question.multipleCorrectAnswers,
         )
-        QuestionTextCardLoaded(
-            question = uiState.question,
+        QuestionTextCard(
+            text = uiState.question.questionText,
         )
-        AnswerOptionsGridLoaded(
+        AnswerOptionsGrid(
             answers = uiState.question.options,
             onClick = {
                 onAnswerOptionClick(it)
             },
         )
-        TimerLoaded(
+        Timer(
             timeLeft = uiState.timeLeft,
         )
-        BottomButtonRowLoaded(
+        BottomButtonRow(
             isQuestionLast = { uiState.question.isLast },
             onNextQuestionClick = onNextQuestionClick,
             onSendAnswersClick = onSendAnswersClick,
@@ -145,7 +143,7 @@ private fun QuestionScreenSuccess(
 }
 
 @Composable
-private fun QuestionHeaderLoaded(
+private fun QuestionHeader(
     categoryName: String,
     questionNumber: Int,
     multipleCorrectAnswers: Boolean,
@@ -162,30 +160,44 @@ private fun QuestionHeaderLoaded(
 }
 
 @Composable
-private fun QuestionTextCardLoaded(
-    question: QuestionDataUiState,
-) {
-    TextCard(text = question.questionText)
+private fun buildHeaderTextString(
+    categoryName: String,
+    questionNumber: Int,
+    multipleCorrectAnswers: Boolean,
+) = buildString {
+    append(
+        stringResource(
+            id = R.string.question_header,
+            categoryName,
+            questionNumber,
+        )
+    )
+
+    if (multipleCorrectAnswers) {
+        append(" ")
+        append(
+            stringResource(
+                id = R.string.question_header_multiple_choice,
+            )
+        )
+    }
 }
 
 @Composable
-private fun AnswerOptionsGridLoaded(
+private fun AnswerOptionsGrid(
+    modifier: Modifier = Modifier,
     answers: List<AnswerOptionUiState>,
     onClick: (AnswerOptionUiState) -> Unit,
 ) {
     SpacedLazyVerticalGrid(
+        modifier = modifier,
         columns = GridCells.Fixed(COLUMNS_NUM),
     ) {
         items(answers) {
-            val color =
-                if (it.isSelected) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.secondary
-
-            AnswerOptionLoaded(
+            AnswerOption(
                 modifier = Modifier
                     .aspectRatio(1.5f),
                 answer = it,
-                color,
             ) {
                 onClick(it)
             }
@@ -194,12 +206,18 @@ private fun AnswerOptionsGridLoaded(
 }
 
 @Composable
-private fun AnswerOptionLoaded(
+private fun AnswerOption(
     modifier: Modifier = Modifier,
     answer: AnswerOptionUiState,
-    color: Color,
     onClick: () -> Unit,
 ) {
+    val color = if (answer.isSelected) {
+        MaterialTheme.colorScheme.primary
+    }
+    else {
+        MaterialTheme.colorScheme.secondary
+    }
+
     ShapedFilledTonalButton(
         modifier = modifier,
         colors = ButtonDefaults.buttonColors(color),
@@ -213,23 +231,16 @@ private fun AnswerOptionLoaded(
 }
 
 @Composable
-private fun TimerLoaded(
-    timeLeft: Long,
-) {
-    Timer(
-        timeLeft = timeLeft,
-    )
-}
-
-@Composable
-private fun BottomButtonRowLoaded(
+private fun BottomButtonRow(
+    modifier: Modifier = Modifier,
     isQuestionLast: () -> Boolean,
     onNextQuestionClick: () -> Unit,
     onSendAnswersClick: () -> Unit,
 ) {
     Row(
         modifier = Modifier
-            .fillMaxWidth(),
+            .fillMaxWidth()
+            .then(modifier),
         horizontalArrangement = Arrangement.Center,
     ) {
         if (isQuestionLast()) {
@@ -253,43 +264,19 @@ private fun SendAnswersButton(
         modifier = modifier,
         onClick = onClick,
     ) {
-        Text(text = stringResource(id = R.string.question_finish))
-    }
-}
-
-@Composable
-private fun buildHeaderTextString(
-    categoryName: String,
-    questionNumber: Int,
-    multipleCorrectAnswers: Boolean
-) = buildString {
-    append(
-        stringResource(
-            id = R.string.question_header,
-            categoryName,
-            questionNumber,
-        )
-    )
-
-    if (multipleCorrectAnswers) {
-        append(" ")
-        append(
-            stringResource(
-                id = R.string.question_header_multiple_choice,
-            )
+        Text(
+            text = stringResource(id = R.string.question_finish),
         )
     }
 }
 
 @Composable
-private fun TextCard(
+private fun QuestionTextCard(
     modifier: Modifier = Modifier,
-    textModifier: Modifier = Modifier,
     text: String,
 ) {
     Card(
         modifier = Modifier
-            .padding(8.dp)
             .fillMaxWidth()
             .wrapContentHeight()
             .then(modifier),
@@ -301,8 +288,7 @@ private fun TextCard(
                     horizontal = 24.dp,
                     vertical = 12.dp
                 )
-                .fillMaxWidth()
-                .then(textModifier),
+                .fillMaxWidth(),
             textAlign = TextAlign.Center,
         )
     }
@@ -310,6 +296,7 @@ private fun TextCard(
 
 @Composable
 private fun Timer(
+    modifier: Modifier = Modifier,
     timeLeft: Long,
 ) {
     val timeLeftText = pluralStringResource(
@@ -321,7 +308,7 @@ private fun Timer(
     Text(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp),
+            .then(modifier),
         text = timeLeftText,
         textAlign = TextAlign.Center,
         fontSize = 24.sp,
@@ -337,7 +324,9 @@ private fun NextQuestionButton(
         modifier = modifier,
         onClick = onClick,
     ) {
-        Text(text = stringResource(id = R.string.question_next))
+        Text(
+            text = stringResource(id = R.string.question_next),
+        )
     }
 }
 
