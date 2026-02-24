@@ -114,7 +114,7 @@ private fun QuestionScreenSuccess(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .padding(horizontal = 16.dp),
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         QuestionHeader(
