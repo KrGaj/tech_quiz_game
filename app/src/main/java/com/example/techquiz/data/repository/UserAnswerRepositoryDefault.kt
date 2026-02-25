@@ -11,7 +11,6 @@ import io.ktor.client.request.setBody
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
-// TODO improve
 class UserAnswerRepositoryDefault(
     private val httpClient: HttpClient,
 ) : UserAnswerRepository {
