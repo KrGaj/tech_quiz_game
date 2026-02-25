@@ -72,7 +72,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.compose.navigation3)
 
     implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.client.okhttp)
