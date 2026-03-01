@@ -25,7 +25,7 @@ class Navigator(
     }.stateIn(
         scope = coroutineScope,
         started = SharingStarted.WhileSubscribed(stopTimeoutMillis = 5000L),
-        initialValue = state.value.toNavigationState(),
+        initialValue = State().toNavigationState(),
     )
 
     fun onTabClick(
@@ -53,7 +53,7 @@ class Navigator(
         currentTab: NavTab,
         destination: Screen,
     ): NavBackStacks {
-        val topBackStack = backStacks[currentTab]!!
+        val topBackStack = backStacks.getValue(currentTab)
 
         return backStacks.toMutableMap().also {
             it[currentTab] = topBackStack + destination
@@ -62,20 +62,17 @@ class Navigator(
 
     fun goBack() {
         state.update {
-            when(it.currentTab) {
-                NavTab.HOME -> it.copy(
+            val topBackStack = it.backStacks.getValue(it.currentTab)
+
+            if (it.currentTab == NavTab.HOME || topBackStack.size > 1) {
+                it.copy(
                     backStacks = popBackStack(
                         backStacks = it.backStacks,
                         currentTab = it.currentTab,
-                    )
+                    ),
                 )
-                else if it.backStacks[it.currentTab]!!.size > 1 -> it.copy(
-                    backStacks = popBackStack(
-                        backStacks = it.backStacks,
-                        currentTab = it.currentTab,
-                    )
-                )
-                else -> it.copy(currentTab = NavTab.HOME)
+            } else {
+                it.copy(currentTab = NavTab.HOME)
             }
         }
     }
@@ -84,7 +81,7 @@ class Navigator(
         backStacks: NavBackStacks,
         currentTab: NavTab,
     ): NavBackStacks {
-        val topBackStack = backStacks[currentTab]!!
+        val topBackStack = backStacks.getValue(currentTab)
 
         return backStacks.toMutableMap().also {
             it[currentTab] = topBackStack.dropLast(1)
@@ -94,14 +91,15 @@ class Navigator(
     private data class State(
         val currentTab: NavTab = NavTab.HOME,
         val backStacks: NavBackStacks = mapOf(
-            NavTab.HOME to mutableListOf<Screen>(QuizRoute.Categories),
-            NavTab.STATISTICS to mutableListOf<Screen>(StatsRoute.Statistics),
+            NavTab.HOME to listOf<QuizRoute>(QuizRoute.Categories),
+            NavTab.STATISTICS to listOf<StatsRoute>(StatsRoute.Statistics),
         ),
     ) {
         fun toNavigationState(): NavigationState {
             val backStack = when(currentTab) {
-                NavTab.HOME -> backStacks[currentTab]!!
-                else -> backStacks[NavTab.HOME]!! + backStacks[currentTab]!!
+                NavTab.HOME -> backStacks.getValue(currentTab)
+                else -> backStacks.getValue(NavTab.HOME) +
+                        backStacks.getValue(currentTab)
             }
 
             return NavigationState(
