@@ -7,12 +7,16 @@ import androidx.navigation3.ui.NavDisplay
 import com.example.techquiz.app.ui.navigation.Navigator
 import com.example.techquiz.app.ui.navigation.QuizRoute
 import com.example.techquiz.app.ui.navigation.StatsRoute
+import com.example.techquiz.app.ui.question.QuestionScreen
+import com.example.techquiz.app.ui.question.QuestionViewModel
+import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.ui.screen.CategoriesScreen
-import com.example.techquiz.ui.screen.QuestionScreen
 import com.example.techquiz.ui.screen.QuizSummaryScreen
 import com.example.techquiz.ui.screen.StatsScreen
+import org.koin.androidx.compose.koinViewModel
 import org.koin.androidx.scope.dsl.activityRetainedScope
 import org.koin.core.annotation.KoinExperimentalAPI
+import org.koin.core.parameter.parametersOf
 import org.koin.dsl.module
 import org.koin.dsl.navigation3.navigation
 
@@ -37,21 +41,32 @@ val navigationModule = module {
             )
         }
 
-        navigation<QuizRoute.Question> { question ->
+        navigation<QuizRoute.Question> { navKey ->
             val navigator = get<Navigator>()
 
-            QuestionScreen(
-                category = question.category,
-                navigateToCategories = {
-                    navigator.goBack()
-                },
-                navigateToResults = {
-                    navigator.goBack()
-                    navigator.goTo(
-                        destination = QuizRoute.QuizSummary(
-                            userAnswers = it,
-                        )
+            val questionViewModel: QuestionViewModel = koinViewModel {
+                parametersOf(navKey.category)
+            }
+
+            val navigateToSummary: (List<UserAnswer>) -> Unit = {
+                navigator.goBack()
+                navigator.goTo(
+                    destination = QuizRoute.QuizSummary(
+                        userAnswers = it,
                     )
+                )
+            }
+
+            val navigateToCategories = {
+                navigator.goBack()
+            }
+
+            QuestionScreen(
+                questionViewModel = questionViewModel,
+                navigateFromQuestion = { userAnswers ->
+                    userAnswers.takeIf { it.isNotEmpty() }?.let {
+                        navigateToSummary(it)
+                    } ?: navigateToCategories()
                 },
             )
         }
@@ -60,10 +75,10 @@ val navigationModule = module {
             val navigator = get<Navigator>()
 
             QuizSummaryScreen(
-                quizResults = it.userAnswers,
+                userAnswers = it.userAnswers,
                 navigateToCategories = {
                     navigator.goBack()
-                }
+                },
             )
         }
 
