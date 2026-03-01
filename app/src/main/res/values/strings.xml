@@ -47,6 +47,8 @@
     <string name="socket_timeout_message">Socket Timeout</string>
     <string name="other_error_message">An error occurred</string>
 
+    <string name="retry">Retry</string>
+
     <string name="quiz_exit_message">Are you sure want to quit this quiz?</string>
     <string name="app_exit_message">Are you sure want to exit this app?</string>
 </resources>
