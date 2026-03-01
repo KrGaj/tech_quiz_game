@@ -72,7 +72,9 @@ dependencies {
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.compose.navigation3)
 
     implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.client.okhttp)
@@ -88,6 +90,10 @@ dependencies {
     implementation(libs.compose.shimmer)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))
