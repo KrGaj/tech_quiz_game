@@ -1,9 +1,6 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.kotlinAndroid)
     alias(libs.plugins.ksp)
     alias(libs.plugins.parcelize)
     alias(libs.plugins.serialization)
@@ -15,7 +12,7 @@ android {
 
     defaultConfig {
         applicationId = "com.example.techquiz"
-        minSdk = 30
+        minSdk = 31
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -41,12 +38,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_17
     }
 
-    kotlin {
-        compilerOptions {
-            jvmTarget = JvmTarget.JVM_17
-        }
-    }
-
     buildFeatures {
         compose = true
     }
@@ -65,20 +56,27 @@ dependencies {
     implementation(platform(libs.compose.bom))
 
     implementation(libs.androidx.datastore.preferences)
-    implementation(libs.androidx.lifecycle.runtime.compose)
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material)
     implementation(libs.androidx.material3)
-    implementation(libs.androidx.navigation.compose)
+
+    implementation(libs.androidx.lifecycle.runtime.compose)
+
+    implementation(libs.androidx.lifecycle.viewmodel.navigation3)
+    implementation(libs.androidx.navigation3.runtime)
+    implementation(libs.androidx.navigation3.ui)
 
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
+    implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.compose.navigation3)
 
+    implementation(platform(libs.ktor.bom))
     implementation(libs.ktor.client.okhttp)
     implementation(libs.ktor.client.core)
     implementation(libs.ktor.client.resources)
@@ -92,6 +90,10 @@ dependencies {
     implementation(libs.compose.shimmer)
 
     testImplementation(libs.junit)
+    testImplementation(libs.kotest.assertions)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.ext.junit)
     androidTestImplementation(libs.espresso.core)
     androidTestImplementation(platform(libs.compose.bom))

@@ -3,50 +3,46 @@ package com.example.techquiz
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.getValue
-import androidx.compose.ui.Modifier
-import androidx.navigation.compose.currentBackStackEntryAsState
-import androidx.navigation.compose.rememberNavController
-import com.example.techquiz.navigation.AppNavHost
-import com.example.techquiz.navigation.BottomNavBar
-import com.example.techquiz.navigation.Screen
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
+import com.example.techquiz.app.ui.navigation.NavigationRoot
+import com.example.techquiz.app.ui.navigation.Navigator
+import com.example.techquiz.ui.screen.LoginScreen
 import com.example.techquiz.ui.theme.CodingQuizTheme
+import org.koin.android.ext.android.inject
+import org.koin.android.scope.AndroidScopeComponent
+import org.koin.androidx.compose.navigation3.getEntryProvider
+import org.koin.androidx.scope.activityRetainedScope
+import org.koin.core.annotation.KoinExperimentalAPI
 
-class MainActivity : ComponentActivity() {
+class MainActivity : ComponentActivity(), AndroidScopeComponent {
+    override val scope by activityRetainedScope()
+
+    @OptIn(KoinExperimentalAPI::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         setContent {
-            CodingQuizTheme {
-                val navController = rememberNavController()
-                val navBackStackEntry by navController.currentBackStackEntryAsState()
+            val navigator by inject<Navigator>()
 
-                // A surface container using the 'background' color from the theme
-                Scaffold(
-                    bottomBar = {
-                        when (navBackStackEntry?.destination?.route) {
-                            Screen.Categories.route,
-                            Screen.Statistics.route -> BottomNavBar(
-                                navController = navController,
-                                destinationRoute = navBackStackEntry?.destination?.route,
-                            )
-                            else -> Unit
-                        }
-                    },
-                ) {
-                    Surface(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(it),
-                        color = MaterialTheme.colorScheme.background
-                    ) {
-                        AppNavHost(navController)
+            CodingQuizTheme {
+                var isLoggedIn by rememberSaveable {
+                    mutableStateOf(false)
+                }
+                // TODO change when refactoring login
+                if (!isLoggedIn) {
+                    LoginScreen {
+                        isLoggedIn = true
                     }
+                } else {
+                    NavigationRoot(
+                        navigator = navigator,
+                        entryProvider = getEntryProvider(),
+                    )
                 }
             }
         }

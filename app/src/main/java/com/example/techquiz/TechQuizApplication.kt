@@ -1,6 +1,7 @@
 package com.example.techquiz
 
 import android.app.Application
+import com.example.techquiz.app.di.navigation.navigationModule
 import com.example.techquiz.di.dataStoreModule
 import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.propertiesReaderModule
@@ -14,6 +15,7 @@ class TechQuizApplication : Application() {
     private val koinModules = listOf(
         dataStoreModule,
         httpClientModule,
+        navigationModule,
         propertiesReaderModule,
         repositoryModule,
         viewModelModule,

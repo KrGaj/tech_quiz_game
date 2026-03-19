@@ -13,6 +13,9 @@
     <string name="navigation_results_label">Summary</string>
     <string name="navigation_stats_label">Statistics</string>
 
+    <string name="categories_icon_content_description">Home</string>
+    <string name="stats_icon_content_description">Stats</string>
+
     <string name="navigation_question_error">Cannot navigate to questions</string>
 
     <string name="categories_header">Categories</string>
