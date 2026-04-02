@@ -53,7 +53,10 @@ class QuestionViewModel(
         val TIMEOUT = 30.seconds
         val DEFAULT_QUESTION = Question(
             id = 0,
-            category = Category(name = "0"),
+            category = Category(
+                id = 0,
+                name = "0",
+            ),
             text = "Questions not loaded yet",
             answers = emptyList(),
         )

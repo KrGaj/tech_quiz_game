@@ -1,18 +1,15 @@
 package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.GivenAnswer
-import com.example.techquiz.data.dto.request.GivenAnswerDTO
 import com.example.techquiz.data.dto.request.QuestionReqDTO
-import com.example.techquiz.data.resources.GivenAnswers
-import io.ktor.client.HttpClient
-import io.ktor.client.plugins.resources.post
-import io.ktor.client.request.setBody
+import com.example.techquiz.data.remote.client.BackendApiClient
+import com.example.techquiz.data.remote.dto.request.GivenAnswerDTO
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 // TODO improve
 class GivenAnswerRepositoryDefault(
-    private val httpClient: HttpClient,
+    private val apiClient: BackendApiClient,
 ) : GivenAnswerRepository {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun insertAnswers(
@@ -32,10 +29,6 @@ class GivenAnswerRepositoryDefault(
             )
         }
 
-        httpClient.post(
-            resource = GivenAnswers(),
-        ) {
-            setBody(answersDTO)
-        }
+        apiClient.addUserAnswers(answersDTO)
     }
 }

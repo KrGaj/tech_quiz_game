@@ -1,7 +1,6 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
     alias(libs.plugins.parcelize)
     alias(libs.plugins.serialization)
 }

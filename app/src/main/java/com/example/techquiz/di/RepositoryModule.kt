@@ -18,13 +18,13 @@ import org.koin.dsl.module
 val repositoryModule = module {
     factory<CategoryRepository> {
         CategoryRepositoryDefault(
-            httpClient = get(named(QUIZ_API_CLIENT)),
+            apiClient = get(),
         )
     }
 
     factory<GivenAnswerRepository> {
         GivenAnswerRepositoryDefault(
-            httpClient = get(named(TECH_QUIZ_BACKEND_CLIENT)),
+            apiClient = get(),
         )
     }
 
