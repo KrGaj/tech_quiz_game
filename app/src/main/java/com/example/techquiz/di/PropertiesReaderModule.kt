@@ -6,11 +6,11 @@ import java.util.Properties
 
 val propertiesReaderModule = module {
     factory {
-        Properties().also {
+        Properties().apply {
             val propertiesStream = androidContext().assets.open(
                 "env_config.properties",
             )
-            it.load(propertiesStream)
+            load(propertiesStream)
         }
     }
 }

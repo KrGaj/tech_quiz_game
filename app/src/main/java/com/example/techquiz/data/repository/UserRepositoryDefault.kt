@@ -1,24 +1,19 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.domain.User
-import com.example.techquiz.data.dto.response.UserDTO
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.resources.get
+import com.example.techquiz.domain.models.User
+import com.example.techquiz.data.remote.client.BackendApiClient
+import com.example.techquiz.domain.repository.UserRepository
 import kotlin.uuid.ExperimentalUuidApi
 
 class UserRepositoryDefault(
-    private val httpClient: HttpClient,
+    private val apiClient: BackendApiClient,
 ) : UserRepository {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getUser(): User {
-        val response = httpClient.get(
-            resource = com.example.techquiz.data.resources.User(),
-        )
-        val body = response.body<UserDTO>()
+        val response = apiClient.getUser()
 
         return User(
-            uuid = body.uuid,
+            uuid = response.uuid,
         )
     }
 }

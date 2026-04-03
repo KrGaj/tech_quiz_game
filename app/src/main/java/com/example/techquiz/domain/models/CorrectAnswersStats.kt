@@ -1,4 +1,4 @@
-package com.example.techquiz.data.dto.response.stats
+package com.example.techquiz.domain.models
 
 import kotlinx.serialization.Serializable
 

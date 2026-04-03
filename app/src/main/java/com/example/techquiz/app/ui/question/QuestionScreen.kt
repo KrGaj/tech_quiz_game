@@ -372,8 +372,10 @@ private val SELECTED_OPTIONS = listOf(
 )
 
 private val QUESTION = Question(
-    id = 0,
-    category = Category("Demo Category"),
+    category = Category(
+        id = 1,
+        name = "Demo Category",
+    ),
     text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
             "sed do eiusmod tempor incididunt ut labore et dolore " +
             "magna aliqua. Ut enim ad minim veniam, quis nostrud " +

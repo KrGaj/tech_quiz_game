@@ -7,12 +7,14 @@ import com.example.techquiz.viewmodel.LoginViewModel
 import com.example.techquiz.viewmodel.QuizResultsViewModel
 import com.example.techquiz.viewmodel.StatsViewModel
 import org.koin.core.module.dsl.viewModel
-import org.koin.core.module.dsl.viewModelOf
 import org.koin.dsl.module
+import org.koin.plugin.module.dsl.viewModel
 
 val viewModelModule = module {
-    viewModelOf(::CategoryViewModel)
-    viewModelOf(::LoginViewModel)
+    includes(repositoryModule)
+
+    viewModel<CategoryViewModel>()
+    viewModel<LoginViewModel>()
 
     viewModel { (category: Category) ->
         QuestionViewModel(
@@ -23,6 +25,6 @@ val viewModelModule = module {
         )
     }
 
-    viewModelOf(::QuizResultsViewModel)
-    viewModelOf(::StatsViewModel)
+    viewModel<QuizResultsViewModel>()
+    viewModel<StatsViewModel>()
 }

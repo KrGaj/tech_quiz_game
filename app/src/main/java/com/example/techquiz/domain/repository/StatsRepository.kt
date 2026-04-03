@@ -1,7 +1,7 @@
-package com.example.techquiz.data.repository
+package com.example.techquiz.domain.repository
 
-import com.example.techquiz.data.dto.response.stats.CategoryStats
-import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
+import com.example.techquiz.domain.models.CategoryStats
+import com.example.techquiz.domain.models.CorrectAnswersStats
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 

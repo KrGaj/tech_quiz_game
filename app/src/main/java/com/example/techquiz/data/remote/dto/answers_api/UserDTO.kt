@@ -1,4 +1,4 @@
-package com.example.techquiz.data.dto.response
+package com.example.techquiz.data.remote.dto.answers_api
 
 import kotlinx.serialization.Serializable
 import kotlin.uuid.ExperimentalUuidApi

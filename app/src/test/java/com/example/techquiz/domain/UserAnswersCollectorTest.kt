@@ -78,7 +78,7 @@ class UserAnswersCollectorTest {
             }
 
             val modifiedAnswer = state.userAnswers.find {
-                it.question.id == questionDuplicate.id
+                it.question.text == questionDuplicate.text
             }
             modifiedAnswer shouldNotBeNull {
                 selectedOptions shouldBe listOf(

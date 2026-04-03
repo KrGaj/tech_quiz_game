@@ -61,7 +61,10 @@ class NavigatorTest {
     @Test
     fun `Navigating to new destination updates backstack`() = runTest {
         val destination = QuizRoute.Question(
-            Category(name = "Demo"),
+            Category(
+                id = 1,
+                name = "Demo",
+            ),
         )
 
         navigator.navigationState.test {
@@ -81,7 +84,10 @@ class NavigatorTest {
     @Test
     fun `Going back navigates to previous screen in the same route`() = runTest {
         val questionDestination = QuizRoute.Question(
-            Category(name = "Demo"),
+            Category(
+                id = 2,
+                name = "Demo2",
+            ),
         )
         val summaryDestination = QuizRoute.QuizSummary(emptyList())
 
@@ -114,7 +120,10 @@ class NavigatorTest {
     @Test
     fun `Going back navigates to the home route`() = runTest {
         val questionDestination = QuizRoute.Question(
-            Category(name = "Demo"),
+            Category(
+                id = 3,
+                name = "Demo3",
+            ),
         )
         val summaryDestination = QuizRoute.QuizSummary(emptyList())
 

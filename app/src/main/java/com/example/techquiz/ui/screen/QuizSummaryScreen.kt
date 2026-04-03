@@ -248,8 +248,10 @@ private fun PreviewFinishButton() {
 private val userAnswers = listOf(
     UserAnswer(
         question = Question(
-            id = 0,
-            category = Category("Demo"),
+            category = Category(
+                id = 1,
+                name = "Demo",
+            ),
             text = "Demo Question 1",
             options = listOf(
                 AnswerOption(
@@ -270,8 +272,10 @@ private val userAnswers = listOf(
     ),
     UserAnswer(
         question = Question(
-            id = 1,
-            category = Category("Demo"),
+            category = Category(
+                id = 1,
+                name = "Demo",
+            ),
             text = "Demo Question 2",
             options = emptyList(),
         ),
@@ -279,8 +283,10 @@ private val userAnswers = listOf(
     ),
     UserAnswer(
         question = Question(
-            id = 2,
-            category = Category("Demo"),
+            category = Category(
+                id = 1,
+                name = "Demo",
+            ),
             text = "Demo Question 3, but very very very long for preview purposes",
             options = emptyList(),
         ),

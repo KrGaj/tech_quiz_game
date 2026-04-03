@@ -1,4 +1,4 @@
-package com.example.techquiz.data.resources
+package com.example.techquiz.data.remote.client.resources
 
 import io.ktor.resources.Resource
 

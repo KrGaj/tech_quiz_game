@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.koin.compiler)
     alias(libs.plugins.parcelize)
     alias(libs.plugins.serialization)
 }
@@ -34,8 +34,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildFeatures {
@@ -47,6 +47,10 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+koinCompiler {
+    compileSafety = false
 }
 
 dependencies {
@@ -74,6 +78,7 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.core)
     implementation(libs.koin.compose.navigation3)
 
     implementation(platform(libs.ktor.bom))

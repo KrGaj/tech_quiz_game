@@ -7,20 +7,25 @@ import com.example.techquiz.domain.models.UserAnswer
 
 @Immutable
 sealed class QuestionUiState {
+    @Immutable
     data class Success(
         val question: QuestionDataUiState,
         val timeLeft: Long,
         val isExitDialogVisible: Boolean = false,
     ) : QuestionUiState()
 
+    @Immutable
     data object Loading : QuestionUiState()
 
+    @Immutable
     data class AnswersSent(
         val userAnswers: List<UserAnswer>,
     ) : QuestionUiState()
 
+    @Immutable
     data object EmptyCategory : QuestionUiState()
 
+    @Immutable
     data class Error(
         @param:StringRes val errorMsgRes: Int,
     ) : QuestionUiState()

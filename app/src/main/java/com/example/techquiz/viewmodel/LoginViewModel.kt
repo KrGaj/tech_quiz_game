@@ -6,10 +6,10 @@ import androidx.credentials.CustomCredential
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.domain.User
+import com.example.techquiz.domain.models.User
 import com.example.techquiz.data.domain.exception.InvalidCredentialTypeException
 import com.example.techquiz.data.repository.UserDataStoreRepository
-import com.example.techquiz.data.repository.UserRepository
+import com.example.techquiz.domain.repository.UserRepository
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.libraries.identity.googleid.GoogleIdTokenParsingException

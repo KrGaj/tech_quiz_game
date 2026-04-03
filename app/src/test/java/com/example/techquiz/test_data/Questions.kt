@@ -8,11 +8,13 @@ import kotlin.time.Duration.Companion.seconds
 object Questions {
     val timeout = 5.seconds
 
-    val category = Category(name = "Demo Category")
+    val category = Category(
+        id = 1,
+        name = "Demo Category",
+    )
 
     val questions = listOf(
         Question(
-            id = 1,
             category = category,
             text = "Question ABC",
             options = listOf(
@@ -35,7 +37,6 @@ object Questions {
             ),
         ),
         Question(
-            id = 2,
             category = category,
             text = "Question xD",
             options = listOf(
@@ -58,7 +59,6 @@ object Questions {
             ),
         ),
         Question(
-            id = 3,
             category = category,
             text = "Example Question",
             options = listOf(
@@ -81,7 +81,6 @@ object Questions {
             ),
         ),
         Question(
-            id = 5,
             category = category,
             text = "Question DEF",
             options = listOf(
@@ -104,7 +103,6 @@ object Questions {
             ),
         ),
         Question(
-            id = 8,
             category = category,
             text = "Question MZ ETZ 251",
             options = listOf(

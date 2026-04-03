@@ -3,14 +3,14 @@ package com.example.techquiz.app.ui.question
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
+import com.example.techquiz.data.domain.Category
+import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.domain.Timer
 import com.example.techquiz.domain.UserAnswersCollector
 import com.example.techquiz.domain.models.AnswerOption
-import com.example.techquiz.data.domain.Category
 import com.example.techquiz.domain.models.Question
 import com.example.techquiz.domain.repository.QuestionRepository
 import com.example.techquiz.domain.repository.UserAnswerRepository
-import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.util.getHttpFailureMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -48,10 +48,11 @@ class QuestionViewModel(
                 QuestionUiState.AnswersSent(
                     userAnswers = collectorState.userAnswers,
                 )
-            sessionState.error != null ->
+            sessionState.error != null -> {
                 QuestionUiState.Error(
                     errorMsgRes = getHttpFailureMessage(sessionState.error),
                 )
+            }
             sessionState.questions.isEmpty() ->
                 QuestionUiState.EmptyCategory
             else ->
@@ -91,29 +92,28 @@ class QuestionViewModel(
                 quantity = QUESTIONS_NUM,
             )
 
-            _sessionState.update { state ->
-                result.fold(
-                    onSuccess = {
-                        state.copy(
-                            questions = it,
-                            questionNumber = 1,
-                            loadingState = LoadingState.IDLE,
-                            error = null,
+            result.onSuccess {
+                _sessionState.update { state ->
+                    state.copy(
+                        questions = it,
+                        questionNumber = 1,
+                        loadingState = LoadingState.IDLE,
+                        error = null,
+                    ).also {
+                        timer.start(
+                            timeout = timeout,
+                            onTimeout = ::onTimeout,
                         )
-                    },
-                    onFailure = {
-                        state.copy(
-                            loadingState = LoadingState.FAILURE,
-                            error = it,
-                        )
-                    },
-                )
+                    }
+                }
+            }.onFailure {
+                _sessionState.update { state ->
+                    state.copy(
+                        loadingState = LoadingState.FAILURE,
+                        error = it,
+                    )
+                }
             }
-
-            timer.start(
-                timeout = timeout,
-                onTimeout = ::onTimeout,
-            )
         }
     }
 

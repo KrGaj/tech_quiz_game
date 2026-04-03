@@ -1,9 +1,8 @@
-package com.example.techquiz.data.dto.response
+package com.example.techquiz.data.remote.dto.answers_api
 
 import kotlinx.serialization.Serializable
 
 @Serializable
 data class CategoryDTO(
-    val id: Int,
     val name: String,
 )

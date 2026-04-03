@@ -1,9 +1,9 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
-import com.example.techquiz.data.dto.response.stats.CategoryStats
-import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
-import com.example.techquiz.data.repository.StatsRepository
+import com.example.techquiz.domain.models.CategoryStats
+import com.example.techquiz.domain.models.CorrectAnswersStats
+import com.example.techquiz.domain.repository.StatsRepository
 import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

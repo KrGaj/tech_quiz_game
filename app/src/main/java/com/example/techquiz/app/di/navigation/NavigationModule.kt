@@ -3,6 +3,7 @@ package com.example.techquiz.app.di.navigation
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.togetherWith
+import androidx.navigation3.runtime.metadata
 import androidx.navigation3.ui.NavDisplay
 import com.example.techquiz.app.ui.navigation.Navigator
 import com.example.techquiz.app.ui.navigation.QuizRoute
@@ -83,10 +84,13 @@ val navigationModule = module {
         }
 
         navigation<StatsRoute.Statistics>(
-            metadata = NavDisplay.popTransitionSpec {
-                EnterTransition.None togetherWith ExitTransition.None
-            } + NavDisplay.predictivePopTransitionSpec {
-                EnterTransition.None togetherWith ExitTransition.None
+            metadata = metadata {
+                put(NavDisplay.PopTransitionKey) {
+                    EnterTransition.None togetherWith ExitTransition.None
+                }
+                put(NavDisplay.PredictivePopTransitionKey) {
+                    EnterTransition.None togetherWith ExitTransition.None
+                }
             },
         ) {
             StatsScreen()

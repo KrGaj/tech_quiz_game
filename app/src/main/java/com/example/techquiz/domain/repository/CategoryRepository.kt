@@ -1,4 +1,4 @@
-package com.example.techquiz.data.repository
+package com.example.techquiz.domain.repository
 
 import com.example.techquiz.data.domain.Category
 
