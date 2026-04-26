@@ -7,7 +7,9 @@ import com.example.techquiz.domain.models.AnswerOption
 import com.example.techquiz.domain.models.Question
 import com.example.techquiz.domain.repository.CategoryRepository
 import com.example.techquiz.domain.repository.QuestionRepository
+import org.koin.core.annotation.Factory
 
+@Factory
 class QuestionRepositoryDefault(
     private val apiClient: QuizApiClient,
     private val categoryRepository: CategoryRepository,

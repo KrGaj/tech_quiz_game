@@ -2,7 +2,7 @@ package com.example.techquiz.domain
 
 import app.cash.turbine.test
 import com.example.techquiz.domain.models.UserAnswer
-import com.example.techquiz.test_data.Questions
+import com.example.techquiz.testdata.Questions
 import io.kotest.inspectors.forNone
 import io.kotest.inspectors.forOne
 import io.kotest.matchers.nulls.shouldNotBeNull

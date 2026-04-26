@@ -8,7 +8,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.lifecycle.ViewModel
 import com.example.techquiz.domain.models.User
 import com.example.techquiz.data.domain.exception.InvalidCredentialTypeException
-import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.data.local.UserDataProvider
 import com.example.techquiz.domain.repository.UserRepository
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
@@ -19,7 +19,7 @@ import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class LoginViewModel(
-    private val userDataStoreRepository: UserDataStoreRepository,
+    private val userDataProvider: UserDataProvider,
     private val userRepository: UserRepository,
     webClientId: String,
 ) : ViewModel() {
@@ -96,12 +96,12 @@ class LoginViewModel(
     }
 
     suspend fun setToken(token: String) {
-        userDataStoreRepository.setUserToken(token)
+        userDataProvider.setUserToken(token)
     }
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun setUserUuid(uuid: Uuid) {
-        userDataStoreRepository.setUserUuid(uuid)
+        userDataProvider.setUserUuid(uuid)
     }
 
     suspend fun fetchUser(): Unit = Result.runCatching {

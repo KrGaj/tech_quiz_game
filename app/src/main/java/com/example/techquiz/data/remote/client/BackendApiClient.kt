@@ -1,12 +1,12 @@
 package com.example.techquiz.data.remote.client
 
-import com.example.techquiz.data.remote.dto.answers_api.UserDTO
+import com.example.techquiz.data.local.UserDataProvider
 import com.example.techquiz.data.remote.client.resources.User
 import com.example.techquiz.data.remote.client.resources.UserAnswers
 import com.example.techquiz.data.remote.dto.answers_api.UserAnswerDTO
+import com.example.techquiz.data.remote.dto.answers_api.UserDTO
 import com.example.techquiz.data.remote.dto.answers_api.stats.CategoryStatsDTO
 import com.example.techquiz.data.remote.dto.answers_api.stats.CorrectAnswersStatsDTO
-import com.example.techquiz.data.repository.UserDataStoreRepository
 import com.example.techquiz.data.resources.Stats
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -27,16 +27,18 @@ import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.serialization.json.Json
+import org.koin.core.annotation.Factory
 import java.util.Properties
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
+@Factory
 class BackendApiClient(
     engine: HttpClientEngine = OkHttp.create(),
     clientProperties: Properties,
-    userDataStoreRepository: UserDataStoreRepository,
+    userDataProvider: UserDataProvider,
     requestTimeout: Duration = 10.seconds,
 ) {
     private val client = HttpClient(engine) {
@@ -68,7 +70,7 @@ class BackendApiClient(
         expectSuccess = true
     }.also {
         it.plugin(HttpSend).intercept { request ->
-            val user = userDataStoreRepository.userFlow.firstOrNull()
+            val user = userDataProvider.userFlow.firstOrNull()
             if (user != null) {
                 request.headers.append(
                     name = "Authorization",

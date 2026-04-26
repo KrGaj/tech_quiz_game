@@ -8,12 +8,12 @@ plugins {
 
 android {
     namespace = "com.example.techquiz"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.techquiz"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -50,6 +50,8 @@ android {
 }
 
 koinCompiler {
+    // TODO remove after migration do Annotations
+    // https://slack-chats.kotlinlang.org/t/33159970/hi-all-i-m-having-troubles-when-mixing-koin-compiler-dsl-wit
     compileSafety = false
 }
 
@@ -78,6 +80,7 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.annotations)
     implementation(libs.koin.core)
     implementation(libs.koin.compose.navigation3)
 
@@ -97,6 +100,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.ext.junit)

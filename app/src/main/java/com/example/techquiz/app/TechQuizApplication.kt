@@ -1,20 +1,19 @@
 package com.example.techquiz.app
 
 import android.app.Application
-import com.example.techquiz.app.di.navigation.navigationModule
+import com.example.techquiz.app.di.QuizApp
+import com.example.techquiz.app.di.navigationModule
 import com.example.techquiz.di.dataStoreModule
-import com.example.techquiz.di.httpClientModule
 import com.example.techquiz.di.propertiesReaderModule
 import com.example.techquiz.di.repositoryModule
 import com.example.techquiz.di.viewModelModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
-import org.koin.core.context.startKoin
+import org.koin.plugin.module.dsl.startKoin
 
 class TechQuizApplication : Application() {
     private val koinModules = listOf(
         dataStoreModule,
-        httpClientModule,
         navigationModule,
         propertiesReaderModule,
         repositoryModule,
@@ -28,7 +27,7 @@ class TechQuizApplication : Application() {
     }
 
     private fun initKoin() =
-        startKoin {
+        startKoin<QuizApp> {
             androidContext(this@TechQuizApplication)
             androidLogger()
 

@@ -1,4 +1,4 @@
-package com.example.techquiz.app.di.navigation
+package com.example.techquiz.app.di
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition

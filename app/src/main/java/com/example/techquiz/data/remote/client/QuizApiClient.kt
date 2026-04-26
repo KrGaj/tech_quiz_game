@@ -18,9 +18,11 @@ import io.ktor.http.URLProtocol
 import io.ktor.http.contentType
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import org.koin.core.annotation.Factory
 import kotlin.time.Duration
 import kotlin.time.Duration.Companion.seconds
 
+@Factory
 class QuizApiClient(
     engine: HttpClientEngine = OkHttp.create(),
     requestTimeout: Duration = 10.seconds,

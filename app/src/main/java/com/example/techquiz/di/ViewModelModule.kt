@@ -21,7 +21,7 @@ val viewModelModule = module {
             category = category,
             questionRepository = get(),
             userAnswerRepository = get(),
-            userDataStoreRepository = get(),
+            userDataProvider = get(),
         )
     }
 

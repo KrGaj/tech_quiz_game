@@ -4,7 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.data.local.UserDataProvider
 import com.example.techquiz.domain.Timer
 import com.example.techquiz.domain.UserAnswersCollector
 import com.example.techquiz.domain.models.AnswerOption
@@ -28,7 +28,7 @@ class QuestionViewModel(
     private val category: Category,
     private val questionRepository: QuestionRepository,
     private val userAnswerRepository: UserAnswerRepository,
-    private val userDataStoreRepository: UserDataStoreRepository,
+    private val userDataProvider: UserDataProvider,
     private val userAnswersCollector: UserAnswersCollector = UserAnswersCollector(),
     private val timer: Timer = Timer(),
     private val timeout: Duration = 30.seconds,
@@ -202,7 +202,7 @@ class QuestionViewModel(
             }
             timer.clear()
 
-            val user = userDataStoreRepository.userFlow.first()
+            val user = userDataProvider.userFlow.first()
             val result = userAnswerRepository.insertAnswers(
                 userUuid = user.userUuid,
                 answers = userAnswersCollector.state.value.userAnswers,

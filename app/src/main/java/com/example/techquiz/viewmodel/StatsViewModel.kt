@@ -1,10 +1,10 @@
 package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.example.techquiz.data.local.UserDataProvider
 import com.example.techquiz.domain.models.CategoryStats
 import com.example.techquiz.domain.models.CorrectAnswersStats
 import com.example.techquiz.domain.repository.StatsRepository
-import com.example.techquiz.data.repository.UserDataStoreRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
@@ -12,7 +12,7 @@ import kotlin.uuid.ExperimentalUuidApi
 
 class StatsViewModel(
     private val statsRepository: StatsRepository,
-    private val userDataStoreRepository: UserDataStoreRepository,
+    private val userDataProvider: UserDataProvider,
 ) : ViewModel() {
     private val _categoryStats = MutableStateFlow<Result<List<CategoryStats>>?>(null)
     val categoryStats get() = _categoryStats.asStateFlow()
@@ -22,7 +22,7 @@ class StatsViewModel(
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getMostAnsweredCategories() = Result.runCatching {
-        val userPreferences = userDataStoreRepository.userFlow.first()
+        val userPreferences = userDataProvider.userFlow.first()
 
         statsRepository.getMostAnsweredCategories(
             userUuid = userPreferences.userUuid,
@@ -32,7 +32,7 @@ class StatsViewModel(
 
     @OptIn(ExperimentalUuidApi::class)
     suspend fun getCorrectAnswersCount() = Result.runCatching {
-        val userPreferences = userDataStoreRepository.userFlow.first()
+        val userPreferences = userDataProvider.userFlow.first()
 
         statsRepository.getCorrectAnswersCount(
             userUuid = userPreferences.userUuid,

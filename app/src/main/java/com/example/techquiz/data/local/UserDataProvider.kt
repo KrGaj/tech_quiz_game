@@ -1,18 +1,19 @@
-package com.example.techquiz.data.repository
+package com.example.techquiz.data.local
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
-import com.example.techquiz.data.domain.UserPreferences
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import org.koin.core.annotation.Single
 import java.util.UUID
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 import kotlin.uuid.toKotlinUuid
 
-class UserDataStoreRepository(
+@Single
+class UserDataProvider(
     private val dataStore: DataStore<Preferences>,
 ) {
     @OptIn(ExperimentalUuidApi::class)

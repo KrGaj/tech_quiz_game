@@ -2,14 +2,14 @@ package com.example.techquiz.app.ui.question
 
 import app.cash.turbine.test
 import com.example.techquiz.app.ui.mapper.toQuestionDataUiState
-import com.example.techquiz.data.domain.UserPreferences
-import com.example.techquiz.data.repository.UserDataStoreRepository
+import com.example.techquiz.data.local.UserPreferences
+import com.example.techquiz.data.local.UserDataProvider
 import com.example.techquiz.domain.Timer
 import com.example.techquiz.domain.UserAnswersCollector
 import com.example.techquiz.domain.models.UserAnswer
 import com.example.techquiz.domain.repository.QuestionRepository
 import com.example.techquiz.domain.repository.UserAnswerRepository
-import com.example.techquiz.test_data.Questions
+import com.example.techquiz.testdata.Questions
 import com.example.techquiz.util.getHttpFailureMessage
 import io.kotest.assertions.throwables.shouldNotThrow
 import io.kotest.matchers.shouldBe
@@ -43,7 +43,7 @@ class QuestionViewModelTest {
 
     private lateinit var questionRepository: QuestionRepository
     private lateinit var userAnswerRepository: UserAnswerRepository
-    private lateinit var userDataStoreRepository: UserDataStoreRepository
+    private lateinit var userDataProvider: UserDataProvider
     private lateinit var userAnswersCollector: UserAnswersCollector
     private lateinit var timer: Timer
 
@@ -59,7 +59,7 @@ class QuestionViewModelTest {
 
         questionRepository = mockk()
         userAnswerRepository = mockk()
-        userDataStoreRepository = mockk()
+        userDataProvider = mockk()
         userAnswersCollector = mockk()
         timer = mockk()
 
@@ -110,7 +110,7 @@ class QuestionViewModelTest {
         }
 
         coEvery {
-            userDataStoreRepository.userFlow
+            userDataProvider.userFlow
         } returns flowOf(UserPreferences(
             userUuid = Uuid.random(),
             userToken = "Demo token",
@@ -120,7 +120,7 @@ class QuestionViewModelTest {
             category = Questions.category,
             questionRepository = questionRepository,
             userAnswerRepository = userAnswerRepository,
-            userDataStoreRepository = userDataStoreRepository,
+            userDataProvider = userDataProvider,
             userAnswersCollector = userAnswersCollector,
             timer = timer,
             timeout = Questions.timeout,

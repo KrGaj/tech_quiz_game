@@ -1,4 +1,4 @@
-package com.example.techquiz.data.domain
+package com.example.techquiz.data.local
 
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid

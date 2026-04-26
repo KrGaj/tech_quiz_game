@@ -1,4 +1,4 @@
-package com.example.techquiz.test_data
+package com.example.techquiz.testdata
 
 import com.example.techquiz.data.domain.Category
 import com.example.techquiz.domain.models.AnswerOption
