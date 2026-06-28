@@ -1,19 +1,19 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.compose.compiler)
-    alias(libs.plugins.ksp)
+    alias(libs.plugins.koin.compiler)
     alias(libs.plugins.parcelize)
     alias(libs.plugins.serialization)
 }
 
 android {
     namespace = "com.example.techquiz"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.example.techquiz"
         minSdk = 31
-        targetSdk = 36
+        targetSdk = 37
         versionCode = 1
         versionName = "1.0"
 
@@ -34,8 +34,8 @@ android {
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_17
-        targetCompatibility = JavaVersion.VERSION_17
+        sourceCompatibility = JavaVersion.VERSION_21
+        targetCompatibility = JavaVersion.VERSION_21
     }
 
     buildFeatures {
@@ -47,6 +47,12 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+}
+
+koinCompiler {
+    // TODO remove after migration do Annotations
+    // https://slack-chats.kotlinlang.org/t/33159970/hi-all-i-m-having-troubles-when-mixing-koin-compiler-dsl-wit
+    compileSafety = false
 }
 
 dependencies {
@@ -74,6 +80,8 @@ dependencies {
 
     implementation(platform(libs.koin.bom))
     implementation(libs.koin.androidx.compose)
+    implementation(libs.koin.annotations)
+    implementation(libs.koin.core)
     implementation(libs.koin.compose.navigation3)
 
     implementation(platform(libs.ktor.bom))
@@ -92,6 +100,7 @@ dependencies {
     testImplementation(libs.junit)
     testImplementation(libs.kotest.assertions)
     testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.ktor.client.mock)
     testImplementation(libs.mockk)
     testImplementation(libs.turbine)
     androidTestImplementation(libs.androidx.test.ext.junit)

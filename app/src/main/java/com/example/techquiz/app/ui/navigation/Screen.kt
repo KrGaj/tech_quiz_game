@@ -2,7 +2,7 @@ package com.example.techquiz.app.ui.navigation
 
 import androidx.navigation3.runtime.NavKey
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.QuizResult
+import com.example.techquiz.domain.models.UserAnswer
 import kotlinx.serialization.Serializable
 
 sealed interface Screen : NavKey
@@ -18,7 +18,7 @@ sealed class QuizRoute : Screen {
 
     @Serializable
     data class QuizSummary(
-        val userAnswers: List<QuizResult>,
+        val userAnswers: List<UserAnswer>,
     ) : QuizRoute()
 }
 

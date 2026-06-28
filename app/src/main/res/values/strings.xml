@@ -23,6 +23,7 @@
     <string name="question_header_multiple_choice">(Multiple Choice)</string>
     <string name="question_next">Next question</string>
     <string name="question_finish">Finish quiz</string>
+    <string name="question_empty_category">There are no questions in this category</string>
 
     <string name="quiz_results_score">Your score: %1$d/%2$d</string>
     <string name="quiz_results_finish">Finish</string>
@@ -45,6 +46,8 @@
     <string name="connection_timeout_message">Connection Timeout</string>
     <string name="socket_timeout_message">Socket Timeout</string>
     <string name="other_error_message">An error occurred</string>
+
+    <string name="retry">Retry</string>
 
     <string name="quiz_exit_message">Are you sure want to quit this quiz?</string>
     <string name="app_exit_message">Are you sure want to exit this app?</string>

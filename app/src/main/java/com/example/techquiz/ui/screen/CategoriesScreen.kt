@@ -66,7 +66,7 @@ fun CategoriesScreen(
                 categories = it
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
             },
         )
@@ -205,8 +205,20 @@ private fun PreviewCategoryGrid() {
 }
 
 private val CATEGORIES = listOf(
-    Category("Category 1"),
-    Category("Category 2"),
-    Category("Category 3"),
-    Category("Category 4"),
+    Category(
+        id = 1,
+        name = "Category 1",
+    ),
+    Category(
+        id = 2,
+        name = "Category 2",
+    ),
+    Category(
+        id = 3,
+        name = "Category 3",
+    ),
+    Category(
+        id = 4,
+        name = "Category 4",
+    ),
 )

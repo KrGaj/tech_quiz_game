@@ -2,7 +2,7 @@ package com.example.techquiz.viewmodel
 
 import androidx.lifecycle.ViewModel
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.repository.CategoryRepository
+import com.example.techquiz.domain.repository.CategoryRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 

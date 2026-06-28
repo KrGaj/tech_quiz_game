@@ -1,54 +1,53 @@
 package com.example.techquiz.data.repository
 
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.domain.PossibleAnswer
-import com.example.techquiz.data.domain.Question
-import com.example.techquiz.data.dto.response.QuestionResDTO
-import com.example.techquiz.data.resources.Questions
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.resources.get
+import com.example.techquiz.data.remote.client.QuizApiClient
+import com.example.techquiz.data.remote.dto.quiz_api.QuestionsDTO
+import com.example.techquiz.domain.models.AnswerOption
+import com.example.techquiz.domain.models.Question
+import com.example.techquiz.domain.repository.CategoryRepository
+import com.example.techquiz.domain.repository.QuestionRepository
+import org.koin.core.annotation.Factory
 
+@Factory
 class QuestionRepositoryDefault(
-    private val httpClient: HttpClient,
+    private val apiClient: QuizApiClient,
+    private val categoryRepository: CategoryRepository,
 ) : QuestionRepository {
     override suspend fun getRandomQuestions(
-        quantity: Int,
         category: Category,
-    ): List<Question> {
-        val response = httpClient.get(
-            Questions(
-                category = category.name,
-                limit = quantity,
-            )
+        quantity: Int,
+    ): Result<List<Question>> = Result.runCatching {
+        val response = apiClient.getQuestions(
+            category = category.id,
+            amount = quantity,
         )
 
-        val responseBody: List<QuestionResDTO> = response.body()
-        val questions = mapQuestionDtoToDomainQuestion(responseBody)
+        val questions = mapQuestionDtoToDomainQuestion(response)
 
-        return questions.shuffled()
+        return@runCatching questions.shuffled()
     }
 
-    private fun mapQuestionDtoToDomainQuestion(
-        responseBody: List<QuestionResDTO>
-    ) = responseBody.map { question ->
-        val possibleAnswers = question.answers.asSequence()
-            .zip(question.correctAnswers.asSequence())
-            .filter { it.first.value != null }
-            .associate {
-                it.first.value as String to it.second.value
-            }.map {
-                PossibleAnswer(
-                    text = it.key,
-                    isCorrect = it.value,
-                )
-            }
+    private suspend fun mapQuestionDtoToDomainQuestion(
+        responseBody: QuestionsDTO
+    ) = responseBody.content.map { question ->
+        val answerOptions = question.incorrectAnswers.map {
+            AnswerOption(
+                text = it,
+                isCorrect = false,
+            )
+        } + AnswerOption(
+            text = question.correctAnswer,
+            isCorrect = true,
+        )
+
+        val category = categoryRepository.getAllCategories()
+            .first { it.name == question.category }
 
         Question(
-            id = question.id,
-            category = Category(question.category),
+            category = category,
             text = question.questionText,
-            answers = possibleAnswers.shuffled(),
+            options = answerOptions.shuffled(),
         )
     }
 }

@@ -21,8 +21,8 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.techquiz.R
 import com.example.techquiz.data.domain.Category
-import com.example.techquiz.data.dto.response.stats.CategoryStats
-import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
+import com.example.techquiz.domain.models.CategoryStats
+import com.example.techquiz.domain.models.CorrectAnswersStats
 import com.example.techquiz.ui.common.HeaderTextLarge
 import com.example.techquiz.ui.common.HeaderTextMedium
 import com.example.techquiz.ui.common.SpacedLazyColumn
@@ -70,7 +70,7 @@ fun StatsScreen(
                 isCategoryStatsLoading = false
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
                 isCategoryStatsLoading = false
             },
@@ -84,7 +84,7 @@ fun StatsScreen(
                 isCorrectAnswersStatsLoading = false
             },
             onFailure = {
-                val messageRes = getHttpFailureMessage(it as? Exception)
+                val messageRes = getHttpFailureMessage(it)
                 snackbarHostState.showSnackbar(context.getString(messageRes))
                 isCorrectAnswersStatsLoading = false
             },
@@ -283,15 +283,24 @@ private fun PreviewCorrectAnswersStats() {
 
 private val categoryStats = listOf(
     CategoryStats(
-        category = Category("Demo1"),
-        2137,
+        category = Category(
+            id = 1,
+            name = "Demo1",
+        ),
+        answersGiven = 2137,
     ),
     CategoryStats(
-        category = Category("Demo2"),
+        category = Category(
+            id = 2,
+            name = "Demo2",
+        ),
         answersGiven = 21,
     ),
     CategoryStats(
-        category = Category("Demo3"),
+        category = Category(
+            id = 3,
+            name = "Demo3",
+        ),
         answersGiven = 37,
     ),
 )

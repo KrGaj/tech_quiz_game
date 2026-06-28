@@ -10,7 +10,7 @@ import io.ktor.client.plugins.ServerResponseException
 import java.net.ConnectException
 
 @StringRes fun getHttpFailureMessage(
-    exception: Exception?,
+    exception: Throwable,
 ): Int = when (exception) {
     is ClientRequestException -> R.string.client_error_message
     is ServerResponseException -> R.string.server_error_message

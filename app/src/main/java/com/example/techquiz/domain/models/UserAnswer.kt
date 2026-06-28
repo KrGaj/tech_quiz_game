@@ -1,0 +1,15 @@
+package com.example.techquiz.domain.models
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
+@Parcelize
+data class UserAnswer(
+    val question: Question,
+    val selectedOptions: List<AnswerOption> = emptyList(),
+) : Parcelable {
+    val isCorrect
+        get() = question.options.filter { it.isCorrect } == selectedOptions
+}

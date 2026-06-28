@@ -1,42 +1,45 @@
 package com.example.techquiz.data.repository
 
-import com.example.techquiz.data.dto.response.stats.CategoryStats
-import com.example.techquiz.data.dto.response.stats.CorrectAnswersStats
-import com.example.techquiz.data.resources.Stats
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.plugins.resources.get
+import com.example.techquiz.data.domain.Category
+import com.example.techquiz.domain.models.CategoryStats
+import com.example.techquiz.domain.models.CorrectAnswersStats
+import com.example.techquiz.data.remote.client.BackendApiClient
+import com.example.techquiz.domain.repository.StatsRepository
 import kotlin.uuid.ExperimentalUuidApi
 import kotlin.uuid.Uuid
 
 class StatsRepositoryDefault(
-    private val httpClient: HttpClient,
+    private val apiClient: BackendApiClient,
 ) : StatsRepository {
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getMostAnsweredCategories(
-        userUuid: Uuid?,
+        userUuid: Uuid,
         count: Int,
-    ): List<CategoryStats> {
-        val response = httpClient.get(
-            resource = Stats.MostAnsweredCategories(
-                userUuid = userUuid,
-                count = count,
+    ) = apiClient.getMostAnsweredCategories(
+        userUuid = userUuid,
+        count = count,
+    ).map {
+        CategoryStats(
+            category = Category(
+                id = 0, // For display purposes
+                name = it.category.name,
             ),
+            answersGiven = it.answersGiven,
         )
-
-        return response.body()
     }
+
 
     @OptIn(ExperimentalUuidApi::class)
     override suspend fun getCorrectAnswersCount(
-        userUuid: Uuid?,
+        userUuid: Uuid,
     ): CorrectAnswersStats {
-        val response = httpClient.get(
-            resource = Stats.CorrectAnswersCount(
-                userUuid = userUuid,
-            ),
+        val response = apiClient.getCorrectAnswersCount(
+            userUuid = userUuid,
         )
 
-        return response.body()
+        return CorrectAnswersStats(
+            correctAnswers = response.correctAnswers,
+            allAnswers = response.allAnswers,
+        )
     }
 }

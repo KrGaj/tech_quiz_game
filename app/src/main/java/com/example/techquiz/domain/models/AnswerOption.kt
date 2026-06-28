@@ -1,0 +1,12 @@
+package com.example.techquiz.domain.models
+
+import android.os.Parcelable
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+
+@Serializable
+@Parcelize
+data class AnswerOption(
+    val text: String,
+    val isCorrect: Boolean,
+) : Parcelable
